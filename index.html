@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Villamo Growth — Tracker 90 Días</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   VILLAMO GROWTH — DESIGN SYSTEM
+   ============================================================ */
+:root {
+  --black:       #0A0A0A;
+  --black-soft:  #141414;
+  --black-card:  #1A1A1A;
+  --carbon:      #2C2C2A;
+  --green:       #22C55E;
+  --green-dark:  #16A34A;
+  --green-dim:   rgba(34,197,94,0.10);
+  --green-border:rgba(34,197,94,0.22);
+  --white:       #FFFFFF;
+  --cream:       #F5F5F4;
+  --gray:        #888780;
+  --gray-mid:    #4A4A48;
+  --gray-dark:   #2E2E2C;
+  --border:      rgba(255,255,255,0.07);
+  --border-mid:  rgba(255,255,255,0.12);
+  --red:         #EF4444;
+  --red-dim:     rgba(239,68,68,0.10);
+  --amber:       #F59E0B;
+  --amber-dim:   rgba(245,158,11,0.10);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  font-family:'Syne',sans-serif;
+  background:var(--black);
+  color:var(--white);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================ UTILS */
+.hidden{display:none!important;}
+.mono{font-family:'DM Mono',monospace;}
+.green{color:var(--green);}
+.gray{color:var(--gray);}
+
+/* ============================================================ SCREENS */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ============================================================ AUTH SCREEN */
+#screen-auth{
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:var(--black);
+}
+.auth-box{
+  width:100%;
+  max-width:420px;
+  background:var(--black-card);
+  border:1px solid var(--border-mid);
+  border-radius:20px;
+  padding:40px;
+}
+.auth-logo{
+  display:flex;align-items:center;gap:12px;margin-bottom:32px;
+}
+.logo-mark{
+  width:36px;height:36px;background:var(--green);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+}
+.logo-mark svg{width:20px;height:20px;}
+.logo-name{font-size:16px;font-weight:800;letter-spacing:-0.02em;}
+.logo-sub{font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;}
+
+.auth-tabs{
+  display:flex;gap:4px;background:var(--black-soft);
+  border-radius:10px;padding:4px;margin-bottom:28px;
+}
+.auth-tab{
+  flex:1;padding:8px;border:none;border-radius:7px;
+  background:transparent;color:var(--gray);
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+.auth-tab.active{background:var(--black-card);color:var(--white);}
+
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;color:var(--gray);margin-bottom:6px;font-weight:500;}
+.field input,.field select{
+  width:100%;background:var(--black-soft);
+  border:1px solid var(--border-mid);border-radius:10px;
+  padding:11px 14px;color:var(--white);
+  font-family:'Syne',sans-serif;font-size:14px;outline:none;
+  transition:border-color .2s;
+}
+.field input:focus,.field select:focus{border-color:var(--green);}
+.field input::placeholder{color:var(--gray-mid);}
+.field select option{background:var(--black-card);}
+
+.btn-primary{
+  width:100%;padding:13px;background:var(--green);
+  color:var(--black);border:none;border-radius:10px;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:background .2s;margin-top:4px;
+}
+.btn-primary:hover{background:var(--green-dark);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+
+.auth-msg{
+  margin-top:14px;padding:10px 14px;border-radius:8px;
+  font-size:13px;display:none;
+}
+.auth-msg.error{background:var(--red-dim);color:#FCA5A5;border:1px solid rgba(239,68,68,.2);}
+.auth-msg.success{background:var(--green-dim);color:#86EFAC;border:1px solid var(--green-border);}
+
+/* ============================================================ APP SHELL */
+#screen-app{flex-direction:column;}
+
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;height:60px;
+  border-bottom:1px solid var(--border);
+  background:var(--black);
+  position:sticky;top:0;z-index:100;
+}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.topbar-logo{display:flex;align-items:center;gap:10px;}
+.topbar-logo-mark{width:28px;height:28px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.topbar-logo-mark svg{width:16px;height:16px;}
+.topbar-logo-name{font-size:14px;font-weight:800;letter-spacing:-0.02em;}
+
+.topbar-nav{display:flex;gap:2px;}
+.nav-btn{
+  padding:6px 14px;border:none;border-radius:7px;
+  background:transparent;color:var(--gray);
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .2s;
+}
+.nav-btn:hover{color:var(--white);background:var(--gray-dark);}
+.nav-btn.active{color:var(--white);background:var(--gray-dark);}
+
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.user-pill{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--gray);
+}
+.user-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--green-dim);border:1px solid var(--green-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:var(--green);
+}
+.btn-logout{
+  padding:6px 12px;border:1px solid var(--border-mid);border-radius:7px;
+  background:transparent;color:var(--gray);
+  font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;
+  transition:all .2s;
+}
+.btn-logout:hover{color:var(--white);border-color:var(--border-mid);}
+
+.app-body{flex:1;padding:32px;}
+
+/* ============================================================ VIEWS */
+.view{display:none;}
+.view.active{display:block;}
+
+/* ============================================================ ADMIN — LISTA CLIENTES */
+.page-header{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:28px;
+}
+.page-title{font-size:24px;font-weight:800;letter-spacing:-0.02em;}
+.page-sub{font-size:13px;color:var(--gray);margin-top:2px;}
+
+.btn-action{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 16px;background:var(--green);color:var(--black);
+  border:none;border-radius:9px;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:background .2s;
+}
+.btn-action:hover{background:var(--green-dark);}
+.btn-action svg{width:15px;height:15px;}
+
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;background:transparent;
+  border:1px solid var(--border-mid);border-radius:8px;
+  color:var(--gray);font-family:'Syne',sans-serif;
+  font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;
+}
+.btn-ghost:hover{color:var(--white);border-color:var(--border-mid);}
+
+/* CLIENTS GRID */
+.clients-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:14px;
+}
+.client-card{
+  background:var(--black-card);
+  border:1px solid var(--border);
+  border-radius:14px;padding:20px;
+  cursor:pointer;transition:border-color .2s,transform .15s;
+}
+.client-card:hover{border-color:var(--border-mid);transform:translateY(-1px);}
+.client-card-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.client-avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--green-dim);border:1px solid var(--green-border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:var(--green);flex-shrink:0;
+}
+.client-name{font-size:15px;font-weight:700;}
+.client-nicho{font-size:12px;color:var(--gray);}
+
+.progress-mini{margin-bottom:14px;}
+.progress-mini-top{
+  display:flex;justify-content:space-between;
+  font-size:11px;color:var(--gray);margin-bottom:5px;
+}
+.progress-mini-bar{
+  height:4px;background:var(--gray-dark);border-radius:2px;overflow:hidden;
+}
+.progress-mini-fill{height:100%;background:var(--green);border-radius:2px;transition:width .5s;}
+
+.client-dates{
+  display:flex;gap:12px;
+  font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);
+  padding-top:12px;border-top:1px solid var(--border);
+}
+.date-item span{display:block;color:var(--white);font-size:11px;margin-top:2px;}
+
+.tasks-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--amber-dim);color:var(--amber);
+  border:1px solid rgba(245,158,11,.2);
+  border-radius:20px;padding:2px 8px;
+  font-size:11px;font-weight:600;margin-top:8px;
+}
+
+/* ============================================================ MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.75);z-index:1000;
+  align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--black-card);border:1px solid var(--border-mid);
+  border-radius:18px;padding:32px;width:100%;max-width:480px;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--gray);margin-bottom:24px;}
+.modal-footer{display:flex;gap:10px;margin-top:24px;}
+.modal-footer .btn-primary{margin-top:0;}
+.btn-cancel{
+  flex:1;padding:12px;background:transparent;
+  border:1px solid var(--border-mid);border-radius:10px;
+  color:var(--gray);font-family:'Syne',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;
+}
+.btn-cancel:hover{color:var(--white);}
+.modal-msg{
+  margin-top:12px;padding:10px 14px;border-radius:8px;
+  font-size:13px;display:none;
+}
+.modal-msg.error{background:var(--red-dim);color:#FCA5A5;}
+.modal-msg.success{background:var(--green-dim);color:#86EFAC;}
+
+/* ============================================================ CLIENT DETAIL (admin) */
+.back-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  color:var(--gray);font-size:13px;cursor:pointer;
+  margin-bottom:24px;border:none;background:none;
+  font-family:'Syne',sans-serif;transition:color .2s;
+}
+.back-btn:hover{color:var(--white);}
+.back-btn svg{width:16px;height:16px;}
+
+.detail-header{
+  display:grid;grid-template-columns:1fr auto;gap:20px;
+  align-items:start;margin-bottom:28px;
+}
+.detail-client-name{font-size:26px;font-weight:800;letter-spacing:-0.02em;}
+.detail-meta{display:flex;gap:16px;margin-top:6px;flex-wrap:wrap;}
+.detail-meta-item{font-size:12px;color:var(--gray);}
+.detail-meta-item strong{color:var(--white);}
+
+.section-label{
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:.1em;color:var(--gray);text-transform:uppercase;
+  margin-bottom:12px;
+}
+
+/* PHASES */
+.phases-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
+.phase-card{
+  background:var(--black-card);border:1px solid var(--border);
+  border-radius:12px;padding:16px;
+}
+.phase-card-label{font-size:10px;color:var(--gray);margin-bottom:4px;font-family:'DM Mono',monospace;letter-spacing:.08em;}
+.phase-card-name{font-size:13px;font-weight:600;margin-bottom:10px;}
+.phase-card-bar{height:3px;background:var(--gray-dark);border-radius:2px;overflow:hidden;margin-bottom:6px;}
+.phase-card-fill{height:100%;border-radius:2px;transition:width .5s;}
+.phase-card-count{font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;}
+
+/* MODULES LIST */
+.modules-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;}
+.module-row{
+  display:flex;align-items:center;gap:14px;
+  background:var(--black-card);border:1px solid var(--border);
+  border-radius:10px;padding:14px 16px;
+  transition:border-color .2s;
+}
+.module-row.done{border-color:var(--green-border);}
+.module-check-icon{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--gray-mid);
+  display:flex;align-items:center;justify-content:center;
+}
+.module-row.done .module-check-icon{background:var(--green);border-color:var(--green);}
+.module-check-icon svg{display:none;width:12px;height:12px;}
+.module-row.done .module-check-icon svg{display:block;}
+.module-info{flex:1;}
+.module-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);}
+.module-name{font-size:13px;font-weight:600;}
+.module-phase-tag{
+  font-size:10px;padding:3px 8px;border-radius:20px;
+  border:1px solid var(--border-mid);color:var(--gray);
+  font-family:'DM Mono',monospace;
+}
+
+/* TASKS */
+.tasks-section{margin-bottom:28px;}
+.tasks-list{display:flex;flex-direction:column;gap:8px;}
+.task-row{
+  background:var(--black-card);border:1px solid var(--border);
+  border-radius:10px;padding:14px 16px;
+}
+.task-row.done{opacity:.6;}
+.task-row-top{display:flex;align-items:flex-start;gap:10px;}
+.task-title-text{font-size:14px;font-weight:600;flex:1;}
+.task-done-badge{
+  font-size:10px;padding:2px 8px;border-radius:20px;
+  background:var(--green-dim);color:var(--green);
+  border:1px solid var(--green-border);white-space:nowrap;
+}
+.task-pending-badge{
+  font-size:10px;padding:2px 8px;border-radius:20px;
+  background:var(--amber-dim);color:var(--amber);
+  border:1px solid rgba(245,158,11,.2);white-space:nowrap;
+}
+.task-desc{font-size:12px;color:var(--gray);margin-top:5px;line-height:1.5;}
+.task-meta-row{
+  display:flex;align-items:center;gap:12px;margin-top:10px;
+  flex-wrap:wrap;
+}
+.task-meta-tag{
+  font-size:11px;color:var(--gray);
+  font-family:'DM Mono',monospace;
+}
+.task-email-tag{
+  font-size:10px;padding:2px 7px;border-radius:20px;
+  background:var(--green-dim);color:var(--green);
+  border:1px solid var(--green-border);
+}
+.task-no-email-tag{
+  font-size:10px;padding:2px 7px;border-radius:20px;
+  background:rgba(255,255,255,.04);color:var(--gray);
+  border:1px solid var(--border);
+}
+
+/* ============================================================ CLIENT VIEW */
+#view-client-tracker{max-width:760px;margin:0 auto;}
+.tracker-header{
+  display:grid;grid-template-columns:1fr auto;gap:20px;
+  align-items:center;margin-bottom:28px;
+}
+.tracker-title{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+.tracker-dates{font-size:12px;color:var(--gray);}
+.tracker-dates strong{color:var(--white);}
+
+.big-progress{margin-bottom:28px;}
+.big-progress-top{
+  display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;
+}
+.big-progress-label{font-size:13px;color:var(--gray);}
+.big-progress-pct{font-size:32px;font-weight:800;color:var(--green);letter-spacing:-.02em;}
+
+.big-bar{height:8px;background:var(--gray-dark);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.big-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+.phase-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.phase-pill{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;
+  background:var(--black-card);border:1px solid var(--border);
+  font-size:12px;color:var(--gray);
+}
+.phase-pill-dot{width:6px;height:6px;border-radius:50%;}
+
+/* CLIENT MODULES */
+.client-modules{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;}
+.client-module-row{
+  display:flex;align-items:center;gap:14px;
+  background:var(--black-card);border:1px solid var(--border);
+  border-radius:12px;padding:16px 18px;cursor:pointer;
+  transition:border-color .2s,background .2s;
+}
+.client-module-row:hover{border-color:var(--border-mid);}
+.client-module-row.done{border-color:var(--green-border);background:rgba(34,197,94,.04);}
+.client-mod-toggle{
+  width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--gray-mid);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.client-module-row.done .client-mod-toggle{background:var(--green);border-color:var(--green);}
+.client-mod-toggle svg{display:none;width:12px;height:12px;}
+.client-module-row.done .client-mod-toggle svg{display:block;}
+.client-mod-info{flex:1;}
+.client-mod-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);}
+.client-mod-name{font-size:14px;font-weight:600;}
+.client-mod-desc{font-size:12px;color:var(--gray);margin-top:2px;}
+.client-mod-phase{
+  font-size:10px;padding:3px 8px;border-radius:20px;
+  border:1px solid var(--border);color:var(--gray);
+  font-family:'DM Mono',monospace;flex-shrink:0;
+}
+
+/* CLIENT TASKS */
+.client-task-row{
+  background:var(--black-card);border:1px solid var(--border);
+  border-radius:12px;padding:16px 18px;margin-bottom:8px;
+}
+.client-task-header{display:flex;align-items:flex-start;gap:12px;}
+.client-task-check{
+  width:22px;height:22px;border-radius:6px;flex-shrink:0;
+  border:1.5px solid var(--border-mid);background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  margin-top:1px;transition:all .2s;
+}
+.client-task-check.done{background:var(--green);border-color:var(--green);}
+.client-task-check svg{display:none;width:12px;height:12px;}
+.client-task-check.done svg{display:block;}
+.client-task-body{flex:1;}
+.client-task-title{font-size:14px;font-weight:600;}
+.client-task-row.done .client-task-title{text-decoration:line-through;color:var(--gray);}
+.client-task-desc{font-size:12px;color:var(--gray);margin-top:4px;line-height:1.5;}
+.client-task-due{font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);margin-top:8px;}
+.client-task-due.ok{color:var(--gray);}
+
+/* EMPTY STATE */
+.empty-state{
+  text-align:center;padding:40px 20px;
+  color:var(--gray);font-size:13px;
+}
+.empty-state svg{width:32px;height:32px;opacity:.3;margin:0 auto 10px;display:block;}
+
+/* ============================================================ LOADING */
+.app-loading{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;gap:12px;color:var(--gray);
+}
+.spinner{
+  width:18px;height:18px;border:2px solid var(--border);
+  border-top-color:var(--green);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ============================================================ RESPONSIVE */
+@media(max-width:700px){
+  .topbar{padding:0 16px;}
+  .app-body{padding:20px 16px;}
+  .phases-row{grid-template-columns:1fr;}
+  .clients-grid{grid-template-columns:1fr;}
+  .detail-header{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="app-loading" class="app-loading">
+  <div class="spinner"></div>
+  <span>Cargando...</span>
+</div>
+
+<!-- ============================================================ AUTH SCREEN -->
+<div id="screen-auth" class="screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3 16L10 4L17 16" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11H14" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="logo-name">VILLAMO GROWTH</div>
+        <div class="logo-sub">Tracker 90 días</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Entrar</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Registrarme</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="auth-login">
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="tu@email.com" />
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="login-password" placeholder="••••••••" />
+      </div>
+      <button class="btn-primary" onclick="login()">Entrar al programa</button>
+      <div class="auth-msg" id="login-msg"></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="auth-register" class="hidden">
+      <div class="field">
+        <label>Nombre completo / negocio</label>
+        <input type="text" id="reg-name" placeholder="María García / Joyería Luna" />
+      </div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="tu@email.com" />
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="reg-password" placeholder="Mínimo 8 caracteres" />
+      </div>
+      <div class="field">
+        <label>Nicho / tipo de negocio</label>
+        <input type="text" id="reg-nicho" placeholder="Joyería, calzado, lentes..." />
+      </div>
+      <button class="btn-primary" onclick="register()">Crear mi cuenta</button>
+      <div class="auth-msg" id="reg-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ APP SCREEN -->
+<div id="screen-app" class="screen">
+
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">
+        <div class="topbar-logo-mark">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M3 16L10 4L17 16" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11H14" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <span class="topbar-logo-name">VILLAMO GROWTH</span>
+      </div>
+      <!-- Admin nav -->
+      <div class="topbar-nav" id="admin-nav" style="display:none;">
+        <button class="nav-btn active" onclick="showAdminView('clients')">Clientes</button>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill">
+        <div class="user-avatar" id="user-avatar">VG</div>
+        <span id="user-name-display" style="font-size:13px;"></span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Salir</button>
+    </div>
+  </nav>
+
+  <!-- BODY -->
+  <div class="app-body">
+
+    <!-- ADMIN: lista de clientes -->
+    <div id="view-admin-clients" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Mis clientes</div>
+          <div class="page-sub mono" id="admin-subtitle">—</div>
+        </div>
+        <button class="btn-action" onclick="openNewClientModal()">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Nuevo cliente
+        </button>
+      </div>
+      <div class="clients-grid" id="clients-grid">
+        <div class="empty-state">
+          <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.5"/><path d="M16 10v6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Cargando clientes...
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN: detalle de cliente -->
+    <div id="view-admin-detail" class="view">
+      <button class="back-btn" onclick="showAdminView('clients')">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver a clientes
+      </button>
+      <div class="detail-header">
+        <div>
+          <div class="detail-client-name" id="detail-client-name">—</div>
+          <div class="detail-meta" id="detail-client-meta"></div>
+        </div>
+        <button class="btn-action" onclick="openNewTaskModal()">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Asignar tarea
+        </button>
+      </div>
+
+      <div class="section-label">Progreso por fase</div>
+      <div class="phases-row" id="detail-phases"></div>
+
+      <div class="section-label">Módulos del programa</div>
+      <div class="modules-list" id="detail-modules"></div>
+
+      <div class="section-label">Tareas asignadas</div>
+      <div class="tasks-list" id="detail-tasks">
+        <div class="empty-state">Sin tareas asignadas aún.</div>
+      </div>
+    </div>
+
+    <!-- CLIENT: tracker -->
+    <div id="view-client-tracker" class="view">
+      <div class="tracker-header">
+        <div>
+          <div class="tracker-title" id="client-tracker-title">Mi programa</div>
+          <div class="tracker-dates" id="client-tracker-dates"></div>
+        </div>
+        <div id="client-day-badge" class="mono" style="font-size:13px;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);padding:6px 14px;border-radius:20px;">DÍA — / 90</div>
+      </div>
+
+      <div class="big-progress">
+        <div class="big-progress-top">
+          <div class="big-progress-label">Progreso general</div>
+          <div class="big-progress-pct" id="client-pct">0%</div>
+        </div>
+        <div class="big-bar"><div class="big-bar-fill" id="client-bar" style="width:0%"></div></div>
+        <div class="phase-pills" id="client-phase-pills"></div>
+      </div>
+
+      <div class="section-label">Módulos del programa — marca cada uno al completarlo</div>
+      <div class="client-modules" id="client-modules-list"></div>
+
+      <div class="section-label" id="tasks-section-label" style="margin-top:28px;">Tareas pendientes</div>
+      <div id="client-tasks-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ MODALS -->
+
+<!-- MODAL: Nuevo Cliente -->
+<div class="modal-overlay" id="modal-new-client">
+  <div class="modal">
+    <div class="modal-title">Agregar cliente</div>
+    <div class="modal-sub">Se creará la cuenta y el cliente recibirá un correo para entrar.</div>
+    <div class="field"><label>Nombre completo / negocio</label><input type="text" id="nc-name" placeholder="María García" /></div>
+    <div class="field"><label>Correo electrónico</label><input type="email" id="nc-email" placeholder="cliente@email.com" /></div>
+    <div class="field"><label>Contraseña temporal</label><input type="password" id="nc-password" placeholder="Mínimo 8 caracteres" /></div>
+    <div class="field"><label>Nicho</label><input type="text" id="nc-nicho" placeholder="Joyería, calzado, lentes..." /></div>
+    <div class="field"><label>Fecha de inicio del programa</label><input type="date" id="nc-start" /></div>
+    <div class="field"><label>Fecha de finalización</label><input type="date" id="nc-end" /></div>
+    <div class="modal-msg" id="nc-msg"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-new-client')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="createClient()">Crear cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nueva Tarea -->
+<div class="modal-overlay" id="modal-new-task">
+  <div class="modal">
+    <div class="modal-title">Asignar tarea</div>
+    <div class="modal-sub">La tarea aparecerá en el tracker del cliente y le llegará un correo.</div>
+    <div class="field"><label>Título de la tarea</label><input type="text" id="nt-title" placeholder="Ej: Subir 10 fotos de producto a Shopify" /></div>
+    <div class="field"><label>Descripción / instrucciones</label><input type="text" id="nt-desc" placeholder="Detalles de lo que debe hacer..." /></div>
+    <div class="field">
+      <label>Módulo relacionado</label>
+      <select id="nt-module">
+        <option value="">Sin módulo específico</option>
+      </select>
+    </div>
+    <div class="field"><label>Fecha límite</label><input type="date" id="nt-due" /></div>
+    <div class="modal-msg" id="nt-msg"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-new-task')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="createTask()">Asignar y enviar correo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ JAVASCRIPT -->
+<script>
+// ============================================================
+// CONFIGURACIÓN — REEMPLAZAR CON TUS DATOS DE SUPABASE
+// ============================================================
+const SUPABASE_URL = 'https://crgtdkbobxfbiicuxrfj.supabase.co';       // Project URL
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyZ3Rka2JvYnhmYmlpY3V4cmZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0ODE5ODEsImV4cCI6MjA5NTA1Nzk4MX0.iXSvOrqaEpC-Gw1pdOCOO90pYejzZEJjF0AUR7oEpAA'; // anon/public key
+// Tu email de admin (para que puedas promoverte a admin la primera vez)
+const ADMIN_EMAIL = 'pablovillamo123@gmail.com';
+// ============================================================
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let selectedClientId = null;
+let allModules = [];
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadUserProfile(session.user);
+  } else {
+    showScreen('auth');
+  }
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await loadUserProfile(session.user);
+    } else if (event === 'SIGNED_OUT') {
+      showScreen('auth');
+    }
+  });
+}
+
+async function loadUserProfile(user) {
+  currentUser = user;
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  currentProfile = profile;
+
+  // Load modules once
+  const { data: mods } = await sb.from('modules').select('*').order('order_index');
+  allModules = mods || [];
+
+  // Populate module select in task modal
+  const sel = document.getElementById('nt-module');
+  sel.innerHTML = '<option value="">Sin módulo específico</option>';
+  allModules.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id;
+    o.textContent = `Módulo ${m.number} — ${m.name}`;
+    sel.appendChild(o);
+  });
+
+  // Set user display
+  const initials = (profile?.full_name || user.email || 'VG').substring(0,2).toUpperCase();
+  document.getElementById('user-avatar').textContent = initials;
+  document.getElementById('user-name-display').textContent = profile?.full_name || user.email;
+
+  if (profile?.role === 'admin') {
+    document.getElementById('admin-nav').style.display = 'flex';
+    showScreen('app');
+    await loadAdminClients();
+    showAdminView('clients');
+  } else {
+    document.getElementById('admin-nav').style.display = 'none';
+    showScreen('app');
+    await loadClientView();
+  }
+
+  document.getElementById('app-loading').style.display = 'none';
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='register'));
+  });
+  document.getElementById('auth-login').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('auth-register').classList.toggle('hidden', tab !== 'register');
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+  const msg = document.getElementById('login-msg');
+  msg.style.display = 'none';
+
+  if (!email || !pass) { showMsg(msg,'error','Completa todos los campos'); return; }
+
+  const btn = document.querySelector('#auth-login .btn-primary');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Entrar al programa';
+
+  if (error) { showMsg(msg,'error', error.message === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : error.message); }
+}
+
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-password').value;
+  const nicho = document.getElementById('reg-nicho').value.trim();
+  const msg = document.getElementById('reg-msg');
+  msg.style.display = 'none';
+
+  if (!name || !email || !pass) { showMsg(msg,'error','Completa todos los campos'); return; }
+  if (pass.length < 8) { showMsg(msg,'error','La contraseña debe tener mínimo 8 caracteres'); return; }
+
+  const btn = document.querySelector('#auth-register .btn-primary');
+  btn.disabled = true; btn.textContent = 'Creando cuenta...';
+
+  const { error } = await sb.auth.signUp({
+    email, password: pass,
+    options: { data: { full_name: name, nicho, role: 'client' } }
+  });
+
+  btn.disabled = false; btn.textContent = 'Crear mi cuenta';
+
+  if (error) { showMsg(msg,'error', error.message); }
+  else { showMsg(msg,'success','¡Cuenta creada! Revisa tu correo para confirmar.'); }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+}
+
+// ============================================================
+// ADMIN — CLIENTES
+// ============================================================
+async function loadAdminClients() {
+  const { data: clients } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('role','client')
+    .order('created_at', { ascending: false });
+
+  document.getElementById('admin-subtitle').textContent =
+    `${clients?.length || 0} cliente${clients?.length !== 1 ? 's' : ''} activo${clients?.length !== 1 ? 's' : ''}`;
+
+  const grid = document.getElementById('clients-grid');
+
+  if (!clients || clients.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M4 28c0-6.627 5.373-10 12-10s12 3.373 12 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Sin clientes aún. Agrega el primero.</div>';
+    return;
+  }
+
+  // Get progress for each client
+  const { data: allProgress } = await sb.from('client_modules').select('*');
+  const { data: allTasks } = await sb.from('tasks').select('*').eq('completed', false);
+
+  grid.innerHTML = clients.map(c => {
+    const prog = allProgress?.filter(p => p.client_id === c.id) || [];
+    const done = prog.filter(p => p.completed).length;
+    const pct = Math.round((done / 9) * 100);
+    const pendingTasks = allTasks?.filter(t => t.client_id === c.id).length || 0;
+
+    const startStr = c.start_date ? new Date(c.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '—';
+    const endStr = c.end_date ? new Date(c.end_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
+
+    // Calcular día actual
+    let dayNum = '—';
+    if (c.start_date) {
+      const diff = Math.floor((Date.now() - new Date(c.start_date).getTime()) / 86400000) + 1;
+      dayNum = Math.min(90, Math.max(1, diff));
+    }
+
+    const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+
+    return `
+      <div class="client-card" onclick="openClientDetail('${c.id}')">
+        <div class="client-card-top">
+          <div class="client-avatar">${initials}</div>
+          <div>
+            <div class="client-name">${c.full_name || c.email}</div>
+            <div class="client-nicho">${c.nicho || 'Sin nicho'}</div>
+          </div>
+        </div>
+        <div class="progress-mini">
+          <div class="progress-mini-top">
+            <span>${done}/9 módulos</span>
+            <span class="mono green">${pct}%</span>
+          </div>
+          <div class="progress-mini-bar">
+            <div class="progress-mini-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <div class="client-dates">
+          <div class="date-item">INICIO<span>${startStr}</span></div>
+          <div class="date-item">FIN<span>${endStr}</span></div>
+          <div class="date-item">DÍA<span class="mono" style="color:var(--green)">${dayNum}</span></div>
+        </div>
+        ${pendingTasks > 0 ? `<div class="tasks-badge"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 3v2.5l1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${pendingTasks} tarea${pendingTasks!==1?'s':''} pendiente${pendingTasks!==1?'s':''}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function openClientDetail(clientId) {
+  selectedClientId = clientId;
+  showAdminView('detail');
+
+  const { data: client } = await sb.from('profiles').select('*').eq('id', clientId).single();
+  const { data: progress } = await sb.from('client_modules').select('*').eq('client_id', clientId);
+  const { data: tasks } = await sb.from('tasks').select('*,modules(name,number)').eq('client_id', clientId).order('created_at', { ascending: false });
+
+  // Header
+  document.getElementById('detail-client-name').textContent = client.full_name || client.email;
+
+  const startStr = client.start_date ? new Date(client.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : 'Sin definir';
+  const endStr = client.end_date ? new Date(client.end_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : 'Sin definir';
+
+  let dayNum = '—';
+  if (client.start_date) {
+    const diff = Math.floor((Date.now() - new Date(client.start_date).getTime()) / 86400000) + 1;
+    dayNum = Math.min(90, Math.max(1, diff));
+  }
+
+  document.getElementById('detail-client-meta').innerHTML = `
+    <div class="detail-meta-item">Nicho: <strong>${client.nicho || '—'}</strong></div>
+    <div class="detail-meta-item">Inicio: <strong>${startStr}</strong></div>
+    <div class="detail-meta-item">Fin: <strong>${endStr}</strong></div>
+    <div class="detail-meta-item mono" style="color:var(--green)">Día ${dayNum} de 90</div>
+  `;
+
+  // Phases
+  const doneMap = {};
+  (progress || []).forEach(p => { doneMap[p.module_id] = p.completed; });
+
+  const p1done = allModules.filter(m => m.phase===1 && doneMap[m.id]).length;
+  const p2done = allModules.filter(m => m.phase===2 && doneMap[m.id]).length;
+  const p3done = allModules.filter(m => m.phase===3 && doneMap[m.id]).length;
+
+  document.getElementById('detail-phases').innerHTML = [
+    { label:'FASE 1 · Días 1–15', name:'Diagnóstico y base', done:p1done, total:2, color:'#22C55E' },
+    { label:'FASE 2 · Días 16–60', name:'Construcción del sistema', done:p2done, total:3, color:'#16A34A' },
+    { label:'FASE 3 · Días 61–90', name:'Sistema completo', done:p3done, total:4, color:'#085041' },
+  ].map(ph => `
+    <div class="phase-card">
+      <div class="phase-card-label">${ph.label}</div>
+      <div class="phase-card-name">${ph.name}</div>
+      <div class="phase-card-bar"><div class="phase-card-fill" style="width:${Math.round(ph.done/ph.total*100)}%;background:${ph.color}"></div></div>
+      <div class="phase-card-count mono">${ph.done} / ${ph.total} módulos</div>
+    </div>
+  `).join('');
+
+  // Modules
+  document.getElementById('detail-modules').innerHTML = allModules.map(m => `
+    <div class="module-row ${doneMap[m.id] ? 'done' : ''}">
+      <div class="module-check-icon">
+        <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="module-info">
+        <div class="module-num">MÓDULO ${m.number}</div>
+        <div class="module-name">${m.name}</div>
+      </div>
+      <div class="module-phase-tag">Fase ${m.phase}</div>
+    </div>
+  `).join('');
+
+  // Tasks
+  const taskList = document.getElementById('detail-tasks');
+  if (!tasks || tasks.length === 0) {
+    taskList.innerHTML = '<div class="empty-state">Sin tareas asignadas aún. Usa "Asignar tarea" para agregar la primera.</div>';
+  } else {
+    taskList.innerHTML = tasks.map(t => {
+      const dueStr = t.due_date ? new Date(t.due_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : null;
+      return `
+        <div class="task-row ${t.completed ? 'done' : ''}">
+          <div class="task-row-top">
+            <div class="task-title-text">${t.title}</div>
+            ${t.completed ? '<span class="task-done-badge">Completada</span>' : '<span class="task-pending-badge">Pendiente</span>'}
+          </div>
+          ${t.description ? `<div class="task-desc">${t.description}</div>` : ''}
+          <div class="task-meta-row">
+            ${t.modules ? `<span class="task-meta-tag">Módulo ${t.modules.number} — ${t.modules.name}</span>` : ''}
+            ${dueStr ? `<span class="task-meta-tag">Vence: ${dueStr}</span>` : ''}
+            ${t.email_sent ? '<span class="task-email-tag">Correo enviado</span>' : '<span class="task-no-email-tag">Sin correo</span>'}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+// ============================================================
+// ADMIN — CREAR CLIENTE
+// ============================================================
+function openNewClientModal() {
+  // Default dates: today + 90 days
+  const today = new Date();
+  const end = new Date(today); end.setDate(end.getDate() + 90);
+  document.getElementById('nc-start').value = today.toISOString().split('T')[0];
+  document.getElementById('nc-end').value = end.toISOString().split('T')[0];
+  openModal('modal-new-client');
+}
+
+async function createClient() {
+  const name = document.getElementById('nc-name').value.trim();
+  const email = document.getElementById('nc-email').value.trim();
+  const pass = document.getElementById('nc-password').value;
+  const nicho = document.getElementById('nc-nicho').value.trim();
+  const start = document.getElementById('nc-start').value;
+  const end = document.getElementById('nc-end').value;
+  const msg = document.getElementById('nc-msg');
+
+  if (!name || !email || !pass) { showMsg(msg,'error','Nombre, email y contraseña son requeridos'); return; }
+  if (pass.length < 8) { showMsg(msg,'error','La contraseña debe tener mínimo 8 caracteres'); return; }
+
+  const btn = document.querySelector('#modal-new-client .btn-primary');
+  btn.disabled = true; btn.textContent = 'Creando...';
+
+  // Create user via signUp (admin creates client account)
+  const { data: authData, error: authErr } = await sb.auth.signUp({
+    email, password: pass,
+    options: { data: { full_name: name, nicho, role: 'client' } }
+  });
+
+  if (authErr) {
+    btn.disabled = false; btn.textContent = 'Crear cliente';
+    showMsg(msg,'error', authErr.message); return;
+  }
+
+  // Update profile with dates and nicho
+  if (authData.user) {
+    await sb.from('profiles').update({ nicho, start_date: start || null, end_date: end || null })
+      .eq('id', authData.user.id);
+  }
+
+  btn.disabled = false; btn.textContent = 'Crear cliente';
+  showMsg(msg,'success','¡Cliente creado! Ya puede acceder con su email y contraseña.');
+
+  setTimeout(async () => {
+    closeModal('modal-new-client');
+    ['nc-name','nc-email','nc-password','nc-nicho'].forEach(id => { document.getElementById(id).value = ''; });
+    await loadAdminClients();
+  }, 1800);
+}
+
+// ============================================================
+// ADMIN — CREAR TAREA
+// ============================================================
+function openNewTaskModal() {
+  document.getElementById('nt-title').value = '';
+  document.getElementById('nt-desc').value = '';
+  document.getElementById('nt-module').value = '';
+  const in7 = new Date(); in7.setDate(in7.getDate() + 7);
+  document.getElementById('nt-due').value = in7.toISOString().split('T')[0];
+  openModal('modal-new-task');
+}
+
+async function createTask() {
+  const title = document.getElementById('nt-title').value.trim();
+  const desc = document.getElementById('nt-desc').value.trim();
+  const moduleId = document.getElementById('nt-module').value;
+  const due = document.getElementById('nt-due').value;
+  const msg = document.getElementById('nt-msg');
+
+  if (!title) { showMsg(msg,'error','El título de la tarea es requerido'); return; }
+
+  const btn = document.querySelector('#modal-new-task .btn-primary');
+  btn.disabled = true; btn.textContent = 'Creando...';
+
+  const { data: task, error } = await sb.from('tasks').insert({
+    client_id: selectedClientId,
+    module_id: moduleId || null,
+    title,
+    description: desc || null,
+    due_date: due || null,
+    created_by: currentUser.id
+  }).select().single();
+
+  if (error) {
+    btn.disabled = false; btn.textContent = 'Asignar y enviar correo';
+    showMsg(msg,'error', error.message); return;
+  }
+
+  // Call Edge Function to send email
+  try {
+    await sb.functions.invoke('notify-task', { body: { task_id: task.id } });
+    showMsg(msg,'success','¡Tarea creada y correo enviado al cliente!');
+  } catch(e) {
+    showMsg(msg,'success','¡Tarea creada! (El correo se enviará en breve)');
+  }
+
+  btn.disabled = false; btn.textContent = 'Asignar y enviar correo';
+
+  setTimeout(async () => {
+    closeModal('modal-new-task');
+    await openClientDetail(selectedClientId);
+  }, 1800);
+}
+
+// ============================================================
+// CLIENT VIEW
+// ============================================================
+async function loadClientView() {
+  const userId = currentUser.id;
+
+  const { data: progress } = await sb
+    .from('client_modules')
+    .select('*, modules(*)')
+    .eq('client_id', userId)
+    .order('modules(order_index)');
+
+  const { data: tasks } = await sb
+    .from('tasks')
+    .select('*, modules(name,number)')
+    .eq('client_id', userId)
+    .order('due_date');
+
+  // Header
+  const p = currentProfile;
+  document.getElementById('client-tracker-title').textContent = p?.full_name || 'Mi programa';
+
+  let dayNum = 1;
+  if (p?.start_date) {
+    const diff = Math.floor((Date.now() - new Date(p.start_date).getTime()) / 86400000) + 1;
+    dayNum = Math.min(90, Math.max(1, diff));
+  }
+  document.getElementById('client-day-badge').textContent = `DÍA ${dayNum} / 90`;
+
+  const startStr = p?.start_date ? new Date(p.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : null;
+  const endStr = p?.end_date ? new Date(p.end_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : null;
+  document.getElementById('client-tracker-dates').innerHTML = startStr
+    ? `Inicio: <strong>${startStr}</strong>${endStr ? ` &nbsp;·&nbsp; Fin: <strong>${endStr}</strong>` : ''}`
+    : '';
+
+  // Progress
+  const done = (progress||[]).filter(p => p.completed).length;
+  const pct = Math.round((done / 9) * 100);
+  document.getElementById('client-pct').textContent = pct + '%';
+  document.getElementById('client-bar').style.width = pct + '%';
+
+  const p1done = (progress||[]).filter(p => p.modules?.phase===1 && p.completed).length;
+  const p2done = (progress||[]).filter(p => p.modules?.phase===2 && p.completed).length;
+  const p3done = (progress||[]).filter(p => p.modules?.phase===3 && p.completed).length;
+
+  document.getElementById('client-phase-pills').innerHTML = [
+    { label:'Fase 1', done:p1done, total:2, color:'#22C55E' },
+    { label:'Fase 2', done:p2done, total:3, color:'#16A34A' },
+    { label:'Fase 3', done:p3done, total:4, color:'#085041' },
+  ].map(ph => `
+    <div class="phase-pill">
+      <div class="phase-pill-dot" style="background:${ph.color}"></div>
+      <span>${ph.label}: ${ph.done}/${ph.total}</span>
+    </div>
+  `).join('');
+
+  // Modules
+  document.getElementById('client-modules-list').innerHTML = (progress||[]).map(row => {
+    const m = row.modules;
+    if (!m) return '';
+    return `
+      <div class="client-module-row ${row.completed ? 'done' : ''}" onclick="toggleClientModule('${row.id}', ${!row.completed})">
+        <div class="client-mod-toggle">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="client-mod-info">
+          <div class="client-mod-num">MÓDULO ${m.number} · FASE ${m.phase}</div>
+          <div class="client-mod-name">${m.name}</div>
+          <div class="client-mod-desc">${m.description}</div>
+        </div>
+        <div class="client-mod-phase">Fase ${m.phase}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Tasks
+  const pendingTasks = (tasks||[]).filter(t => !t.completed);
+  const doneTasks = (tasks||[]).filter(t => t.completed);
+  const allTasks = [...pendingTasks, ...doneTasks];
+
+  const taskLabel = document.getElementById('tasks-section-label');
+  taskLabel.textContent = `Tareas asignadas (${pendingTasks.length} pendiente${pendingTasks.length!==1?'s':''})`;
+
+  const taskList = document.getElementById('client-tasks-list');
+  if (allTasks.length === 0) {
+    taskList.innerHTML = '<div class="empty-state"><svg viewBox="0 0 32 32" fill="none"><path d="M8 6h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.5"/><path d="M11 16l3 3 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Sin tareas asignadas por ahora.</div>';
+    return;
+  }
+
+  taskList.innerHTML = allTasks.map(t => {
+    let dueLabel = '';
+    if (t.due_date) {
+      const due = new Date(t.due_date);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const isOverdue = due < today && !t.completed;
+      const dueStr = due.toLocaleDateString('es-ES',{day:'numeric',month:'long'});
+      dueLabel = `<div class="client-task-due ${!isOverdue?'ok':''}" style="${isOverdue?'color:var(--red)':''}">${isOverdue?'⚠ Venció el ':'Vence el '}${dueStr}</div>`;
+    }
+    return `
+      <div class="client-task-row ${t.completed ? 'done' : ''}">
+        <div class="client-task-header">
+          <div class="client-task-check ${t.completed ? 'done' : ''}" onclick="toggleClientTask('${t.id}', ${!t.completed})">
+            <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="client-task-body">
+            <div class="client-task-title">${t.title}</div>
+            ${t.description ? `<div class="client-task-desc">${t.description}</div>` : ''}
+            ${t.modules ? `<div class="client-task-desc" style="margin-top:6px;color:var(--green)">Módulo ${t.modules.number} — ${t.modules.name}</div>` : ''}
+            ${dueLabel}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  showView('view-client-tracker');
+}
+
+async function toggleClientModule(rowId, newValue) {
+  await sb.from('client_modules').update({
+    completed: newValue,
+    completed_at: newValue ? new Date().toISOString() : null
+  }).eq('id', rowId);
+  await loadClientView();
+}
+
+async function toggleClientTask(taskId, newValue) {
+  await sb.from('tasks').update({
+    completed: newValue,
+    completed_at: newValue ? new Date().toISOString() : null
+  }).eq('id', taskId);
+  await loadClientView();
+}
+
+// ============================================================
+// ADMIN NAV
+// ============================================================
+function showAdminView(view) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (view === 'clients') {
+    document.querySelector('.nav-btn').classList.add('active');
+    showView('view-admin-clients');
+  } else if (view === 'detail') {
+    showView('view-admin-detail');
+  }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  if (name === 'auth') document.getElementById('screen-auth').classList.add('active');
+  if (name === 'app')  document.getElementById('screen-app').classList.add('active');
+  document.getElementById('app-loading').style.display = 'none';
+}
+
+function showView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.querySelectorAll(`#${id} .modal-msg`).forEach(m => m.style.display = 'none');
+}
+
+function showMsg(el, type, text) {
+  el.className = `auth-msg ${type}`;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
+});
+
+// ============================================================
+// START
+// ============================================================
+document.getElementById('app-loading').style.display = 'flex';
+init();
+</script>
+</body>
+</html>
