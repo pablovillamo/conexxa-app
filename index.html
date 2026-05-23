@@ -1112,11 +1112,12 @@ async function createTask() {
 async function loadClientView() {
   const userId = currentUser.id;
 
-  const { data: progress } = await sb
+  const { data: progress, error: progressError } = await sb
     .from('client_modules')
     .select('*, modules(*)')
-    .eq('client_id', userId)
-    .order('modules(order_index)');
+    .eq('client_id', userId);
+  if (progressError) console.error('Progress error:', progressError);
+  if (progress) progress.sort((a, b) => (a.modules?.order_index || 0) - (b.modules?.order_index || 0));
 
   const { data: tasks } = await sb
     .from('tasks')
