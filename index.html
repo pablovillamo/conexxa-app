@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Villamo Growth — Tracker 90 Días</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    VILLAMO GROWTH — DESIGN SYSTEM
@@ -35,7 +35,7 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body {
-  font-family:'Syne',sans-serif;
+  font-family:'Inter',sans-serif;
   background:var(--black);
   color:var(--white);
   min-height:100vh;
@@ -75,7 +75,6 @@ body {
   border-radius:8px;display:flex;align-items:center;justify-content:center;
 }
 .logo-mark svg{width:20px;height:20px;}
-.logo-name{font-size:16px;font-weight:800;letter-spacing:-0.02em;}
 .logo-sub{font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;}
 
 .auth-tabs{
@@ -85,7 +84,7 @@ body {
 .auth-tab{
   flex:1;padding:8px;border:none;border-radius:7px;
   background:transparent;color:var(--gray);
-  font-family:'Syne',sans-serif;font-size:13px;font-weight:600;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
   cursor:pointer;transition:all .2s;
 }
 .auth-tab.active{background:var(--black-card);color:var(--white);}
@@ -133,8 +132,6 @@ body {
 .topbar-logo{display:flex;align-items:center;gap:10px;}
 .topbar-logo-mark{width:28px;height:28px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;}
 .topbar-logo-mark svg{width:16px;height:16px;}
-.topbar-logo-name{font-size:14px;font-weight:800;letter-spacing:-0.02em;}
-
 .topbar-nav{display:flex;gap:2px;}
 .nav-btn{
   padding:6px 14px;border:none;border-radius:7px;
@@ -175,7 +172,9 @@ body {
   display:flex;align-items:baseline;justify-content:space-between;
   margin-bottom:28px;
 }
-.page-title{font-size:24px;font-weight:800;letter-spacing:-0.02em;}
+.page-title{font-size:22px;font-weight:600;letter-spacing:-0.01em;}
+.logo-name{font-size:15px;font-weight:600;letter-spacing:-0.01em;}
+.topbar-logo-name{font-size:14px;font-weight:600;letter-spacing:-0.01em;}
 .page-sub{font-size:13px;color:var(--gray);margin-top:2px;}
 
 .btn-action{
@@ -289,7 +288,7 @@ body {
   display:grid;grid-template-columns:1fr auto;gap:20px;
   align-items:start;margin-bottom:28px;
 }
-.detail-client-name{font-size:26px;font-weight:800;letter-spacing:-0.02em;}
+.detail-client-name{font-size:24px;font-weight:600;letter-spacing:-0.01em;}
 .detail-meta{display:flex;gap:16px;margin-top:6px;flex-wrap:wrap;}
 .detail-meta-item{font-size:12px;color:var(--gray);}
 .detail-meta-item strong{color:var(--white);}
@@ -384,7 +383,7 @@ body {
   display:grid;grid-template-columns:1fr auto;gap:20px;
   align-items:center;margin-bottom:28px;
 }
-.tracker-title{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+.tracker-title{font-size:20px;font-weight:600;letter-spacing:-0.01em;}
 .tracker-dates{font-size:12px;color:var(--gray);}
 .tracker-dates strong{color:var(--white);}
 
@@ -393,7 +392,7 @@ body {
   display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;
 }
 .big-progress-label{font-size:13px;color:var(--gray);}
-.big-progress-pct{font-size:32px;font-weight:800;color:var(--green);letter-spacing:-.02em;}
+.big-progress-pct{font-size:28px;font-weight:600;color:var(--green);letter-spacing:-.01em;}
 
 .big-bar{height:8px;background:var(--gray-dark);border-radius:4px;overflow:hidden;margin-bottom:10px;}
 .big-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);}
@@ -959,9 +958,13 @@ async function openClientDetail(clientId) {
     </div>
   `).join('');
 
-  // Modules
-  document.getElementById('detail-modules').innerHTML = allModules.map(m => `
-    <div class="module-row ${doneMap[m.id] ? 'done' : ''}">
+  // Modules — admin can toggle
+  document.getElementById('detail-modules').innerHTML = allModules.map(m => {
+    const row = (progress||[]).find(p => p.module_id === m.id);
+    const isDone = row?.completed || false;
+    const rowId = row?.id || '';
+    return `
+    <div class="module-row ${isDone ? 'done' : ''}" onclick="toggleAdminModule('${rowId}', ${!isDone}, '${m.id}')" style="cursor:pointer;">
       <div class="module-check-icon">
         <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
@@ -971,7 +974,8 @@ async function openClientDetail(clientId) {
       </div>
       <div class="module-phase-tag">Fase ${m.phase}</div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   // Tasks
   const taskList = document.getElementById('detail-tasks');
@@ -1093,17 +1097,13 @@ async function createTask() {
   // Call Edge Function to send email
   try {
     await sb.functions.invoke('notify-task', { body: { task_id: task.id } });
-    showMsg(msg,'success','¡Tarea creada y correo enviado al cliente!');
   } catch(e) {
-    showMsg(msg,'success','¡Tarea creada! (El correo se enviará en breve)');
+    console.log('Email error:', e);
   }
 
   btn.disabled = false; btn.textContent = 'Asignar y enviar correo';
-
-  setTimeout(async () => {
-    closeModal('modal-new-task');
-    await openClientDetail(selectedClientId);
-  }, 1800);
+  closeModal('modal-new-task');
+  await openClientDetail(selectedClientId);
 }
 
 // ============================================================
@@ -1162,13 +1162,13 @@ async function loadClientView() {
     </div>
   `).join('');
 
-  // Modules
+  // Modules — READ ONLY for client
   document.getElementById('client-modules-list').innerHTML = (progress||[]).map(row => {
     const m = row.modules;
     if (!m) return '';
     return `
-      <div class="client-module-row ${row.completed ? 'done' : ''}" onclick="toggleClientModule('${row.id}', ${!row.completed})">
-        <div class="client-mod-toggle">
+      <div class="client-module-row ${row.completed ? 'done' : ''}" style="cursor:default;">
+        <div class="client-mod-toggle" style="pointer-events:none;">
           <svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div class="client-mod-info">
@@ -1222,6 +1222,24 @@ async function loadClientView() {
   }).join('');
 
   showView('view-client-tracker');
+}
+
+async function toggleAdminModule(rowId, newValue, moduleId) {
+  if (!rowId) {
+    // Create the row if it doesn't exist
+    await sb.from('client_modules').insert({
+      client_id: selectedClientId,
+      module_id: parseInt(moduleId),
+      completed: newValue,
+      completed_at: newValue ? new Date().toISOString() : null
+    });
+  } else {
+    await sb.from('client_modules').update({
+      completed: newValue,
+      completed_at: newValue ? new Date().toISOString() : null
+    }).eq('id', rowId);
+  }
+  await openClientDetail(selectedClientId);
 }
 
 async function toggleClientModule(rowId, newValue) {
