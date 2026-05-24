@@ -734,7 +734,7 @@ body {
 }
 .blog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 40px;
 }
@@ -843,6 +843,141 @@ body {
   .tasks-stats { flex-wrap: wrap; gap: 12px; }
 }
 
+
+/* ============================================================ USER DROPDOWN */
+.user-dropdown-wrap { position: relative; }
+.user-avatar-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: none; border: none; cursor: pointer;
+  padding: 4px 8px; border-radius: 8px;
+  transition: background 0.15s;
+}
+.user-avatar-btn:hover { background: rgba(255,255,255,0.06); }
+.user-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--black-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 12px;
+  padding: 6px;
+  min-width: 180px;
+  z-index: 200;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.user-dropdown.open { display: block; }
+.dropdown-header {
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.dropdown-name { font-size: 13px; font-weight: 600; }
+.dropdown-email { font-size: 11px; color: var(--gray); margin-top: 1px; }
+.dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 9px 12px;
+  background: none; border: none;
+  border-radius: 8px; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: var(--white);
+  text-align: left; transition: background 0.15s;
+}
+.dropdown-item:hover { background: rgba(255,255,255,0.06); }
+.dropdown-item svg { width: 15px; height: 15px; color: var(--gray); flex-shrink: 0; }
+.dropdown-item.danger { color: var(--red); }
+.dropdown-item.danger svg { color: var(--red); }
+.dropdown-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* CONFIG VIEW */
+.config-section { max-width: 720px; margin: 0 auto; padding-bottom: 60px; }
+.config-card {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.config-card-title {
+  font-size: 12px; font-weight: 600;
+  color: var(--green);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.config-field { display: flex; flex-direction: column; gap: 6px; }
+.config-field.full { grid-column: 1 / -1; }
+.config-label { font-size: 11px; color: var(--gray); font-weight: 500; }
+.config-input {
+  background: var(--black-soft);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.config-input:focus { border-color: var(--green); }
+.config-input::placeholder { color: var(--gray-mid); }
+.config-select {
+  background: var(--black-soft);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+.config-select option { background: var(--black-card); }
+.config-status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+.config-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 20px;
+}
+.btn-save {
+  padding: 10px 20px;
+  background: var(--green);
+  color: var(--black);
+  border: none; border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-save:hover { background: var(--green-dark); }
+.btn-cancel-sm {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--gray);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+}
+
+@media(max-width:600px) {
+  .config-grid { grid-template-columns: 1fr; }
+  .blog-grid { grid-template-columns: 1fr; }
+  .sistema-grid { grid-template-columns: 1fr; }
+}
+
 </style>
 </head>
 <body>
@@ -927,11 +1062,36 @@ body {
       </div>
     </div>
     <div class="topbar-right">
-      <div class="user-pill">
-        <div class="user-avatar" id="user-avatar">VG</div>
-        <span id="user-name-display" style="font-size:13px;"></span>
+      <div class="user-dropdown-wrap" id="user-dropdown-wrap">
+        <button class="user-avatar-btn" onclick="toggleDropdown()" id="user-avatar-btn">
+          <div class="user-avatar" id="user-avatar">VG</div>
+          <span id="user-name-display" style="font-size:13px;color:var(--gray);"></span>
+          <svg viewBox="0 0 12 12" fill="none" style="width:12px;height:12px;color:var(--gray);"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="user-dropdown" id="user-dropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-name" id="dd-name">—</div>
+            <div class="dropdown-email" id="dd-email">—</div>
+          </div>
+          <button class="dropdown-item" onclick="openConfig()">
+            <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.22 3.22l1.41 1.41M11.37 11.37l1.41 1.41M3.22 12.78l1.41-1.41M11.37 4.63l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Configuración
+          </button>
+          <button class="dropdown-item" id="dd-modules-btn" onclick="closeDropdown();showView('view-client-sistema')" style="display:none;">
+            <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+            Módulos
+          </button>
+          <button class="dropdown-item" onclick="openChangePassword()">
+            <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="8" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Contraseña
+          </button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item danger" onclick="logout()">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M6 14H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Salir
+          </button>
+        </div>
       </div>
-      <button class="btn-logout" onclick="logout()">Salir</button>
     </div>
   </nav>
 
@@ -1008,6 +1168,9 @@ body {
             <p>Dentro de esta plataforma podrás encontrar tu progreso general, tareas y objetivos a completar, seguimiento personalizado, las victorias que iremos alcanzando juntos y recursos adicionales. Además, tendrás acceso a una IA personalizada diseñada específicamente para potenciar tu marca.</p>
             <p>Gracias por confiar en nosotros. Estamos emocionados de acompañarte en este proceso. <strong style="color:var(--white)">Este es solo el comienzo de una nueva etapa para tu marca.</strong></p>
           </div>
+          <div style="margin-top:24px;">
+            <button class="btn-iniciar" onclick="showView('view-client-sistema')">Iniciar transformación →</button>
+          </div>
         </div>
 
         <!-- Podcast Ecommerce -->
@@ -1022,15 +1185,15 @@ body {
             </a>
           </div>
           <div class="podcast-social" style="margin-top:12px;">
-            <a href="https://www.instagram.com/pablovillamo" target="_blank" class="podcast-social-btn">
+            <a href="https://www.instagram.com/villamogrowth?igsh=dmh6cWsxcHJnZmw4&utm_source=qr" target="_blank" class="podcast-social-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
               Instagram
             </a>
-            <a href="https://www.tiktok.com/@pablovillamo" target="_blank" class="podcast-social-btn">
+            <a href="https://www.tiktok.com/@villamo.growth?_r=1&_t=ZT-96cWcTdVebW" target="_blank" class="podcast-social-btn">
               <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M19.59 6.69a4.83 4.83 0 0 1-4.77-4.71V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.14a8.27 8.27 0 0 0 4.84 1.54V7.24a4.85 4.85 0 0 1-.07-.55z"/></svg>
               TikTok
             </a>
-            <a href="https://www.facebook.com/pablovillamo" target="_blank" class="podcast-social-btn">
+            <a href="https://www.facebook.com/share/1D1QmuCwrT/?mibextid=wwXIfr" target="_blank" class="podcast-social-btn">
               <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
               Facebook
             </a>
@@ -1050,12 +1213,10 @@ body {
           <div class="blog-card"><div class="blog-tag">Automatización</div><div class="blog-card-title">Automatiza tu ecommerce sin perder el toque humano</div><div class="blog-card-desc">Las herramientas correctas para responder, nutrir y cerrar sin intervención.</div></div>
           <div class="blog-card"><div class="blog-tag">Retención</div><div class="blog-card-title">Cómo hacer que tus clientes vuelvan a comprar</div><div class="blog-card-desc">El cliente más barato es el que ya te compró una vez.</div></div>
           <div class="blog-card"><div class="blog-tag">Branding</div><div class="blog-card-title">Branding que vende: construye una marca que conecta</div><div class="blog-card-desc">La diferencia entre una tienda y una marca que la gente elige.</div></div>
+          <div class="blog-card"><div class="blog-tag">Estrategia</div><div class="blog-card-title">Cómo construir una oferta irresistible para tu ecommerce</div><div class="blog-card-desc">Los principios detrás de las ofertas que generan urgencia real y decisiones de compra inmediatas.</div></div>
         </div>
 
-        <!-- Botón Iniciar Transformación -->
-        <div style="text-align:center;padding:8px 0 40px;">
-          <button class="btn-iniciar" onclick="showView('view-client-sistema')">Iniciar transformación →</button>
-        </div>
+
 
       </div>
     </div>
@@ -1293,6 +1454,141 @@ body {
       </div>
     </div>
 
+    <!-- CLIENT: CONFIGURACIÓN DE USUARIO -->
+    <div id="view-client-config" class="view">
+      <div class="config-section">
+        <button class="back-btn" onclick="closeDropdown();showView('view-client-dashboard')">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Volver al inicio
+        </button>
+        <div style="font-size:20px;font-weight:600;margin-bottom:6px;">Configuración</div>
+        <div style="font-size:13px;color:var(--gray);margin-bottom:28px;">Información de tu negocio y programa.</div>
+
+        <!-- Info del negocio -->
+        <div class="config-card">
+          <div class="config-card-title">Información del negocio</div>
+          <div class="config-grid">
+            <div class="config-field">
+              <label class="config-label">Nombre del negocio</label>
+              <input class="config-input" type="text" id="cfg-business" placeholder="Ej: Joyería Luna" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Nombre del dueño / responsable</label>
+              <input class="config-input" type="text" id="cfg-owner" placeholder="Tu nombre completo" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Correo principal</label>
+              <input class="config-input" type="email" id="cfg-email" placeholder="tu@email.com" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Teléfono</label>
+              <input class="config-input" type="tel" id="cfg-phone" placeholder="+52 55 1234 5678" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Sitio web</label>
+              <input class="config-input" type="url" id="cfg-website" placeholder="https://tu-tienda.com" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Industria / Nicho</label>
+              <input class="config-input" type="text" id="cfg-nicho" placeholder="Joyería, calzado, moda..." />
+            </div>
+            <div class="config-field">
+              <label class="config-label">País</label>
+              <select class="config-select" id="cfg-country">
+                <option value="">Selecciona tu país</option>
+                <option>México</option>
+                <option>Colombia</option>
+                <option>Argentina</option>
+                <option>Chile</option>
+                <option>Perú</option>
+                <option>Ecuador</option>
+                <option>Venezuela</option>
+                <option>Costa Rica</option>
+                <option>Guatemala</option>
+                <option>República Dominicana</option>
+                <option>España</option>
+                <option>Estados Unidos</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="config-field">
+              <label class="config-label">Nivel actual del negocio</label>
+              <select class="config-select" id="cfg-level">
+                <option value="">Selecciona tu nivel</option>
+                <option>Emprendimiento nuevo (menos de 1 año)</option>
+                <option>Negocio en crecimiento (1-3 años)</option>
+                <option>Negocio establecido (3+ años)</option>
+                <option>Marca consolidada</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Redes sociales -->
+        <div class="config-card">
+          <div class="config-card-title">Redes sociales</div>
+          <div class="config-grid">
+            <div class="config-field">
+              <label class="config-label">Instagram</label>
+              <input class="config-input" type="text" id="cfg-instagram" placeholder="@tu.marca" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">TikTok</label>
+              <input class="config-input" type="text" id="cfg-tiktok" placeholder="@tu.marca" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Facebook</label>
+              <input class="config-input" type="text" id="cfg-facebook" placeholder="facebook.com/tu-marca" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Objetivos -->
+        <div class="config-card">
+          <div class="config-card-title">Objetivos del programa</div>
+          <div class="config-grid">
+            <div class="config-field full">
+              <label class="config-label">Objetivo principal del negocio</label>
+              <input class="config-input" type="text" id="cfg-goal" placeholder="Ej: Aumentar ventas online un 40% en 90 días" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Meta de facturación mensual</label>
+              <input class="config-input" type="text" id="cfg-revenue" placeholder="Ej: $50,000 USD" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado del programa (solo lectura) -->
+        <div class="config-card">
+          <div class="config-card-title">Estado del programa</div>
+          <div class="config-grid">
+            <div class="config-field">
+              <label class="config-label">Estado</label>
+              <div style="margin-top:4px;"><span class="config-status-badge">● Activo</span></div>
+            </div>
+            <div class="config-field">
+              <label class="config-label">Fecha de inicio</label>
+              <input class="config-input" type="text" id="cfg-start-date" placeholder="—" readonly style="opacity:0.6;cursor:not-allowed;" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Fecha de finalización</label>
+              <input class="config-input" type="text" id="cfg-end-date" placeholder="—" readonly style="opacity:0.6;cursor:not-allowed;" />
+            </div>
+            <div class="config-field">
+              <label class="config-label">Días transcurridos</label>
+              <input class="config-input" type="text" id="cfg-days" placeholder="—" readonly style="opacity:0.6;cursor:not-allowed;" />
+            </div>
+          </div>
+        </div>
+
+        <div class="config-actions">
+          <button class="btn-cancel-sm" onclick="showView('view-client-dashboard')">Cancelar</button>
+          <button class="btn-save" onclick="saveConfig()">Guardar cambios</button>
+        </div>
+
+      </div>
+    </div>
+
 <!-- ============================================================ MODALS -->
 
 <!-- MODAL: Nuevo Cliente -->
@@ -1402,7 +1698,16 @@ async function loadUserProfile(user) {
   // Set user display
   const initials = (profile?.full_name || user.email || 'VG').substring(0,2).toUpperCase();
   document.getElementById('user-avatar').textContent = initials;
-  document.getElementById('user-name-display').textContent = profile?.full_name || user.email;
+  document.getElementById('user-name-display').textContent = profile?.full_name || (user.email || '').split('@')[0];
+  const ddName = document.getElementById('dd-name');
+  if(ddName) ddName.textContent = profile?.full_name || user.email;
+  const ddEmail = document.getElementById('dd-email');
+  if(ddEmail) ddEmail.textContent = user.email;
+  // Show modules button only for clients
+  if(profile?.role === 'client') {
+    const ddMod = document.getElementById('dd-modules-btn');
+    if(ddMod) ddMod.style.display = 'flex';
+  }
 
   if (profile?.role === 'admin') {
     document.getElementById('admin-nav').style.display = 'flex';
@@ -1987,6 +2292,67 @@ function showMsg(el, type, text) {
 document.querySelectorAll('.modal-overlay').forEach(o => {
   o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
 });
+
+// ============================================================
+// DROPDOWN
+// ============================================================
+function toggleDropdown() {
+  const dd = document.getElementById('user-dropdown');
+  dd.classList.toggle('open');
+}
+
+function closeDropdown() {
+  const dd = document.getElementById('user-dropdown');
+  if(dd) dd.classList.remove('open');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('user-dropdown-wrap');
+  if (wrap && !wrap.contains(e.target)) closeDropdown();
+});
+
+function openConfig() {
+  closeDropdown();
+  // Pre-fill config with current profile data
+  const p = currentProfile;
+  if(p) {
+    const ownerEl = document.getElementById('cfg-owner');
+    if(ownerEl) ownerEl.value = p.full_name || '';
+    const emailEl = document.getElementById('cfg-email');
+    if(emailEl) emailEl.value = p.email || '';
+    const nichoEl = document.getElementById('cfg-nicho');
+    if(nichoEl) nichoEl.value = p.nicho || '';
+    const startEl = document.getElementById('cfg-start-date');
+    if(startEl && p.start_date) startEl.value = new Date(p.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
+    const endEl = document.getElementById('cfg-end-date');
+    if(endEl && p.end_date) endEl.value = new Date(p.end_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});
+    const daysEl = document.getElementById('cfg-days');
+    if(daysEl && p.start_date) {
+      const diff = Math.floor((Date.now() - new Date(p.start_date).getTime()) / 86400000) + 1;
+      daysEl.value = `Día ${Math.min(90, Math.max(1, diff))} de 90`;
+    }
+  }
+  showView('view-client-config');
+}
+
+function openChangePassword() {
+  closeDropdown();
+  alert('Para cambiar tu contraseña, cierra sesión y usa "¿Olvidé mi contraseña?" en la pantalla de inicio.');
+}
+
+async function saveConfig() {
+  const btn = document.querySelector('.btn-save');
+  if(btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  // Save nicho and full_name to Supabase
+  const nicho = document.getElementById('cfg-nicho')?.value || '';
+  const fullName = document.getElementById('cfg-owner')?.value || '';
+  if(currentUser) {
+    await sb.from('profiles').update({ nicho, full_name: fullName }).eq('id', currentUser.id);
+    currentProfile = { ...currentProfile, nicho, full_name: fullName };
+  }
+  if(btn) { btn.disabled = false; btn.textContent = 'Guardado ✓'; setTimeout(() => { btn.textContent = 'Guardar cambios'; }, 2000); }
+}
 
 // ============================================================
 // START
