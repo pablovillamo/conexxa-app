@@ -1756,32 +1756,35 @@ async function loadClientView() {
 
   // Header
   const p = currentProfile;
-  document.getElementById('client-tracker-title').textContent = p?.full_name || 'Mi programa';
+  const titleEl = document.getElementById('client-tracker-title');
+  if (titleEl) titleEl.textContent = p?.full_name || 'Mi programa';
 
   let dayNum = 1;
   if (p?.start_date) {
     const diff = Math.floor((Date.now() - new Date(p.start_date).getTime()) / 86400000) + 1;
     dayNum = Math.min(90, Math.max(1, diff));
   }
-  document.getElementById('client-day-badge').textContent = p?.start_date ? `DÍA ${dayNum} / 90` : 'Programa activo';
+  const dayBadgeEl = document.getElementById('client-day-badge');
+  if (dayBadgeEl) dayBadgeEl.textContent = p?.start_date ? `DÍA ${dayNum} / 90` : 'Programa activo';
 
   const startStr = p?.start_date ? new Date(p.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : null;
   const endStr = p?.end_date ? new Date(p.end_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : null;
-  document.getElementById('client-tracker-dates').innerHTML = startStr
+  const datesEl = document.getElementById('client-tracker-dates');
+  if (datesEl) datesEl.innerHTML = startStr
     ? `Inicio: <strong>${startStr}</strong>${endStr ? ` &nbsp;·&nbsp; Fin: <strong>${endStr}</strong>` : ''}`
     : '';
 
   // Progress
   const doneModules = (progress||[]).filter(p => p.completed).length;
   const pct = Math.round((doneModules / 9) * 100);
-  document.getElementById('client-pct').textContent = pct + '%';
-  document.getElementById('client-bar').style.width = pct + '%';
+  const pctEl2 = document.getElementById('client-pct'); if(pctEl2) pctEl2.textContent = pct + '%';
+  const barEl2 = document.getElementById('client-bar'); if(barEl2) barEl2.style.width = pct + '%';
 
   const p1done = (progress||[]).filter(p => p.modules?.phase===1 && p.completed).length;
   const p2done = (progress||[]).filter(p => p.modules?.phase===2 && p.completed).length;
   const p3done = (progress||[]).filter(p => p.modules?.phase===3 && p.completed).length;
 
-  document.getElementById('client-phase-pills').innerHTML = [
+  const pillsEl = document.getElementById('client-phase-pills'); if(pillsEl) pillsEl.innerHTML = [
     { label:'Fase 1', done:p1done, total:2, color:'#22C55E' },
     { label:'Fase 2', done:p2done, total:3, color:'#16A34A' },
     { label:'Fase 3', done:p3done, total:4, color:'#085041' },
