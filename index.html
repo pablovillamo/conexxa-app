@@ -484,6 +484,157 @@ body {
   .clients-grid{grid-template-columns:1fr;}
   .detail-header{grid-template-columns:1fr;}
 }
+
+/* ============================================================ CLIENT DASHBOARD */
+.client-dashboard { max-width: 800px; margin: 0 auto; padding-bottom: 60px; }
+
+.dashboard-quote-section {
+  text-align: center;
+  padding: 48px 24px 40px;
+  position: relative;
+}
+.dashboard-quote-mark {
+  font-size: 80px;
+  line-height: 0.5;
+  color: var(--green);
+  opacity: 0.3;
+  font-family: Georgia, serif;
+  display: block;
+  margin-bottom: 20px;
+}
+.dashboard-quote-text {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--white);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  max-width: 640px;
+  margin: 0 auto 16px;
+  font-style: italic;
+}
+.dashboard-quote-author {
+  font-size: 12px;
+  color: var(--green);
+  font-family: "DM Mono", monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dashboard-welcome {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 36px;
+  margin-bottom: 36px;
+}
+.dashboard-welcome-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  font-family: "DM Mono", monospace;
+}
+.dashboard-welcome-text {
+  font-size: 14px;
+  color: #B0B0A8;
+  line-height: 1.9;
+}
+.dashboard-welcome-text p { margin-bottom: 16px; }
+.dashboard-welcome-text p:last-child { margin-bottom: 0; }
+
+.dashboard-modules-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gray);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: "DM Mono", monospace;
+  margin-bottom: 16px;
+}
+
+.dashboard-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.dash-module-card {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s, background 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dash-module-card:hover {
+  border-color: var(--border-mid);
+  transform: translateY(-2px);
+  background: #1E1E1C;
+}
+.dash-module-card.active {
+  border-color: var(--green-border);
+  background: rgba(34,197,94,0.05);
+}
+.dash-module-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dash-module-icon svg { width: 20px; height: 20px; }
+.dash-module-name { font-size: 14px; font-weight: 600; color: var(--white); }
+.dash-module-desc { font-size: 12px; color: var(--gray); line-height: 1.5; }
+.dash-module-arrow {
+  font-size: 18px;
+  color: var(--gray);
+  margin-top: auto;
+  transition: color 0.2s;
+}
+.dash-module-card:hover .dash-module-arrow { color: var(--green); }
+
+
+.btn-iniciar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  background: var(--green);
+  color: var(--black);
+  border: none;
+  border-radius: 10px;
+  padding: 13px 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-iniciar:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+.dash-module-card.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.dash-module-lock {
+  font-size: 11px;
+  color: var(--gray);
+  font-family: 'DM Mono', monospace;
+  margin-top: auto;
+}
+
+@media(max-width:700px) {
+  .dashboard-modules-grid { grid-template-columns: 1fr; }
+  .dashboard-quote-text { font-size: 18px; }
+  .dashboard-welcome { padding: 24px 20px; }
+}
+
 </style>
 </head>
 <body>
@@ -628,8 +779,140 @@ body {
       </div>
     </div>
 
+
+    <!-- CLIENT: dashboard principal -->
+    <div id="view-client-dashboard" class="view">
+      <div class="client-dashboard">
+
+        <!-- Frase motivacional -->
+        <div class="dashboard-quote-section">
+          <span class="dashboard-quote-mark">&ldquo;</span>
+          <div class="dashboard-quote-text" id="dashboard-quote">Cargando...</div>
+          <div class="dashboard-quote-author" id="dashboard-quote-author">Villamo Growth</div>
+        </div>
+
+        <!-- Bienvenida -->
+        <div class="dashboard-welcome">
+          <div class="dashboard-welcome-title">Bienvenido al programa</div>
+          <div class="dashboard-welcome-text">
+            <p>Queremos agradecerte por dar este paso y permitirnos ser parte del crecimiento de tu negocio. Estás iniciando un proceso diseñado estratégicamente para ayudarte a aumentar tus ventas, fortalecer la conexión con tus clientes y construir una marca con mayor impacto y posicionamiento en el mercado digital.</p>
+            <p>A través de esta experiencia recibirás acompañamiento personalizado, análisis enfocados en resultados y estrategias adaptadas específicamente a las necesidades de tu e-commerce. Nuestro objetivo no es únicamente ayudarte a vender más, sino construir una estructura sólida que impulse el crecimiento sostenible de tu marca.</p>
+            <p>Dentro de esta plataforma podrás encontrar tu progreso general, tareas y objetivos a completar, seguimiento personalizado, las victorias que iremos alcanzando juntos y recursos adicionales a los que podrás acceder en cualquier momento para continuar fortaleciendo tu negocio. Además, tendrás acceso a una IA personalizada diseñada específicamente para potenciar tu marca.</p>
+            <p>Gracias por confiar en nosotros. Estamos emocionados de acompañarte en este proceso y de construir algo increíble junto a ti. <strong style="color:var(--white)">Este es solo el comienzo de una nueva etapa para tu marca.</strong></p>
+          </div>
+          <button class="btn-iniciar" onclick="document.getElementById('section-modulos').scrollIntoView({behavior:'smooth'})">
+            Iniciar transformación →
+          </button>
+        </div>
+
+        <!-- Módulos -->
+        <div id="section-modulos" style="padding-top:8px;">
+          <div class="dashboard-modules-label">Tu sistema de crecimiento</div>
+          <div class="dashboard-modules-grid">
+
+            <div class="dash-module-card" onclick="showView('view-client-tracker')">
+              <div class="dash-module-icon" style="background:rgba(34,197,94,0.12)">
+                <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#22C55E" stroke-width="1.5"/><path d="M10 6v4l3 3" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="dash-module-name">Progreso General</div>
+                <div class="dash-module-desc">Tus 90 días, módulos completados y avance por fase.</div>
+              </div>
+              <div class="dash-module-arrow">→</div>
+            </div>
+
+            <div class="dash-module-card" onclick="showView('view-client-tasks')">
+              <div class="dash-module-icon" style="background:rgba(99,102,241,0.12)">
+                <svg viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="3" stroke="#6366F1" stroke-width="1.5"/><path d="M7 10l2 2 4-4" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="dash-module-name">Mis Tareas</div>
+                <div class="dash-module-desc">Acciones asignadas por tu mentor con fechas límite.</div>
+              </div>
+              <div class="dash-module-arrow">→</div>
+            </div>
+
+            <div class="dash-module-card locked">
+              <div class="dash-module-icon" style="background:rgba(245,158,11,0.12)">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M10 2l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z" stroke="#F59E0B" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="dash-module-name">Victorias y Resultados</div>
+                <div class="dash-module-desc">Los logros que iremos alcanzando juntos.</div>
+              </div>
+              <div class="dash-module-lock">🔒 Próximamente</div>
+            </div>
+
+            <div class="dash-module-card locked">
+              <div class="dash-module-icon" style="background:rgba(236,72,153,0.12)">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M4 6h12M4 10h8M4 14h10" stroke="#EC4899" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="dash-module-name">Recursos</div>
+                <div class="dash-module-desc">Material exclusivo para fortalecer tu negocio.</div>
+              </div>
+              <div class="dash-module-lock">🔒 Próximamente</div>
+            </div>
+
+            <div class="dash-module-card locked">
+              <div class="dash-module-icon" style="background:rgba(34,197,94,0.08)">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M10 3c-3.87 0-7 3.13-7 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z" stroke="#22C55E" stroke-width="1.5"/><path d="M8 9c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2M10 13h.01" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="dash-module-name">Cerebro Clonado IA</div>
+                <div class="dash-module-desc">IA entrenada con tu marca, métricas y estrategia.</div>
+              </div>
+              <div class="dash-module-lock">🔒 Próximamente</div>
+            </div>
+
+            <div class="dash-module-card locked">
+              <div class="dash-module-icon" style="background:rgba(168,85,247,0.12)">
+                <svg viewBox="0 0 20 20" fill="none"><path d="M4 4h5v5H4zM11 4h5v5h-5zM4 11h5v5H4zM11 11h5v5h-5z" stroke="#A855F7" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <div class="dash-module-name">Generador de Contenido</div>
+                <div class="dash-module-desc">Contenido especializado generado para tu marca.</div>
+              </div>
+              <div class="dash-module-lock">🔒 Próximamente</div>
+            </div>
+
+            <div class="dash-module-card locked">
+              <div class="dash-module-icon" style="background:rgba(20,184,166,0.12)">
+                <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" stroke="#14B8A6" stroke-width="1.5"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2M5.64 5.64l1.42 1.42M12.94 12.94l1.42 1.42M5.64 14.36l1.42-1.42M12.94 7.06l1.42-1.42" stroke="#14B8A6" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div>
+                <div class="dash-module-name">Integraciones</div>
+                <div class="dash-module-desc">Conecta tus herramientas y plataformas en un solo lugar.</div>
+              </div>
+              <div class="dash-module-lock">🔒 Próximamente</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CLIENT: mis tareas (vista separada) -->
+    <div id="view-client-tasks" class="view">
+      <div style="max-width:700px;margin:0 auto;">
+        <button class="back-btn" onclick="showView('view-client-dashboard')">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Volver al inicio
+        </button>
+        <div class="page-title" style="font-size:20px;font-weight:600;margin-bottom:24px;">Mis Tareas</div>
+        <div id="client-tasks-standalone"></div>
+      </div>
+    </div>
+
     <!-- CLIENT: tracker -->
     <div id="view-client-tracker" class="view">
+      <div style="max-width:760px;margin:0 auto;">
+        <button class="back-btn" onclick="showView('view-client-dashboard')" style="margin-bottom:20px;">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Volver al inicio
+        </button>
+      </div>
       <div class="tracker-header">
         <div>
           <div class="tracker-title" id="client-tracker-title">Mi programa</div>
@@ -777,6 +1060,7 @@ async function loadUserProfile(user) {
     document.getElementById('admin-nav').style.display = 'none';
     showScreen('app');
     await loadClientView();
+    loadDashboard();
   }
 
   document.getElementById('app-loading').style.display = 'none';
@@ -1109,6 +1393,37 @@ async function createTask() {
 // ============================================================
 // CLIENT VIEW
 // ============================================================
+
+// ============================================================
+// FRASES MOTIVACIONALES
+// ============================================================
+const FRASES = [
+  { text: 'El éxito no es el destino, es el resultado de sistemas bien construidos.', author: 'Villamo Growth' },
+  { text: 'Tu marca no crece por accidente. Crece por diseño.', author: 'Villamo Growth' },
+  { text: 'No vendas productos. Construye experiencias que la gente no pueda ignorar.', author: 'Villamo Growth' },
+  { text: 'La consistencia hace lo que el talento no puede hacer solo.', author: 'Villamo Growth' },
+  { text: 'El mercado recompensa a quienes entienden a su cliente mejor que nadie.', author: 'Villamo Growth' },
+  { text: 'Escalar no es trabajar más. Es construir el sistema correcto.', author: 'Villamo Growth' },
+  { text: 'Tu ecommerce es tan fuerte como los datos que decides entender.', author: 'Villamo Growth' },
+  { text: 'La automatización no reemplaza tu marca. La libera.', author: 'Villamo Growth' },
+  { text: 'Cada decisión sin datos es una apuesta. Cada decisión con datos es estrategia.', author: 'Villamo Growth' },
+  { text: 'Una marca con estructura puede escalar. Una sin estructura solo sobrevive.', author: 'Villamo Growth' },
+  { text: 'El crecimiento sostenible no se improvisa. Se diseña paso a paso.', author: 'Villamo Growth' },
+  { text: 'No esperes el momento perfecto. Construye el sistema que lo crea.', author: 'Villamo Growth' },
+];
+
+function loadDashboard() {
+  // Show random quote
+  const frase = FRASES[Math.floor(Math.random() * FRASES.length)];
+  const quoteEl = document.getElementById('dashboard-quote');
+  const authorEl = document.getElementById('dashboard-quote-author');
+  if (quoteEl) quoteEl.textContent = frase.text;
+  if (authorEl) authorEl.textContent = frase.author;
+
+  // Show dashboard as default view for clients
+  showView('view-client-dashboard');
+}
+
 async function loadClientView() {
   const userId = currentUser.id;
 
@@ -1193,7 +1508,9 @@ async function loadClientView() {
   const taskList = document.getElementById('client-tasks-list');
   if (allTasks.length === 0) {
     taskList.innerHTML = '<div class="empty-state"><svg viewBox="0 0 32 32" fill="none"><path d="M8 6h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.5"/><path d="M11 16l3 3 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Sin tareas asignadas por ahora.</div>';
-    showView('view-client-tracker');
+    const stl = document.getElementById('client-tasks-standalone');
+    if (stl) stl.innerHTML = taskList.innerHTML;
+    showView('view-client-dashboard');
     return;
   }
 
@@ -1223,7 +1540,17 @@ async function loadClientView() {
     `;
   }).join('');
 
-  showView('view-client-tracker');
+  // Also populate standalone tasks view
+  const standaloneTaskList = document.getElementById('client-tasks-standalone');
+  if (standaloneTaskList) {
+    if (allTasks.length === 0) {
+      standaloneTaskList.innerHTML = '<div class="empty-state">Sin tareas asignadas por ahora.</div>';
+    } else {
+      standaloneTaskList.innerHTML = taskList.innerHTML;
+    }
+  }
+
+  showView('view-client-dashboard');
 }
 
 async function toggleAdminModule(rowId, newValue, moduleId) {
