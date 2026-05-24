@@ -980,6 +980,527 @@ body {
   .sistema-grid { grid-template-columns: 1fr; }
 }
 
+
+/* ============================================================ DASHBOARD REDESIGN */
+.dash-hero {
+  text-align: center;
+  padding: 56px 24px 48px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.dash-hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.dash-hero-title {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+.dash-hero-desc {
+  font-size: 15px;
+  color: #9A9A92;
+  line-height: 1.8;
+  margin-bottom: 32px;
+}
+.dash-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green);
+  color: var(--black);
+  border: none;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  letter-spacing: -0.01em;
+}
+.dash-hero-btn:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+.dash-manifesto {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 48px 24px;
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.dash-manifesto-quote {
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--white);
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+}
+.dash-manifesto-attr {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.dash-section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 56px 24px;
+}
+.dash-section-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.dash-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.dash-section-sub {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+/* BLOG CARDS REDESIGN */
+.blog-grid-new {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.blog-card-new {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+.blog-card-new:hover { border-color: var(--border-mid); transform: translateY(-2px); }
+.blog-card-cover {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+.blog-card-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.blog-card-tag-new {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.blog-card-title-new { font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--white); }
+.blog-card-desc-new { font-size: 12px; color: var(--gray); line-height: 1.6; flex: 1; }
+.blog-card-cta {
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 500;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* PODCAST REDESIGN */
+.podcast-extra {
+  border-top: 1px solid var(--border);
+  padding: 56px 24px 60px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.podcast-extra-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.podcast-extra-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.podcast-extra-sub {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.7;
+  margin-bottom: 28px;
+  max-width: 560px;
+}
+.podcast-card {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.podcast-thumb {
+  width: 80px; height: 80px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #22C55E22, #16A34A44);
+  border: 1px solid var(--green-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+.podcast-info { flex: 1; min-width: 200px; }
+.podcast-info-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.podcast-info-desc { font-size: 13px; color: var(--gray); line-height: 1.6; margin-bottom: 16px; }
+.podcast-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+
+@media(max-width:700px) {
+  .blog-grid-new { grid-template-columns: 1fr; }
+  .dash-hero-title { font-size: 24px; }
+  .dash-manifesto-quote { font-size: 18px; }
+  .podcast-card { flex-direction: column; }
+}
+
+/* ============================================================ ADMIN PREMIUM REDESIGN */
+.admin-body { max-width: 1200px; margin: 0 auto; }
+
+/* KPI STRIP */
+.kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 28px; }
+.kpi-card {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.kpi-label { font-size: 10px; font-family:'DM Mono',monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--gray); margin-bottom:8px; }
+.kpi-val { font-size: 28px; font-weight: 600; letter-spacing:-0.02em; }
+.kpi-sub { font-size: 11px; color: var(--gray); margin-top: 4px; }
+.kpi-trend-up { color: var(--green); }
+.kpi-trend-warn { color: var(--amber); }
+.kpi-trend-err { color: var(--red); }
+
+/* ALERTS */
+.alerts-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
+.alert-card {
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.alert-card.warn { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2); color: var(--amber); }
+.alert-card.danger { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); color: var(--red); }
+.alert-card.success { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+.alert-icon { font-size: 18px; flex-shrink: 0; }
+.alert-text { flex: 1; }
+.alert-count { font-size: 20px; font-weight: 700; margin-left: auto; }
+
+/* TOOLBAR */
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  background: var(--black-soft);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  padding: 9px 14px;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  outline: none;
+}
+.search-input:focus { border-color: var(--green); }
+.filter-select {
+  background: var(--black-soft);
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+.filter-select option { background: var(--black-card); }
+
+/* CLIENT TABLE */
+.clients-table { width: 100%; border-collapse: collapse; }
+.clients-table th {
+  text-align: left;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.clients-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.clients-table tr:last-child td { border-bottom: none; }
+.clients-table tr:hover td { background: rgba(255,255,255,.02); }
+.clients-table tr { cursor: pointer; transition: background .15s; }
+
+.client-avatar-cell {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; color: var(--green);
+  flex-shrink: 0;
+}
+.client-name-cell { font-weight: 500; }
+.client-nicho-cell { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+.progress-cell-bar {
+  height: 4px;
+  background: var(--gray-dark);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 80px;
+}
+.progress-cell-fill { height: 100%; background: var(--green); border-radius: 2px; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.status-activo { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+.status-pausado { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,.2); }
+.status-finalizado { background: rgba(99,102,241,.1); color: #818CF8; border: 1px solid rgba(99,102,241,.2); }
+.status-pendiente { background: rgba(255,255,255,.05); color: var(--gray); border: 1px solid var(--border); }
+
+.days-remaining { font-family: 'DM Mono',monospace; font-size: 12px; }
+.days-urgent { color: var(--red); }
+.days-warn { color: var(--amber); }
+.days-ok { color: var(--green); }
+
+/* ADMIN DETAIL REDESIGN */
+.admin-detail-wrap { max-width: 1100px; margin: 0 auto; }
+.detail-top-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-client-avatar {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: var(--green);
+}
+.detail-client-info-name { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.detail-client-info-meta { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
+.detail-meta-pill {
+  font-size: 11px; color: var(--gray);
+  display: flex; align-items: center; gap: 4px;
+}
+.detail-actions { display: flex; gap: 8px; }
+
+/* DETAIL TABS */
+.detail-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--black-soft);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.detail-tab {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--gray);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.detail-tab.active { background: var(--black-card); color: var(--white); }
+
+.detail-tab-content { display: none; }
+.detail-tab-content.active { display: block; }
+
+/* AUDIT CARDS */
+.audit-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+.audit-card {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.audit-card:hover { border-color: var(--border-mid); }
+.audit-card-num { font-family: 'DM Mono',monospace; font-size: 10px; color: var(--gray); margin-bottom: 8px; }
+.audit-card-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.audit-card-status { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 12px; }
+.audit-card-date { font-size: 11px; color: var(--gray); }
+.audit-bar { height: 3px; background: var(--gray-dark); border-radius: 2px; overflow: hidden; margin-top: 12px; }
+.audit-bar-fill { height: 100%; border-radius: 2px; }
+
+/* SHOPIFY CHECKLIST */
+.shopify-category { margin-bottom: 12px; }
+.shopify-cat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.shopify-cat-header:hover { border-color: var(--border-mid); }
+.shopify-cat-title { font-size: 14px; font-weight: 600; flex: 1; }
+.shopify-cat-progress { font-size: 12px; color: var(--gray); font-family: 'DM Mono',monospace; }
+.shopify-cat-mini-bar { width: 60px; height: 4px; background: var(--gray-dark); border-radius: 2px; overflow: hidden; }
+.shopify-cat-mini-fill { height: 100%; background: var(--green); border-radius: 2px; }
+.shopify-cat-chevron { transition: transform .2s; }
+.shopify-cat-chevron.open { transform: rotate(180deg); }
+
+.shopify-tasks { padding: 8px 0 8px 16px; display: none; }
+.shopify-tasks.open { display: block; }
+.shopify-task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  transition: background .15s;
+}
+.shopify-task-row:hover { background: rgba(255,255,255,.03); }
+.shopify-task-name { flex: 1; font-size: 13px; }
+.task-state-btn {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.task-state-btn:hover { opacity: 0.8; }
+.task-state-done { background: rgba(34,197,94,.15); }
+.task-state-skip { background: rgba(239,68,68,.15); }
+.task-state-pending { background: rgba(245,158,11,.15); }
+
+/* NOTES CRM */
+.notes-crm { max-width: 700px; }
+.note-input-area {
+  background: var(--black-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.note-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  resize: none;
+  min-height: 80px;
+}
+.note-textarea::placeholder { color: var(--gray); }
+.note-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.note-meta { font-size: 11px; color: var(--gray); font-family: 'DM Mono',monospace; }
+
+.note-timeline { display: flex; flex-direction: column; gap: 16px; }
+.note-item {
+  display: flex;
+  gap: 14px;
+}
+.note-dot-wrap { display: flex; flex-direction: column; align-items: center; }
+.note-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 4px; }
+.note-line { flex: 1; width: 1px; background: var(--border); margin-top: 4px; }
+.note-content { flex: 1; padding-bottom: 16px; }
+.note-content-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.note-author { font-size: 12px; font-weight: 600; color: var(--white); }
+.note-time { font-size: 11px; color: var(--gray); font-family: 'DM Mono',monospace; }
+.note-text { font-size: 13px; color: #C0C0B8; line-height: 1.7; background: var(--black-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
+
+/* MODULES COMING SOON */
+.modules-coming-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 10px; }
+.module-coming-card {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  opacity: 0.5;
+  position: relative;
+  overflow: hidden;
+}
+.module-coming-card::after {
+  content: '🔒';
+  position: absolute;
+  top: 12px; right: 12px;
+  font-size: 14px;
+}
+.module-coming-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.module-coming-desc { font-size: 11px; color: var(--gray); }
+
+@media(max-width:900px) {
+  .kpi-strip { grid-template-columns: repeat(2,1fr); }
+  .alerts-row { grid-template-columns: 1fr; }
+  .audit-grid { grid-template-columns: 1fr; }
+  .clients-table th:nth-child(n+5), .clients-table td:nth-child(n+5) { display: none; }
+}
+
 </style>
 </head>
 <body>
@@ -1105,125 +1626,351 @@ body {
 
     <!-- ADMIN: lista de clientes -->
     <div id="view-admin-clients" class="view">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Mis clientes</div>
-          <div class="page-sub mono" id="admin-subtitle">—</div>
+      <div class="admin-body">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">Sistema Operativo</div>
+            <div style="font-size:13px;color:var(--gray);margin-top:2px;" id="admin-subtitle">Cargando...</div>
+          </div>
+          <button class="btn-action" onclick="openNewClientModal()">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Nuevo cliente
+          </button>
         </div>
-        <button class="btn-action" onclick="openNewClientModal()">
-          <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          Nuevo cliente
-        </button>
-      </div>
-      <div class="clients-grid" id="clients-grid">
-        <div class="empty-state">
-          <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.5"/><path d="M16 10v6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Cargando clientes...
+
+        <!-- KPIs -->
+        <div class="kpi-strip" id="admin-kpis">
+          <div class="kpi-card"><div class="kpi-label">Clientes activos</div><div class="kpi-val kpi-trend-up" id="kpi-activos">—</div><div class="kpi-sub">En programa</div></div>
+          <div class="kpi-card"><div class="kpi-label">Completados</div><div class="kpi-val" id="kpi-completados" style="color:#818CF8">—</div><div class="kpi-sub">Finalizaron 90 días</div></div>
+          <div class="kpi-card"><div class="kpi-label">Pausados</div><div class="kpi-val kpi-trend-warn" id="kpi-pausados">—</div><div class="kpi-sub">Requieren atención</div></div>
+          <div class="kpi-card"><div class="kpi-label">Próx. a finalizar</div><div class="kpi-val kpi-trend-err" id="kpi-prox">—</div><div class="kpi-sub">Menos de 15 días</div></div>
+          <div class="kpi-card"><div class="kpi-label">Progreso promedio</div><div class="kpi-val kpi-trend-up" id="kpi-avg">—</div><div class="kpi-sub">De todos los clientes</div></div>
         </div>
+
+        <!-- Alertas -->
+        <div class="alerts-row" id="admin-alerts">
+          <div class="alert-card warn"><div class="alert-icon">⚠️</div><div class="alert-text">Clientes atrasados<br><span style="font-size:11px;opacity:.7;">Progreso por debajo de lo esperado</span></div><div class="alert-count" id="alert-atrasados">0</div></div>
+          <div class="alert-card danger"><div class="alert-icon">🔴</div><div class="alert-text">Tareas vencidas<br><span style="font-size:11px;opacity:.7;">Sin completar después del plazo</span></div><div class="alert-count" id="alert-vencidas">0</div></div>
+          <div class="alert-card success"><div class="alert-icon">🚀</div><div class="alert-text">Mayor avance<br><span style="font-size:11px;opacity:.7;">Cliente con mejor progreso</span></div><div class="alert-count" id="alert-top">—</div></div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="admin-toolbar">
+          <input class="search-input" type="text" id="client-search" placeholder="🔍 Buscar cliente, nicho..." oninput="filterClients()" />
+          <select class="filter-select" id="filter-status" onchange="filterClients()">
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="pausado">Pausado</option>
+            <option value="finalizado">Finalizado</option>
+            <option value="pendiente">Pendiente</option>
+          </select>
+          <select class="filter-select" id="filter-sort" onchange="filterClients()">
+            <option value="date">Ordenar por fecha</option>
+            <option value="progress">Ordenar por progreso</option>
+            <option value="days">Ordenar por días restantes</option>
+            <option value="name">Ordenar por nombre</option>
+          </select>
+        </div>
+
+        <!-- Tabla -->
+        <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+          <table class="clients-table" id="clients-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Nicho</th>
+                <th>Ingreso</th>
+                <th>Día</th>
+                <th>Días restantes</th>
+                <th>Progreso</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="clients-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--gray);">Cargando clientes...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
 
     <!-- ADMIN: detalle de cliente -->
     <div id="view-admin-detail" class="view">
-      <button class="back-btn" onclick="showAdminView('clients')">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Volver a clientes
-      </button>
-      <div class="detail-header">
-        <div>
-          <div class="detail-client-name" id="detail-client-name">—</div>
-          <div class="detail-meta" id="detail-client-meta"></div>
-        </div>
-        <button class="btn-action" onclick="openNewTaskModal()">
-          <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          Asignar tarea
+      <div class="admin-detail-wrap">
+
+        <!-- Top bar -->
+        <button class="back-btn" onclick="showAdminView('clients')" style="margin-bottom:20px;">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Volver al sistema
         </button>
-      </div>
 
-      <div class="section-label">Progreso por fase</div>
-      <div class="phases-row" id="detail-phases"></div>
+        <div class="detail-top-bar">
+          <div class="detail-client-avatar" id="detail-avatar">—</div>
+          <div>
+            <div class="detail-client-info-name" id="detail-client-name">—</div>
+            <div class="detail-client-info-meta" id="detail-client-meta"></div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn-ghost" onclick="openNewTaskModal()">+ Asignar tarea</button>
+            <button class="btn-action" onclick="openEditClientModal()">Editar cliente</button>
+          </div>
+        </div>
 
-      <div class="section-label">Módulos del programa</div>
-      <div class="modules-list" id="detail-modules"></div>
+        <!-- Tabs -->
+        <div class="detail-tabs">
+          <button class="detail-tab active" onclick="switchDetailTab('progreso',this)">📊 Progreso</button>
+          <button class="detail-tab" onclick="switchDetailTab('shopify',this)">🛒 Shopify</button>
+          <button class="detail-tab" onclick="switchDetailTab('auditorias',this)">📋 Auditorías</button>
+          <button class="detail-tab" onclick="switchDetailTab('tareas',this)">✅ Tareas</button>
+          <button class="detail-tab" onclick="switchDetailTab('notas',this)">📝 Notas CRM</button>
+          <button class="detail-tab" onclick="switchDetailTab('modulos',this)">🔧 Módulos</button>
+        </div>
 
-      <div class="section-label">Tareas asignadas</div>
-      <div class="tasks-list" id="detail-tasks">
-        <div class="empty-state">Sin tareas asignadas aún.</div>
+        <!-- TAB: PROGRESO -->
+        <div id="tab-progreso" class="detail-tab-content active">
+          <div class="phases-row" id="detail-phases"></div>
+          <div class="section-label" style="margin-bottom:12px;">Módulos del programa</div>
+          <div class="modules-list" id="detail-modules"></div>
+        </div>
+
+        <!-- TAB: SHOPIFY -->
+        <div id="tab-shopify" class="detail-tab-content">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Shopify Optimizado</div>
+              <div style="font-size:13px;color:var(--gray);">Checklist de optimización avanzada</div>
+            </div>
+            <div style="display:flex;gap:16px;align-items:center;">
+              <div style="text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--green);" id="shopify-pct">0%</div><div style="font-size:11px;color:var(--gray);">Avance</div></div>
+              <div style="text-align:center;"><div style="font-size:22px;font-weight:600;color:var(--amber);" id="shopify-pending">0</div><div style="font-size:11px;color:var(--gray);">Pendientes</div></div>
+              <div style="text-align:center;"><div style="font-size:22px;font-weight:600;" id="shopify-done" style="color:#818CF8">0</div><div style="font-size:11px;color:var(--gray);">Completadas</div></div>
+            </div>
+          </div>
+          <div style="margin-bottom:16px;"><input class="search-input" style="width:100%;max-width:400px;" type="text" placeholder="🔍 Buscar tarea..." oninput="filterShopifyTasks(this.value)" /></div>
+          <div id="shopify-checklist"></div>
+        </div>
+
+        <!-- TAB: AUDITORÍAS -->
+        <div id="tab-auditorias" class="detail-tab-content">
+          <div class="audit-grid" id="audit-cards">
+            <div class="audit-card" onclick="openAuditoria(1)">
+              <div class="audit-card-num">AUDITORÍA 01</div>
+              <div class="audit-card-title">Primera reunión 1:1</div>
+              <div class="audit-card-status"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block;"></span><span style="color:var(--amber);">Pendiente</span></div>
+              <div class="audit-card-date">Sin fecha asignada</div>
+              <div class="audit-bar"><div class="audit-bar-fill" style="width:0%;background:var(--amber);"></div></div>
+            </div>
+            <div class="audit-card" onclick="openAuditoria(2)">
+              <div class="audit-card-num">AUDITORÍA 02</div>
+              <div class="audit-card-title">Segunda reunión 1:1</div>
+              <div class="audit-card-status"><span style="width:8px;height:8px;border-radius:50%;background:var(--gray);display:inline-block;"></span><span style="color:var(--gray);">No iniciada</span></div>
+              <div class="audit-card-date">Sin fecha asignada</div>
+              <div class="audit-bar"><div class="audit-bar-fill" style="width:0%;background:var(--gray);"></div></div>
+            </div>
+            <div class="audit-card" onclick="openAuditoria(3)">
+              <div class="audit-card-num">AUDITORÍA 03</div>
+              <div class="audit-card-title">Tercera reunión 1:1</div>
+              <div class="audit-card-status"><span style="width:8px;height:8px;border-radius:50%;background:var(--gray);display:inline-block;"></span><span style="color:var(--gray);">No iniciada</span></div>
+              <div class="audit-card-date">Sin fecha asignada</div>
+              <div class="audit-bar"><div class="audit-bar-fill" style="width:0%;background:var(--gray);"></div></div>
+            </div>
+          </div>
+          <div id="auditoria-detail" style="display:none;"></div>
+        </div>
+
+        <!-- TAB: TAREAS -->
+        <div id="tab-tareas" class="detail-tab-content">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+            <button class="btn-action" onclick="openNewTaskModal()">+ Asignar tarea</button>
+          </div>
+          <div class="tasks-list" id="detail-tasks"><div class="empty-state">Sin tareas asignadas aún.</div></div>
+        </div>
+
+        <!-- TAB: NOTAS CRM -->
+        <div id="tab-notas" class="detail-tab-content">
+          <div class="notes-crm">
+            <div class="note-input-area">
+              <textarea class="note-textarea" id="note-input" placeholder="Escribe una nota sobre este cliente... Reunión, observación, próxima acción..."></textarea>
+              <div class="note-footer">
+                <div class="note-meta" id="note-meta">—</div>
+                <button class="btn-action" style="padding:8px 16px;font-size:13px;" onclick="saveNote()">Guardar nota</button>
+              </div>
+            </div>
+            <div class="note-timeline" id="note-timeline">
+              <div class="empty-state">Sin notas aún. Escribe la primera nota arriba.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: MÓDULOS PRÓXIMAMENTE -->
+        <div id="tab-modulos" class="detail-tab-content">
+          <div style="margin-bottom:20px;">
+            <div style="font-size:16px;font-weight:600;margin-bottom:6px;">Módulos del Sistema</div>
+            <div style="font-size:13px;color:var(--gray);">Los siguientes módulos estarán disponibles próximamente.</div>
+          </div>
+          <div class="modules-coming-grid">
+            <div class="module-coming-card"><div class="module-coming-name">Optimización de Conversión</div><div class="module-coming-desc">CRO avanzado para la tienda</div></div>
+            <div class="module-coming-card"><div class="module-coming-name">ManyChat Automatizaciones</div><div class="module-coming-desc">Flujos automáticos de ventas</div></div>
+            <div class="module-coming-card"><div class="module-coming-name">SEO Ecommerce</div><div class="module-coming-desc">Tráfico orgánico estructurado</div></div>
+            <div class="module-coming-card"><div class="module-coming-name">Contenido Orgánico</div><div class="module-coming-desc">Sistema de contenido con propósito</div></div>
+            <div class="module-coming-card"><div class="module-coming-name">Email Marketing</div><div class="module-coming-desc">Flujos de retención y venta</div></div>
+            <div class="module-coming-card"><div class="module-coming-name">Métricas y Análisis</div><div class="module-coming-desc">Datos para decisiones estratégicas</div></div>
+            <div class="module-coming-card"><div class="module-coming-name">Escalabilidad</div><div class="module-coming-desc">Sistemas para crecer sin caos</div></div>
+          </div>
+        </div>
+
       </div>
     </div>
 
 
     <!-- CLIENT: DASHBOARD PRINCIPAL -->
     <div id="view-client-dashboard" class="view">
-      <div class="client-dashboard">
 
-        <!-- Frase motivacional -->
-        <div class="dashboard-quote-section">
-          <span class="dashboard-quote-mark">&ldquo;</span>
-          <div class="dashboard-quote-text" id="dashboard-quote">Cargando...</div>
-          <div class="dashboard-quote-author" id="dashboard-quote-author">Villamo Growth</div>
-        </div>
-
-        <!-- Bienvenida -->
-        <div class="dashboard-welcome">
-          <div class="dashboard-welcome-title">Bienvenido al programa</div>
-          <div class="dashboard-welcome-text">
-            <p>Queremos agradecerte por dar este paso y permitirnos ser parte del crecimiento de tu negocio. Estás iniciando un proceso diseñado estratégicamente para ayudarte a aumentar tus ventas, fortalecer la conexión con tus clientes y construir una marca con mayor impacto y posicionamiento en el mercado digital.</p>
-            <p>A través de esta experiencia recibirás acompañamiento personalizado, análisis enfocados en resultados y estrategias adaptadas específicamente a las necesidades de tu e-commerce. Nuestro objetivo no es únicamente ayudarte a vender más, sino construir una estructura sólida que impulse el crecimiento sostenible de tu marca.</p>
-            <p>Dentro de esta plataforma podrás encontrar tu progreso general, tareas y objetivos a completar, seguimiento personalizado, las victorias que iremos alcanzando juntos y recursos adicionales. Además, tendrás acceso a una IA personalizada diseñada específicamente para potenciar tu marca.</p>
-            <p>Gracias por confiar en nosotros. Estamos emocionados de acompañarte en este proceso. <strong style="color:var(--white)">Este es solo el comienzo de una nueva etapa para tu marca.</strong></p>
-          </div>
-          <div style="margin-top:24px;">
-            <button class="btn-iniciar" onclick="showView('view-client-sistema')">Iniciar transformación →</button>
-          </div>
-        </div>
-
-        <!-- Podcast Ecommerce -->
-        <div class="podcast-hero" style="margin-bottom:20px;">
-          <div class="podcast-eyebrow">Podcast · Ecommerce & Crecimiento</div>
-          <div class="podcast-title">Escala tu marca. Vende más.<br>Construye algo real.</div>
-          <div class="podcast-desc">Podcast diseñado para dueños de negocio que realmente quieren escalar sus marcas, sistemas y ventas online. Sin teoría vacía — solo estrategia, sistemas y resultados reales.</div>
-          <div>
-            <a href="https://www.youtube.com/@pablovillamo" target="_blank" class="podcast-yt-btn">
-              <svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px;"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
-              Ver en YouTube
-            </a>
-          </div>
-          <div class="podcast-social" style="margin-top:12px;">
-            <a href="https://www.instagram.com/villamogrowth?igsh=dmh6cWsxcHJnZmw4&utm_source=qr" target="_blank" class="podcast-social-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-              Instagram
-            </a>
-            <a href="https://www.tiktok.com/@villamo.growth?_r=1&_t=ZT-96cWcTdVebW" target="_blank" class="podcast-social-btn">
-              <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M19.59 6.69a4.83 4.83 0 0 1-4.77-4.71V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.14a8.27 8.27 0 0 0 4.84 1.54V7.24a4.85 4.85 0 0 1-.07-.55z"/></svg>
-              TikTok
-            </a>
-            <a href="https://www.facebook.com/share/1D1QmuCwrT/?mibextid=wwXIfr" target="_blank" class="podcast-social-btn">
-              <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
-              Facebook
-            </a>
-          </div>
-        </div>
-
-        <!-- Blogs de Alto Valor -->
-        <div class="blog-disclaimer">
-          Este contenido es un extra de alto valor. Nuestro equipo se encarga de la implementación y optimización, pero queremos darte acceso al conocimiento que realmente hace crecer un ecommerce.
-        </div>
-        <div class="blog-grid" style="margin-bottom:32px;">
-          <div class="blog-card"><div class="blog-tag">Ecommerce</div><div class="blog-card-title">Cómo estructurar un ecommerce para que venda solo</div><div class="blog-card-desc">Las bases que separan una tienda que factura de una que solo existe.</div></div>
-          <div class="blog-card"><div class="blog-tag">Shopify</div><div class="blog-card-title">Las 7 optimizaciones de Shopify que más impactan tus ventas</div><div class="blog-card-desc">Desde velocidad hasta checkout — qué cambiar primero y por qué.</div></div>
-          <div class="blog-card"><div class="blog-tag">Conversión</div><div class="blog-card-title">Por qué tu tienda tiene visitas pero no ventas</div><div class="blog-card-desc">Los elementos que matan la conversión y cómo solucionarlos.</div></div>
-          <div class="blog-card"><div class="blog-tag">SEO</div><div class="blog-card-title">SEO para ecommerce sin tecnicismos</div><div class="blog-card-desc">Cómo aparecer en Google con intención de compra real.</div></div>
-          <div class="blog-card"><div class="blog-tag">Email Marketing</div><div class="blog-card-title">El sistema de emails que recupera el 30% de carritos abandonados</div><div class="blog-card-desc">Flujos automatizados que funcionan mientras duermes.</div></div>
-          <div class="blog-card"><div class="blog-tag">Automatización</div><div class="blog-card-title">Automatiza tu ecommerce sin perder el toque humano</div><div class="blog-card-desc">Las herramientas correctas para responder, nutrir y cerrar sin intervención.</div></div>
-          <div class="blog-card"><div class="blog-tag">Retención</div><div class="blog-card-title">Cómo hacer que tus clientes vuelvan a comprar</div><div class="blog-card-desc">El cliente más barato es el que ya te compró una vez.</div></div>
-          <div class="blog-card"><div class="blog-tag">Branding</div><div class="blog-card-title">Branding que vende: construye una marca que conecta</div><div class="blog-card-desc">La diferencia entre una tienda y una marca que la gente elige.</div></div>
-          <div class="blog-card"><div class="blog-tag">Estrategia</div><div class="blog-card-title">Cómo construir una oferta irresistible para tu ecommerce</div><div class="blog-card-desc">Los principios detrás de las ofertas que generan urgencia real y decisiones de compra inmediatas.</div></div>
-        </div>
-
-
-
+      <!-- BLOQUE 1: HERO -->
+      <div class="dash-hero">
+        <div class="dash-hero-eyebrow">Villamo Growth · Programa 90 Días</div>
+        <h1 class="dash-hero-title">Bienvenido al<br>Programa</h1>
+        <p class="dash-hero-desc">Estás iniciando un proceso diseñado estratégicamente para transformar tu ecommerce. Aquí encontrarás todo lo que necesitas para aumentar tus ventas, automatizar tu operación y construir una marca con impacto real.</p>
+        <button class="dash-hero-btn" onclick="showView('view-client-sistema')">
+          Iniciar transformación
+          <svg viewBox="0 0 16 16" fill="none" style="width:16px;height:16px;"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
+
+      <!-- BLOQUE 2: MANIFIESTO -->
+      <div class="dash-manifesto">
+        <div class="dash-manifesto-quote" id="dashboard-quote">
+          "El éxito no es el destino, es el resultado de sistemas bien construidos."
+        </div>
+        <div class="dash-manifesto-attr" id="dashboard-quote-author">Villamo Growth</div>
+      </div>
+
+      <!-- BLOQUE 3: BLOGS -->
+      <div class="dash-section">
+        <div class="dash-section-eyebrow">Conocimiento exclusivo</div>
+        <div class="dash-section-title">Blogs de Alto Valor</div>
+        <div class="dash-section-sub">Contenido educativo seleccionado para potenciar cada etapa de tu ecommerce. Nuestro equipo ejecuta — tú también entiendes el porqué.</div>
+        <div class="blog-grid-new">
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#052414,#0A3D20);">🏗️</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">Ecommerce</div>
+              <div class="blog-card-title-new">Cómo estructurar un ecommerce para que venda solo</div>
+              <div class="blog-card-desc-new">Las bases que separan una tienda que factura de una que solo existe en internet.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#0a0a2a,#1a1a4a);">⚡</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">Shopify</div>
+              <div class="blog-card-title-new">Las 7 optimizaciones de Shopify que más impactan tus ventas</div>
+              <div class="blog-card-desc-new">Desde la velocidad hasta el checkout — qué cambiar primero y por qué.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#1a0a0a,#3a1010);">🎯</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">Conversión</div>
+              <div class="blog-card-title-new">Por qué tu tienda tiene visitas pero no ventas</div>
+              <div class="blog-card-desc-new">Los elementos que matan la conversión y cómo solucionarlos.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#0a1a0a,#1a3a1a);">🔍</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">SEO</div>
+              <div class="blog-card-title-new">SEO para ecommerce sin tecnicismos</div>
+              <div class="blog-card-desc-new">Cómo aparecer en Google con intención de compra real, no solo tráfico vacío.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#1a0a1a,#3a1a3a);">📧</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">Email Marketing</div>
+              <div class="blog-card-title-new">El sistema de emails que recupera el 30% de carritos abandonados</div>
+              <div class="blog-card-desc-new">Flujos automatizados que funcionan mientras duermes.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#0a1010,#1a2a2a);">🤖</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">Automatización</div>
+              <div class="blog-card-title-new">Automatiza tu ecommerce sin perder el toque humano</div>
+              <div class="blog-card-desc-new">Las herramientas correctas para responder, nutrir y cerrar sin intervención manual.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#1a1000,#3a2800);">🔄</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">Retención</div>
+              <div class="blog-card-title-new">Cómo hacer que tus clientes vuelvan a comprar</div>
+              <div class="blog-card-desc-new">El cliente más barato es el que ya te compró una vez.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#100a1a,#281a3a);">💎</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">Branding</div>
+              <div class="blog-card-title-new">Branding que vende: construye una marca que conecta</div>
+              <div class="blog-card-desc-new">La diferencia entre una tienda y una marca que la gente elige conscientemente.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+          <div class="blog-card-new">
+            <div class="blog-card-cover" style="background:linear-gradient(135deg,#0a1510,#1a3020);">🚀</div>
+            <div class="blog-card-body">
+              <div class="blog-card-tag-new">Estrategia</div>
+              <div class="blog-card-title-new">Cómo construir una oferta irresistible para tu ecommerce</div>
+              <div class="blog-card-desc-new">Los principios detrás de las ofertas que generan urgencia real y decisiones inmediatas.</div>
+              <div class="blog-card-cta">Leer más →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOQUE 4: PODCAST -->
+      <div class="podcast-extra">
+        <div class="podcast-extra-eyebrow">Contenido complementario exclusivo</div>
+        <div class="podcast-extra-title">Podcast para acelerar tu transformación</div>
+        <div class="podcast-extra-sub">Este contenido es un extra diseñado para potenciar tu crecimiento. El núcleo del programa son los módulos y la ejecución — el podcast es el combustible adicional.</div>
+        <div class="podcast-card">
+          <div class="podcast-thumb">🎙️</div>
+          <div class="podcast-info">
+            <div class="podcast-info-title">Ecommerce & Crecimiento — con Pablo Villamo</div>
+            <div class="podcast-info-desc">Sin teoría vacía. Estrategia, sistemas y resultados reales para dueños de negocio que quieren escalar sus marcas online.</div>
+            <div class="podcast-buttons">
+              <a href="https://www.youtube.com/@pablovillamo" target="_blank" class="podcast-yt-btn" style="font-size:13px;padding:10px 18px;">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.5 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                YouTube
+              </a>
+              <a href="https://www.instagram.com/villamogrowth?igsh=dmh6cWsxcHJnZmw4&utm_source=qr" target="_blank" class="podcast-social-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                Instagram
+              </a>
+              <a href="https://www.tiktok.com/@villamo.growth?_r=1&_t=ZT-96cWzOAC8cw" target="_blank" class="podcast-social-btn">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M19.59 6.69a4.83 4.83 0 0 1-4.77-4.71V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.14a8.27 8.27 0 0 0 4.84 1.54V7.24a4.85 4.85 0 0 1-.07-.55z"/></svg>
+                TikTok
+              </a>
+              <a href="https://www.facebook.com/share/1D1QmuCwrT/?mibextid=wwXIfr" target="_blank" class="podcast-social-btn">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.88v2.27h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+                Facebook
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- CLIENT: SISTEMA DE CRECIMIENTO (módulos) -->
@@ -1827,72 +2574,146 @@ async function logout() {
 // ============================================================
 // ADMIN — CLIENTES
 // ============================================================
+let allClientsData = [];
+let allProgressData = [];
+let allTasksData = [];
+
 async function loadAdminClients() {
-  const { data: clients } = await sb
-    .from('profiles')
-    .select('*')
-    .eq('role','client')
-    .order('created_at', { ascending: false });
+  const { data: clients } = await sb.from('profiles').select('*').eq('role','client').order('created_at',{ascending:false});
+  const { data: allProgress } = await sb.from('client_modules').select('*');
+  const { data: allTasks } = await sb.from('tasks').select('*');
 
-  document.getElementById('admin-subtitle').textContent =
-    `${clients?.length || 0} cliente${clients?.length !== 1 ? 's' : ''} activo${clients?.length !== 1 ? 's' : ''}`;
+  allClientsData = clients || [];
+  allProgressData = allProgress || [];
+  allTasksData = allTasks || [];
 
-  const grid = document.getElementById('clients-grid');
+  // KPIs
+  const total = allClientsData.length;
+  let activos=0, completados=0, pausados=0, proxFinish=0, totalPct=0;
+  let topClient = null, topPct = 0;
+  let vencidas = 0;
+  const today = new Date(); today.setHours(0,0,0,0);
 
-  if (!clients || clients.length === 0) {
-    grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M4 28c0-6.627 5.373-10 12-10s12 3.373 12 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Sin clientes aún. Agrega el primero.</div>';
+  allClientsData.forEach(c => {
+    const status = (c.status || 'activo').toLowerCase();
+    if(status === 'activo') activos++;
+    else if(status === 'finalizado') completados++;
+    else if(status === 'pausado') pausados++;
+
+    const prog = allProgressData.filter(p => p.client_id === c.id);
+    const done = prog.filter(p => p.completed).length;
+    const pct = Math.round((done/9)*100);
+    totalPct += pct;
+    if(pct > topPct) { topPct = pct; topClient = c; }
+
+    if(c.end_date) {
+      const daysLeft = Math.ceil((new Date(c.end_date) - today) / 86400000);
+      if(daysLeft > 0 && daysLeft <= 15) proxFinish++;
+    }
+  });
+
+  allTasksData.forEach(t => {
+    if(!t.completed && t.due_date && new Date(t.due_date) < today) vencidas++;
+  });
+
+  const avgPct = total > 0 ? Math.round(totalPct/total) : 0;
+  const atrasados = allClientsData.filter(c => {
+    if(!c.start_date) return false;
+    const dayNum = Math.floor((Date.now() - new Date(c.start_date).getTime()) / 86400000) + 1;
+    const prog = allProgressData.filter(p => p.client_id === c.id);
+    const done = prog.filter(p => p.completed).length;
+    const pct = Math.round((done/9)*100);
+    const expectedPct = Math.round((Math.min(dayNum,90)/90)*100);
+    return pct < expectedPct - 20;
+  }).length;
+
+  document.getElementById('kpi-activos').textContent = activos;
+  document.getElementById('kpi-completados').textContent = completados;
+  document.getElementById('kpi-pausados').textContent = pausados;
+  document.getElementById('kpi-prox').textContent = proxFinish;
+  document.getElementById('kpi-avg').textContent = avgPct + '%';
+  document.getElementById('alert-atrasados').textContent = atrasados;
+  document.getElementById('alert-vencidas').textContent = vencidas;
+  document.getElementById('alert-top').textContent = topClient ? (topClient.full_name || topClient.email).split(' ')[0] + ' ' + topPct + '%' : '—';
+  document.getElementById('admin-subtitle').textContent = `${total} cliente${total!==1?'s':''} · Sistema Operativo Villamo Growth`;
+
+  renderClientsTable(allClientsData);
+}
+
+function renderClientsTable(clients) {
+  const tbody = document.getElementById('clients-tbody');
+  if(!clients || clients.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--gray);">Sin clientes aún. Agrega el primero.</td></tr>';
     return;
   }
-
-  // Get progress for each client
-  const { data: allProgress } = await sb.from('client_modules').select('*');
-  const { data: allTasks } = await sb.from('tasks').select('*').eq('completed', false);
-
-  grid.innerHTML = clients.map(c => {
-    const prog = allProgress?.filter(p => p.client_id === c.id) || [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  tbody.innerHTML = clients.map(c => {
+    const prog = allProgressData.filter(p => p.client_id === c.id);
     const done = prog.filter(p => p.completed).length;
-    const pct = Math.round((done / 9) * 100);
-    const pendingTasks = allTasks?.filter(t => t.client_id === c.id).length || 0;
-
-    const startStr = c.start_date ? new Date(c.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : '—';
-    const endStr = c.end_date ? new Date(c.end_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
-
-    // Calcular día actual
-    let dayNum = '—';
-    if (c.start_date) {
-      const diff = Math.floor((Date.now() - new Date(c.start_date).getTime()) / 86400000) + 1;
-      dayNum = Math.min(90, Math.max(1, diff));
-    }
-
+    const pct = Math.round((done/9)*100);
     const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
-
-    return `
-      <div class="client-card" onclick="openClientDetail('${c.id}')">
-        <div class="client-card-top">
-          <div class="client-avatar">${initials}</div>
-          <div>
-            <div class="client-name">${c.full_name || c.email}</div>
-            <div class="client-nicho">${c.nicho || 'Sin nicho'}</div>
-          </div>
-        </div>
-        <div class="progress-mini">
-          <div class="progress-mini-top">
-            <span>${done}/9 módulos</span>
-            <span class="mono green">${pct}%</span>
-          </div>
-          <div class="progress-mini-bar">
-            <div class="progress-mini-fill" style="width:${pct}%"></div>
-          </div>
-        </div>
-        <div class="client-dates">
-          <div class="date-item">INICIO<span>${startStr}</span></div>
-          <div class="date-item">FIN<span>${endStr}</span></div>
-          <div class="date-item">DÍA<span class="mono" style="color:var(--green)">${dayNum}</span></div>
-        </div>
-        ${pendingTasks > 0 ? `<div class="tasks-badge"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 3v2.5l1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${pendingTasks} tarea${pendingTasks!==1?'s':''} pendiente${pendingTasks!==1?'s':''}</div>` : ''}
-      </div>
-    `;
+    const startStr = c.start_date ? new Date(c.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    let dayNum = '—', daysLeft = '—', daysClass = '';
+    if(c.start_date) {
+      const d = Math.floor((Date.now()-new Date(c.start_date).getTime())/86400000)+1;
+      dayNum = Math.min(90,Math.max(1,d));
+    }
+    if(c.end_date) {
+      const dl = Math.ceil((new Date(c.end_date)-today)/86400000);
+      daysLeft = dl > 0 ? dl + ' días' : 'Vencido';
+      daysClass = dl <= 0 ? 'days-urgent' : dl <= 15 ? 'days-warn' : 'days-ok';
+    }
+    const status = c.status || 'activo';
+    const statusMap = {activo:'status-activo',pausado:'status-pausado',finalizado:'status-finalizado',pendiente:'status-pendiente'};
+    const statusLabel = {activo:'Activo',pausado:'Pausado',finalizado:'Finalizado',pendiente:'Pendiente'};
+    return `<tr onclick="openClientDetail('${c.id}')">
+      <td><div style="display:flex;align-items:center;gap:10px;">
+        <div class="client-avatar-cell">${initials}</div>
+        <div><div class="client-name-cell">${c.full_name || c.email}</div><div class="client-nicho-cell">${c.email}</div></div>
+      </div></td>
+      <td style="color:var(--gray);font-size:12px;">${c.nicho || '—'}</td>
+      <td style="color:var(--gray);font-size:12px;">${startStr}</td>
+      <td><span class="mono" style="font-size:13px;color:var(--green);">${dayNum}</span></td>
+      <td><span class="days-remaining ${daysClass}">${daysLeft}</span></td>
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <div class="progress-cell-bar"><div class="progress-cell-fill" style="width:${pct}%"></div></div>
+        <span style="font-size:12px;color:var(--gray);">${pct}%</span>
+      </div></td>
+      <td><span class="status-badge ${statusMap[status]||'status-pendiente'}">● ${statusLabel[status]||status}</span></td>
+      <td><svg viewBox="0 0 16 16" fill="none" style="width:16px;height:16px;color:var(--gray);"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
+    </tr>`;
   }).join('');
+}
+
+function filterClients() {
+  const search = (document.getElementById('client-search')?.value || '').toLowerCase();
+  const status = document.getElementById('filter-status')?.value || '';
+  const sort = document.getElementById('filter-sort')?.value || 'date';
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  let filtered = allClientsData.filter(c => {
+    const matchSearch = !search || (c.full_name||'').toLowerCase().includes(search) || (c.email||'').toLowerCase().includes(search) || (c.nicho||'').toLowerCase().includes(search);
+    const matchStatus = !status || (c.status||'activo').toLowerCase() === status;
+    return matchSearch && matchStatus;
+  });
+
+  if(sort === 'progress') {
+    filtered.sort((a,b) => {
+      const pa = allProgressData.filter(p=>p.client_id===a.id).filter(p=>p.completed).length;
+      const pb = allProgressData.filter(p=>p.client_id===b.id).filter(p=>p.completed).length;
+      return pb - pa;
+    });
+  } else if(sort === 'days') {
+    filtered.sort((a,b) => {
+      const da = a.end_date ? Math.ceil((new Date(a.end_date)-today)/86400000) : 999;
+      const db = b.end_date ? Math.ceil((new Date(b.end_date)-today)/86400000) : 999;
+      return da - db;
+    });
+  } else if(sort === 'name') {
+    filtered.sort((a,b) => (a.full_name||a.email).localeCompare(b.full_name||b.email));
+  }
+
+  renderClientsTable(filtered);
 }
 
 async function openClientDetail(clientId) {
@@ -1904,6 +2725,8 @@ async function openClientDetail(clientId) {
   const { data: tasks } = await sb.from('tasks').select('*,modules(name,number)').eq('client_id', clientId).order('created_at', { ascending: false });
 
   // Header
+  const avatarEl = document.getElementById('detail-avatar');
+  if(avatarEl) avatarEl.textContent = (client.full_name || client.email || 'VG').substring(0,2).toUpperCase();
   document.getElementById('detail-client-name').textContent = client.full_name || client.email;
 
   const startStr = client.start_date ? new Date(client.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : 'Sin definir';
@@ -2094,6 +2917,273 @@ async function createTask() {
 // ============================================================
 // CLIENT VIEW
 // ============================================================
+
+
+// ============================================================
+// ADMIN DETAIL TABS
+// ============================================================
+function switchDetailTab(tab, btn) {
+  document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.detail-tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const el = document.getElementById('tab-' + tab);
+  if(el) el.classList.add('active');
+  if(tab === 'shopify') renderShopifyChecklist();
+  if(tab === 'notas') renderNotes();
+}
+
+// ============================================================
+// SHOPIFY CHECKLIST
+// ============================================================
+const SHOPIFY_CATEGORIES = [
+  { id:'config', name:'1. Configuración Base de Shopify', icon:'⚙️', tasks:[
+    'Configurar nombre de la tienda y URL',
+    'Conectar dominio personalizado (DNS)',
+    'Configurar moneda y región',
+    'Configurar idioma de la tienda',
+    'Configurar zonas de envío',
+    'Configurar métodos de pago (Stripe, PayPal, etc.)',
+    'Configurar impuestos por región',
+    'Configurar correos transaccionales (SMTP)',
+    'Configurar política de devoluciones',
+    'Configurar política de privacidad',
+    'Configurar términos y condiciones',
+    'Configurar notificaciones de pedido',
+  ]},
+  { id:'tecnico', name:'2. Optimizaciones Técnicas', icon:'🔧', tasks:[
+    'Instalar Google Analytics 4',
+    'Instalar Meta Pixel',
+    'Configurar Google Search Console',
+    'Optimizar velocidad de carga (PageSpeed)',
+    'Comprimir imágenes (WebP)',
+    'Activar lazy loading',
+    'Minificar CSS y JS',
+    'Configurar redirects 301',
+    'Activar SSL / HTTPS',
+    'Revisar errores 404',
+    'Configurar sitemap XML',
+    'Configurar robots.txt',
+  ]},
+  { id:'estructura', name:'3. Estructura del Ecommerce', icon:'🏗️', tasks:[
+    'Crear colecciones principales',
+    'Crear menú de navegación',
+    'Configurar búsqueda interna',
+    'Crear página About / Historia de marca',
+    'Crear FAQ / Preguntas frecuentes',
+    'Crear página de contacto',
+    'Crear blog (si aplica)',
+    'Configurar filtros de colección',
+    'Crear páginas de categorías optimizadas',
+  ]},
+  { id:'diseno', name:'4. Diseño y Branding Shopify', icon:'🎨', tasks:[
+    'Seleccionar e instalar tema',
+    'Configurar colores de marca',
+    'Configurar tipografías',
+    'Subir logo en alta resolución',
+    'Diseñar hero / banner principal',
+    'Diseñar sección de categorías',
+    'Diseñar sección de testimonios',
+    'Diseñar sección de marcas / trust badges',
+    'Diseñar footer profesional',
+    'Optimizar diseño mobile',
+    'Agregar animaciones sutiles',
+  ]},
+  { id:'productos', name:'5. Productos', icon:'📦', tasks:[
+    'Crear fichas de producto completas',
+    'Optimizar títulos SEO de productos',
+    'Optimizar descripciones (storytelling + SEO)',
+    'Subir imágenes de alta calidad',
+    'Agregar variantes (talla, color, etc.)',
+    'Configurar precios y comparar precios',
+    'Configurar SKUs e inventario',
+    'Crear productos relacionados / upsell',
+    'Agregar reseñas / social proof',
+    'Configurar metafields de producto',
+  ]},
+  { id:'apps', name:'6. Apps e Integraciones', icon:'🔌', tasks:[
+    'Instalar app de reseñas (Judge.me / Loox)',
+    'Instalar app de email marketing (Klaviyo)',
+    'Instalar app de recuperación de carrito',
+    'Instalar app de popups y captura de leads',
+    'Instalar app de chat / soporte',
+    'Instalar app de suscripciones (si aplica)',
+    'Instalar app de bundle / paquetes',
+    'Configurar ManyChat + Shopify',
+    'Configurar Zapier / Make automations',
+  ]},
+  { id:'operacion', name:'7. Operación Shopify', icon:'🚀', tasks:[
+    'Capacitar al equipo en gestión de pedidos',
+    'Configurar alertas de stock bajo',
+    'Crear flujo de fulfillment',
+    'Configurar reportes automáticos',
+    'Crear SOP de atención al cliente',
+    'Configurar devoluciones y reembolsos',
+    'Crear calendario editorial de contenido',
+    'Configurar backup automático',
+  ]},
+];
+
+let shopifyStates = {}; // taskId -> 'done'|'skip'|'pending'
+
+function getShopifyKey() {
+  return 'shopify_' + (selectedClientId || 'unknown');
+}
+
+function loadShopifyStates() {
+  try {
+    const saved = localStorage.getItem(getShopifyKey());
+    shopifyStates = saved ? JSON.parse(saved) : {};
+  } catch(e) { shopifyStates = {}; }
+}
+
+function saveShopifyStates() {
+  localStorage.setItem(getShopifyKey(), JSON.stringify(shopifyStates));
+  updateShopifyKPIs();
+}
+
+function updateShopifyKPIs() {
+  let total = 0, done = 0, pending = 0;
+  SHOPIFY_CATEGORIES.forEach(cat => {
+    cat.tasks.forEach((_, i) => {
+      const key = cat.id + '_' + i;
+      total++;
+      const state = shopifyStates[key] || 'pending';
+      if(state === 'done') done++;
+      else if(state !== 'skip') pending++;
+    });
+  });
+  const pct = total > 0 ? Math.round((done/total)*100) : 0;
+  const pctEl = document.getElementById('shopify-pct');
+  const pendEl = document.getElementById('shopify-pending');
+  const doneEl = document.getElementById('shopify-done');
+  if(pctEl) pctEl.textContent = pct + '%';
+  if(pendEl) pendEl.textContent = pending;
+  if(doneEl) { doneEl.textContent = done; doneEl.style.color = done > 0 ? '#818CF8' : 'var(--gray)'; }
+}
+
+function renderShopifyChecklist(filterStr='') {
+  loadShopifyStates();
+  const container = document.getElementById('shopify-checklist');
+  if(!container) return;
+
+  container.innerHTML = SHOPIFY_CATEGORIES.map(cat => {
+    const tasks = cat.tasks.filter(t => !filterStr || t.toLowerCase().includes(filterStr.toLowerCase()));
+    if(tasks.length === 0) return '';
+    const catDone = cat.tasks.filter((_,i) => shopifyStates[cat.id+'_'+i] === 'done').length;
+    const catTotal = cat.tasks.length;
+    const catPct = Math.round((catDone/catTotal)*100);
+
+    return `<div class="shopify-category">
+      <div class="shopify-cat-header" onclick="toggleShopifyCat('${cat.id}')">
+        <span style="font-size:18px;">${cat.icon}</span>
+        <span class="shopify-cat-title">${cat.name}</span>
+        <span class="shopify-cat-progress">${catDone}/${catTotal}</span>
+        <div class="shopify-cat-mini-bar"><div class="shopify-cat-mini-fill" style="width:${catPct}%"></div></div>
+        <svg class="shopify-cat-chevron" viewBox="0 0 16 16" fill="none" id="chev-${cat.id}" style="width:14px;height:14px;color:var(--gray);"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="shopify-tasks" id="tasks-${cat.id}">
+        ${cat.tasks.map((task, i) => {
+          const key = cat.id + '_' + i;
+          const state = shopifyStates[key] || 'pending';
+          const rowStyle = state === 'done' ? 'text-decoration:line-through;color:var(--gray);' : state === 'skip' ? 'color:var(--red);opacity:.6;' : '';
+          return `<div class="shopify-task-row">
+            <div class="shopify-task-name" style="${rowStyle}">${task}</div>
+            <button class="task-state-btn task-state-done" title="Completado" onclick="setShopifyState('${cat.id}','${i}','done')">✅</button>
+            <button class="task-state-btn task-state-skip" title="No necesario" onclick="setShopifyState('${cat.id}','${i}','skip')">❌</button>
+            <button class="task-state-btn task-state-pending" title="Pendiente" onclick="setShopifyState('${cat.id}','${i}','pending')">🟡</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  updateShopifyKPIs();
+}
+
+function toggleShopifyCat(catId) {
+  const tasks = document.getElementById('tasks-' + catId);
+  const chev = document.getElementById('chev-' + catId);
+  if(tasks) tasks.classList.toggle('open');
+  if(chev) chev.classList.toggle('open');
+}
+
+function setShopifyState(catId, taskIdx, state) {
+  const key = catId + '_' + taskIdx;
+  shopifyStates[key] = state;
+  saveShopifyStates();
+  renderShopifyChecklist();
+}
+
+function filterShopifyTasks(val) {
+  renderShopifyChecklist(val);
+}
+
+// ============================================================
+// NOTES CRM
+// ============================================================
+function getNotesKey() { return 'notes_' + (selectedClientId || 'unknown'); }
+
+function loadNotes() {
+  try {
+    const saved = localStorage.getItem(getNotesKey());
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
+}
+
+function renderNotes() {
+  const notes = loadNotes();
+  const timeline = document.getElementById('note-timeline');
+  const metaEl = document.getElementById('note-meta');
+  const now = new Date();
+  if(metaEl) metaEl.textContent = now.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}) + ' · ' + now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+
+  if(!timeline) return;
+  if(notes.length === 0) {
+    timeline.innerHTML = '<div class="empty-state" style="padding:20px 0;">Sin notas aún. Escribe la primera nota arriba.</div>';
+    return;
+  }
+  timeline.innerHTML = notes.map((n, idx) => `
+    <div class="note-item">
+      <div class="note-dot-wrap">
+        <div class="note-dot"></div>
+        ${idx < notes.length-1 ? '<div class="note-line"></div>' : ''}
+      </div>
+      <div class="note-content">
+        <div class="note-content-header">
+          <span class="note-author">${n.author || 'Pablo Villalobos'}</span>
+          <span class="note-time">${n.date}</span>
+        </div>
+        <div class="note-text">${n.text}</div>
+      </div>
+    </div>
+  `).reverse().join('');
+}
+
+function saveNote() {
+  const input = document.getElementById('note-input');
+  const text = input?.value?.trim();
+  if(!text) return;
+  const notes = loadNotes();
+  const now = new Date();
+  notes.push({
+    text,
+    author: currentProfile?.full_name || 'Pablo Villalobos',
+    date: now.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) + ' · ' + now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}),
+    timestamp: now.toISOString()
+  });
+  localStorage.setItem(getNotesKey(), JSON.stringify(notes));
+  if(input) input.value = '';
+  renderNotes();
+}
+
+function openAuditoria(num) {
+  // Future: open audit detail
+  alert('Auditoría ' + num + ' — Próximamente podrás documentar reuniones aquí.');
+}
+
+function openEditClientModal() {
+  alert('Edición de cliente — Próximamente.');
+}
+
 
 // ============================================================
 // FRASES MOTIVACIONALES
