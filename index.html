@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Villamo Growth — Tracker 90 Días</title>
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="shortcut icon" href="/favicon.ico">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -994,8 +994,8 @@ body {
 <div id="screen-auth" class="screen">
   <div class="auth-box">
     <div class="auth-logo">
-      <div class="logo-mark">
-        <svg viewBox="0 0 20 20" fill="none"><path d="M3 16L10 4L17 16" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11H14" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="logo-mark" style="background:#000;overflow:hidden;">
+        <img src="/IMG_5491.jpg" style="width:36px;height:36px;object-fit:cover;display:block;" />
       </div>
       <div>
         <div class="logo-name">VILLAMO GROWTH</div>
@@ -1017,6 +1017,9 @@ body {
       <div class="field">
         <label>Contraseña</label>
         <input type="password" id="login-password" placeholder="••••••••" />
+        <div style="text-align:right;margin-top:6px;">
+          <button onclick="forgotPassword()" style="background:none;border:none;color:var(--gray);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:underline;">¿Olvidé mi contraseña?</button>
+        </div>
       </div>
       <button class="btn-primary" onclick="login()">Entrar al programa</button>
       <div class="auth-msg" id="login-msg"></div>
@@ -1053,8 +1056,8 @@ body {
   <nav class="topbar">
     <div class="topbar-left">
       <div class="topbar-logo">
-        <div class="topbar-logo-mark">
-          <svg viewBox="0 0 20 20" fill="none"><path d="M3 16L10 4L17 16" stroke="#0A0A0A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11H14" stroke="#0A0A0A" stroke-width="2" stroke-linecap="round"/></svg>
+        <div class="topbar-logo-mark" style="background:#000;overflow:hidden;">
+          <img src="/IMG_5491.jpg" style="width:32px;height:32px;object-fit:cover;display:block;" />
         </div>
         <span class="topbar-logo-name">VILLAMO GROWTH</span>
       </div>
@@ -1735,6 +1738,23 @@ function switchAuthTab(tab) {
   });
   document.getElementById('auth-login').classList.toggle('hidden', tab !== 'login');
   document.getElementById('auth-register').classList.toggle('hidden', tab !== 'register');
+}
+
+async function forgotPassword() {
+  const email = document.getElementById('login-email').value.trim();
+  const msg = document.getElementById('login-msg');
+  if (!email) {
+    showMsg(msg, 'error', 'Escribe tu correo arriba primero.');
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://app.villamogrowth.com'
+  });
+  if (error) {
+    showMsg(msg, 'error', error.message);
+  } else {
+    showMsg(msg, 'success', '¡Correo enviado! Revisa tu bandeja de entrada.');
+  }
 }
 
 async function login() {
