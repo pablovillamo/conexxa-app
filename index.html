@@ -1772,8 +1772,8 @@ async function loadClientView() {
     : '';
 
   // Progress
-  const done = (progress||[]).filter(p => p.completed).length;
-  const pct = Math.round((done / 9) * 100);
+  const doneModules = (progress||[]).filter(p => p.completed).length;
+  const pct = Math.round((doneModules / 9) * 100);
   document.getElementById('client-pct').textContent = pct + '%';
   document.getElementById('client-bar').style.width = pct + '%';
 
@@ -1810,11 +1810,6 @@ async function loadClientView() {
       </div>
     `;
   }).join('');
-
-  // Tasks
-  const pendingTasks = (tasks||[]).filter(t => !t.completed);
-  const doneTasks = (tasks||[]).filter(t => t.completed);
-  const allTasks = [...pendingTasks, ...doneTasks];
 
   // Render tasks for the new tasks dashboard
   const pendingList = document.getElementById('tasks-pending-list');
@@ -1863,10 +1858,10 @@ async function loadClientView() {
   }
 
   const pending = (tasks||[]).filter(t => !t.completed);
-  const done = (tasks||[]).filter(t => t.completed);
+  const doneArr = (tasks||[]).filter(t => t.completed);
 
   if(pendingList) pendingList.innerHTML = pending.length > 0 ? pending.map(renderTaskItem).join('') : '<div class="empty-state">Sin tareas pendientes. ¡Bien hecho!</div>';
-  if(doneList) doneList.innerHTML = done.length > 0 ? done.map(renderTaskItem).join('') : '<div class="empty-state" style="font-size:12px;padding:16px 0;">Sin tareas completadas aún.</div>';
+  if(doneList) doneList.innerHTML = doneArr.length > 0 ? doneArr.map(renderTaskItem).join('') : '<div class="empty-state" style="font-size:12px;padding:16px 0;">Sin tareas completadas aún.</div>';
 
   showView('view-client-dashboard');
 }
