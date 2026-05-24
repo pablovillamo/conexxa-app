@@ -1796,7 +1796,8 @@ async function loadClientView() {
   `).join('');
 
   // Modules — READ ONLY for client
-  document.getElementById('client-modules-list').innerHTML = (progress||[]).map(row => {
+  const modListEl = document.getElementById('client-modules-list');
+  if(modListEl) modListEl.innerHTML = (progress||[]).map(row => {
     const m = row.modules;
     if (!m) return '';
     return `
