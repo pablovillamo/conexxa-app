@@ -8,52 +8,11 @@
 <link rel="shortcut icon" href="/favicon.ico">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/design-system.css">
+<link rel="stylesheet" href="/css/brain.css">
+<link rel="stylesheet" href="/css/modals.css">
+<link rel="stylesheet" href="/css/admin.css">
 <style>
-/* ============================================================
-   VILLAMO GROWTH — DESIGN SYSTEM
-   ============================================================ */
-:root {
-  --black:       #0A0A0A;
-  --black-soft:  #141414;
-  --black-card:  #1A1A1A;
-  --carbon:      #2C2C2A;
-  --green:       #22C55E;
-  --green-dark:  #16A34A;
-  --green-dim:   rgba(34,197,94,0.10);
-  --green-border:rgba(34,197,94,0.22);
-  --white:       #FFFFFF;
-  --cream:       #F5F5F4;
-  --gray:        #888780;
-  --gray-mid:    #4A4A48;
-  --gray-dark:   #2E2E2C;
-  --border:      rgba(255,255,255,0.07);
-  --border-mid:  rgba(255,255,255,0.12);
-  --red:         #EF4444;
-  --red-dim:     rgba(239,68,68,0.10);
-  --amber:       #F59E0B;
-  --amber-dim:   rgba(245,158,11,0.10);
-}
-
-*{margin:0;padding:0;box-sizing:border-box;}
-
-body {
-  font-family:'Inter',sans-serif;
-  background:var(--black);
-  color:var(--white);
-  min-height:100vh;
-  -webkit-font-smoothing:antialiased;
-}
-
-/* ============================================================ UTILS */
-.hidden{display:none!important;}
-.mono{font-family:'DM Mono',monospace;}
-.green{color:var(--green);}
-.gray{color:var(--gray);}
-
-/* ============================================================ SCREENS */
-.screen{display:none;min-height:100vh;}
-.screen.active{display:flex;flex-direction:column;}
-
 /* ============================================================ AUTH SCREEN */
 #screen-auth{
   align-items:center;
@@ -168,113 +127,6 @@ body {
 /* ============================================================ VIEWS */
 .view{display:none;}
 .view.active{display:block;}
-
-/* ============================================================ ADMIN — LISTA CLIENTES */
-.page-header{
-  display:flex;align-items:baseline;justify-content:space-between;
-  margin-bottom:28px;
-}
-.page-title{font-size:22px;font-weight:600;letter-spacing:-0.01em;}
-.logo-name{font-size:15px;font-weight:600;letter-spacing:-0.01em;}
-.topbar-logo-name{font-size:14px;font-weight:600;letter-spacing:-0.01em;}
-.page-sub{font-size:13px;color:var(--gray);margin-top:2px;}
-
-.btn-action{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:9px 16px;background:var(--green);color:var(--black);
-  border:none;border-radius:9px;
-  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
-  cursor:pointer;transition:background .2s;
-}
-.btn-action:hover{background:var(--green-dark);}
-.btn-action svg{width:15px;height:15px;}
-
-.btn-ghost{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:7px 13px;background:transparent;
-  border:1px solid var(--border-mid);border-radius:8px;
-  color:var(--gray);font-family:'Syne',sans-serif;
-  font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;
-}
-.btn-ghost:hover{color:var(--white);border-color:var(--border-mid);}
-
-/* CLIENTS GRID */
-.clients-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-  gap:14px;
-}
-.client-card{
-  background:var(--black-card);
-  border:1px solid var(--border);
-  border-radius:14px;padding:20px;
-  cursor:pointer;transition:border-color .2s,transform .15s;
-}
-.client-card:hover{border-color:var(--border-mid);transform:translateY(-1px);}
-.client-card-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
-.client-avatar{
-  width:40px;height:40px;border-radius:50%;
-  background:var(--green-dim);border:1px solid var(--green-border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:700;color:var(--green);flex-shrink:0;
-}
-.client-name{font-size:15px;font-weight:700;}
-.client-nicho{font-size:12px;color:var(--gray);}
-
-.progress-mini{margin-bottom:14px;}
-.progress-mini-top{
-  display:flex;justify-content:space-between;
-  font-size:11px;color:var(--gray);margin-bottom:5px;
-}
-.progress-mini-bar{
-  height:4px;background:var(--gray-dark);border-radius:2px;overflow:hidden;
-}
-.progress-mini-fill{height:100%;background:var(--green);border-radius:2px;transition:width .5s;}
-
-.client-dates{
-  display:flex;gap:12px;
-  font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);
-  padding-top:12px;border-top:1px solid var(--border);
-}
-.date-item span{display:block;color:var(--white);font-size:11px;margin-top:2px;}
-
-.tasks-badge{
-  display:inline-flex;align-items:center;gap:4px;
-  background:var(--amber-dim);color:var(--amber);
-  border:1px solid rgba(245,158,11,.2);
-  border-radius:20px;padding:2px 8px;
-  font-size:11px;font-weight:600;margin-top:8px;
-}
-
-/* ============================================================ MODAL */
-.modal-overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.75);z-index:1000;
-  align-items:center;justify-content:center;padding:20px;
-}
-.modal-overlay.open{display:flex;}
-.modal{
-  background:var(--black-card);border:1px solid var(--border-mid);
-  border-radius:18px;padding:32px;width:100%;max-width:480px;
-  max-height:90vh;overflow-y:auto;
-}
-.modal-title{font-size:18px;font-weight:700;margin-bottom:6px;}
-.modal-sub{font-size:13px;color:var(--gray);margin-bottom:24px;}
-.modal-footer{display:flex;gap:10px;margin-top:24px;}
-.modal-footer .btn-primary{margin-top:0;}
-.btn-cancel{
-  flex:1;padding:12px;background:transparent;
-  border:1px solid var(--border-mid);border-radius:10px;
-  color:var(--gray);font-family:'Syne',sans-serif;
-  font-size:14px;font-weight:600;cursor:pointer;
-}
-.btn-cancel:hover{color:var(--white);}
-.modal-msg{
-  margin-top:12px;padding:10px 14px;border-radius:8px;
-  font-size:13px;display:none;
-}
-.modal-msg.error{background:var(--red-dim);color:#FCA5A5;}
-.modal-msg.success{background:var(--green-dim);color:#86EFAC;}
 
 /* ============================================================ CLIENT DETAIL (admin) */
 .back-btn{
@@ -1178,876 +1030,6 @@ body {
   .podcast-card { flex-direction: column; }
 }
 
-/* ============================================================ ADMIN PREMIUM REDESIGN */
-.admin-body { max-width: 1200px; margin: 0 auto; }
-
-/* KPI STRIP */
-.kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 28px; }
-.kpi-card {
-  background: var(--black-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px 20px;
-}
-.kpi-label { font-size: 10px; font-family:'DM Mono',monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--gray); margin-bottom:8px; }
-.kpi-val { font-size: 28px; font-weight: 600; letter-spacing:-0.02em; }
-.kpi-sub { font-size: 11px; color: var(--gray); margin-top: 4px; }
-.kpi-trend-up { color: var(--green); }
-.kpi-trend-warn { color: var(--amber); }
-.kpi-trend-err { color: var(--red); }
-
-/* ALERTS */
-.alerts-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
-.alert-card {
-  border-radius: 10px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 500;
-}
-.alert-card.warn { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2); color: var(--amber); }
-.alert-card.danger { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); color: var(--red); }
-.alert-card.success { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
-.alert-icon { font-size: 18px; flex-shrink: 0; }
-.alert-text { flex: 1; }
-.alert-count { font-size: 20px; font-weight: 700; margin-left: auto; }
-
-/* TOOLBAR */
-.admin-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.search-input {
-  flex: 1;
-  min-width: 200px;
-  background: var(--black-soft);
-  border: 1px solid var(--border-mid);
-  border-radius: 8px;
-  padding: 9px 14px;
-  color: var(--white);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  outline: none;
-}
-.search-input:focus { border-color: var(--green); }
-.filter-select {
-  background: var(--black-soft);
-  border: 1px solid var(--border-mid);
-  border-radius: 8px;
-  padding: 9px 12px;
-  color: var(--white);
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  cursor: pointer;
-  outline: none;
-}
-.filter-select option { background: var(--black-card); }
-
-/* CLIENT TABLE */
-.clients-table { width: 100%; border-collapse: collapse; }
-.clients-table th {
-  text-align: left;
-  font-size: 10px;
-  font-family: 'DM Mono', monospace;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--gray);
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-}
-.clients-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px;
-  vertical-align: middle;
-}
-.clients-table tr:last-child td { border-bottom: none; }
-.clients-table tr:hover td { background: rgba(255,255,255,.02); }
-.clients-table tr { cursor: pointer; transition: background .15s; }
-
-.client-avatar-cell {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: var(--green-dim);
-  border: 1px solid var(--green-border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 600; color: var(--green);
-  flex-shrink: 0;
-}
-.client-name-cell { font-weight: 500; }
-.client-nicho-cell { font-size: 11px; color: var(--gray); margin-top: 2px; }
-
-.progress-cell-bar {
-  height: 4px;
-  background: var(--gray-dark);
-  border-radius: 2px;
-  overflow: hidden;
-  width: 80px;
-}
-.progress-cell-fill { height: 100%; background: var(--green); border-radius: 2px; }
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 500;
-}
-.status-activo { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
-.status-pausado { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,.2); }
-.status-finalizado { background: rgba(99,102,241,.1); color: #818CF8; border: 1px solid rgba(99,102,241,.2); }
-.status-pendiente { background: rgba(255,255,255,.05); color: var(--gray); border: 1px solid var(--border); }
-
-.days-remaining { font-family: 'DM Mono',monospace; font-size: 12px; }
-.days-urgent { color: var(--red); }
-.days-warn { color: var(--amber); }
-.days-ok { color: var(--green); }
-
-/* ADMIN DETAIL REDESIGN */
-.admin-detail-wrap { max-width: 1100px; margin: 0 auto; }
-.detail-top-bar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 20px;
-  align-items: center;
-  margin-bottom: 28px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-}
-.detail-client-avatar {
-  width: 56px; height: 56px;
-  border-radius: 14px;
-  background: var(--green-dim);
-  border: 1px solid var(--green-border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 700; color: var(--green);
-}
-.detail-client-info-name { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
-.detail-client-info-meta { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
-.detail-meta-pill {
-  font-size: 11px; color: var(--gray);
-  display: flex; align-items: center; gap: 4px;
-}
-.detail-actions { display: flex; gap: 8px; }
-
-/* DETAIL TABS */
-.detail-tabs {
-  display: flex;
-  gap: 2px;
-  background: var(--black-soft);
-  border-radius: 10px;
-  padding: 4px;
-  margin-bottom: 24px;
-  overflow-x: auto;
-}
-.detail-tab {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--gray);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .2s;
-  white-space: nowrap;
-}
-.detail-tab.active { background: var(--black-card); color: var(--white); }
-
-.detail-tab-content { display: none; }
-.detail-tab-content.active { display: block; }
-
-/* AUDIT CARDS */
-.audit-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
-.audit-card {
-  background: var(--black-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px;
-  cursor: pointer;
-  transition: border-color .2s;
-}
-.audit-card:hover { border-color: var(--border-mid); }
-.audit-card-num { font-family: 'DM Mono',monospace; font-size: 10px; color: var(--gray); margin-bottom: 8px; }
-.audit-card-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-.audit-card-status { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 12px; }
-.audit-card-date { font-size: 11px; color: var(--gray); }
-.audit-bar { height: 3px; background: var(--gray-dark); border-radius: 2px; overflow: hidden; margin-top: 12px; }
-.audit-bar-fill { height: 100%; border-radius: 2px; }
-
-/* SHOPIFY CHECKLIST */
-.shopify-category { margin-bottom: 12px; }
-.shopify-cat-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--black-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: border-color .2s;
-}
-.shopify-cat-header:hover { border-color: var(--border-mid); }
-.shopify-cat-title { font-size: 14px; font-weight: 600; flex: 1; }
-.shopify-cat-progress { font-size: 12px; color: var(--gray); font-family: 'DM Mono',monospace; }
-.shopify-cat-mini-bar { width: 60px; height: 4px; background: var(--gray-dark); border-radius: 2px; overflow: hidden; }
-.shopify-cat-mini-fill { height: 100%; background: var(--green); border-radius: 2px; }
-.shopify-cat-chevron { transition: transform .2s; }
-.shopify-cat-chevron.open { transform: rotate(180deg); }
-
-.shopify-tasks { padding: 8px 0 8px 16px; display: none; }
-.shopify-tasks.open { display: block; }
-.shopify-task-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  margin-bottom: 4px;
-  transition: background .15s;
-}
-.shopify-task-row:hover { background: rgba(255,255,255,.03); }
-.shopify-task-name { flex: 1; font-size: 13px; }
-.task-state-btn {
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  transition: opacity .2s;
-  display: flex; align-items: center; justify-content: center;
-}
-.task-state-btn:hover { opacity: 0.8; }
-.task-state-done { background: rgba(34,197,94,.15); }
-.task-state-skip { background: rgba(239,68,68,.15); }
-.task-state-pending { background: rgba(245,158,11,.15); }
-
-/* ============================================================
-   BLOQUE TAREAS PENDIENTES — NUEVO
-   ============================================================ */
-.shopify-pending-block {
-  margin-top: 28px;
-  border: 1px solid rgba(245,158,11,.25);
-  border-radius: 14px;
-  overflow: hidden;
-}
-.shopify-pending-block-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 20px;
-  background: rgba(245,158,11,.06);
-  border-bottom: 1px solid rgba(245,158,11,.15);
-}
-.shopify-pending-block-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--amber);
-  flex: 1;
-}
-.shopify-pending-count {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  color: var(--amber);
-  background: rgba(245,158,11,.12);
-  border: 1px solid rgba(245,158,11,.25);
-  border-radius: 20px;
-  padding: 2px 10px;
-}
-.shopify-pending-item {
-  border-bottom: 1px solid var(--border);
-  padding: 14px 20px;
-  background: var(--black-card);
-}
-.shopify-pending-item:last-child { border-bottom: none; }
-.shopify-pending-item-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.shopify-pending-item-cat {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  color: var(--gray);
-  background: rgba(255,255,255,.04);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 2px 8px;
-}
-.shopify-pending-item-name {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--white);
-}
-.shopify-pending-item-actions {
-  display: flex;
-  gap: 6px;
-}
-.shopify-pending-note-wrap {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-}
-.shopify-pending-note {
-  flex: 1;
-  background: var(--black-soft);
-  border: 1px solid var(--border-mid);
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: var(--white);
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  outline: none;
-  resize: none;
-  min-height: 36px;
-  line-height: 1.5;
-  transition: border-color .2s;
-}
-.shopify-pending-note:focus { border-color: var(--amber); }
-.shopify-pending-note::placeholder { color: var(--gray); }
-.shopify-pending-note-saved {
-  font-size: 11px;
-  color: var(--green);
-  font-family: 'DM Mono', monospace;
-  margin-top: 4px;
-  opacity: 0;
-  transition: opacity .3s;
-}
-.shopify-pending-note-saved.visible { opacity: 1; }
-.btn-save-note {
-  padding: 7px 14px;
-  background: rgba(245,158,11,.12);
-  border: 1px solid rgba(245,158,11,.3);
-  border-radius: 7px;
-  color: var(--amber);
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background .2s;
-  flex-shrink: 0;
-}
-.btn-save-note:hover { background: rgba(245,158,11,.2); }
-.shopify-pending-empty {
-  padding: 28px 20px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--gray);
-  background: var(--black-card);
-}
-
-/* NOTES CRM */
-.notes-crm { max-width: 700px; }
-.note-input-area {
-  background: var(--black-card);
-  border: 1px solid var(--border-mid);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-}
-.note-textarea {
-  width: 100%;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--white);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  line-height: 1.7;
-  resize: none;
-  min-height: 80px;
-}
-.note-textarea::placeholder { color: var(--gray); }
-.note-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
-.note-meta { font-size: 11px; color: var(--gray); font-family: 'DM Mono',monospace; }
-
-.note-timeline { display: flex; flex-direction: column; gap: 16px; }
-.note-item {
-  display: flex;
-  gap: 14px;
-}
-.note-dot-wrap { display: flex; flex-direction: column; align-items: center; }
-.note-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 4px; }
-.note-line { flex: 1; width: 1px; background: var(--border); margin-top: 4px; }
-.note-content { flex: 1; padding-bottom: 16px; }
-.note-content-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
-.note-author { font-size: 12px; font-weight: 600; color: var(--white); }
-.note-time { font-size: 11px; color: var(--gray); font-family: 'DM Mono',monospace; }
-.note-text { font-size: 13px; color: #C0C0B8; line-height: 1.7; background: var(--black-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
-
-/* MODULES COMING SOON */
-.modules-coming-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 10px; }
-.module-coming-card {
-  background: var(--black-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
-  opacity: 0.5;
-  position: relative;
-  overflow: hidden;
-}
-.module-coming-card::after {
-  content: '🔒';
-  position: absolute;
-  top: 12px; right: 12px;
-  font-size: 14px;
-}
-.module-coming-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-.module-coming-desc { font-size: 11px; color: var(--gray); }
-
-@media(max-width:900px) {
-  .kpi-strip { grid-template-columns: repeat(2,1fr); }
-  .alerts-row { grid-template-columns: 1fr; }
-  .audit-grid { grid-template-columns: 1fr; }
-  .clients-table th:nth-child(n+5), .clients-table td:nth-child(n+5) { display: none; }
-}
-
-/* ============ BRAIN GENERATOR GLOBAL ============ */
-.brain-wrap {
-  max-width: 900px;
-  margin: 0 auto;
-  padding-bottom: 80px;
-}
-
-/* HEADER DEL BRAIN */
-.brain-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 24px 28px;
-  background: var(--black-card);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--green);
-  border-radius: 14px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.brain-header-left {}
-.brain-eyebrow {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: .12em;
-  color: var(--green);
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-.brain-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--white);
-  margin-bottom: 4px;
-  letter-spacing: -0.01em;
-}
-.brain-sub {
-  font-size: 13px;
-  color: var(--gray);
-  line-height: 1.6;
-}
-.brain-header-stats {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  flex-shrink: 0;
-}
-.brain-stat {
-  text-align: center;
-}
-.brain-stat-val {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--white);
-  font-family: 'DM Mono', monospace;
-}
-.brain-stat-lbl {
-  font-size: 10px;
-  color: var(--gray);
-  margin-top: 2px;
-}
-
-/* PROGRESS BAR */
-.brain-progress-wrap {
-  background: var(--black-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.brain-progress-bar {
-  flex: 1;
-  height: 6px;
-  background: var(--gray-dark);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.brain-progress-fill {
-  height: 100%;
-  background: var(--green);
-  border-radius: 3px;
-  transition: width 0.4s cubic-bezier(.4,0,.2,1);
-}
-.brain-progress-pct {
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  color: var(--green);
-  min-width: 38px;
-  text-align: right;
-}
-.brain-progress-count {
-  font-size: 12px;
-  color: var(--gray);
-  white-space: nowrap;
-}
-
-/* SECCIONES */
-.brain-section {
-  margin-bottom: 20px;
-  background: var(--black-card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  overflow: hidden;
-}
-.brain-section-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  background: rgba(255,255,255,.02);
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  user-select: none;
-  transition: background .15s;
-}
-.brain-section-header:hover {
-  background: rgba(255,255,255,.04);
-}
-.brain-section-num {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--green-dim);
-  border: 1px solid var(--green-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--green);
-  flex-shrink: 0;
-  font-family: 'DM Mono', monospace;
-}
-.brain-section-num.done-num {
-  background: var(--green);
-  border-color: var(--green);
-  color: var(--black);
-}
-.brain-section-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--white);
-  flex: 1;
-}
-.brain-section-meta {
-  font-size: 11px;
-  color: var(--gray);
-  font-family: 'DM Mono', monospace;
-}
-.brain-section-chevron {
-  width: 16px;
-  height: 16px;
-  color: var(--gray);
-  transition: transform .2s;
-  flex-shrink: 0;
-}
-.brain-section-chevron.open {
-  transform: rotate(180deg);
-}
-.brain-section-body {
-  padding: 20px;
-  display: none;
-  flex-direction: column;
-  gap: 14px;
-}
-.brain-section-body.open {
-  display: flex;
-}
-
-/* CAMPOS */
-.brain-field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.brain-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.brain-field.full {
-  grid-column: 1 / -1;
-}
-.brain-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--gray);
-  letter-spacing: .04em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.brain-label .req {
-  color: var(--green);
-}
-.brain-hint {
-  font-size: 11px;
-  color: var(--gray-mid);
-  line-height: 1.5;
-  margin-top: -2px;
-}
-.brain-input,
-.brain-textarea,
-.brain-select {
-  background: var(--black-soft);
-  border: 1px solid var(--border-mid);
-  border-radius: 8px;
-  padding: 10px 12px;
-  color: var(--white);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  outline: none;
-  transition: border-color .15s, background .15s;
-  width: 100%;
-}
-.brain-input:focus,
-.brain-textarea:focus,
-.brain-select:focus {
-  border-color: var(--green);
-  background: rgba(34,197,94,.04);
-}
-.brain-input::placeholder,
-.brain-textarea::placeholder {
-  color: var(--gray-mid);
-}
-.brain-textarea {
-  resize: vertical;
-  line-height: 1.6;
-  min-height: 80px;
-}
-.brain-select option {
-  background: var(--black-card);
-}
-.brain-field-filled .brain-input,
-.brain-field-filled .brain-textarea {
-  border-color: rgba(34,197,94,.3);
-}
-
-/* ACCIONES FINALES */
-.brain-actions {
-  background: var(--black-card);
-  border: 1px solid var(--green-border);
-  border-radius: 14px;
-  padding: 24px 28px;
-  margin-top: 8px;
-}
-.brain-actions-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--white);
-  margin-bottom: 4px;
-}
-.brain-actions-sub {
-  font-size: 12px;
-  color: var(--gray);
-  margin-bottom: 20px;
-  line-height: 1.6;
-}
-.brain-actions-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.btn-brain-generate {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 22px;
-  background: var(--green);
-  color: var(--black);
-  border: none;
-  border-radius: 9px;
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background .2s, transform .15s;
-}
-.btn-brain-generate:hover {
-  background: var(--green-dark);
-  transform: translateY(-1px);
-}
-.btn-brain-generate:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-  transform: none;
-}
-.btn-brain-download {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 18px;
-  background: transparent;
-  color: var(--white);
-  border: 1px solid var(--border-mid);
-  border-radius: 9px;
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .2s;
-}
-.btn-brain-download:hover {
-  border-color: var(--green-border);
-  color: var(--green);
-}
-.btn-brain-download:disabled {
-  opacity: .4;
-  cursor: not-allowed;
-}
-.btn-brain-download svg {
-  width: 15px;
-  height: 15px;
-}
-
-/* GENERANDO / OUTPUT */
-.brain-generating {
-  display: none;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  background: var(--green-dim);
-  border: 1px solid var(--green-border);
-  border-radius: 10px;
-  margin-top: 16px;
-  font-size: 13px;
-  color: #86EFAC;
-}
-.brain-generating.visible { display: flex; }
-.brain-generating .spinner {
-  width: 16px; height: 16px;
-  border: 2px solid rgba(34,197,94,.3);
-  border-top-color: var(--green);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  flex-shrink: 0;
-}
-
-.brain-output-wrap {
-  display: none;
-  margin-top: 20px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.brain-output-wrap.visible { display: block; }
-.brain-output-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  background: rgba(255,255,255,.03);
-  border-bottom: 1px solid var(--border);
-}
-.brain-output-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--green);
-  font-family: 'DM Mono', monospace;
-  letter-spacing: .08em;
-}
-.brain-output-actions {
-  display: flex;
-  gap: 8px;
-}
-.brain-output-content {
-  padding: 20px;
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  color: #B0B0A8;
-  line-height: 1.9;
-  max-height: 500px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* EMAIL MODAL */
-.brain-email-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.75);
-  z-index: 2000;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.brain-email-modal.open { display: flex; }
-.brain-email-box {
-  background: var(--black-card);
-  border: 1px solid var(--border-mid);
-  border-radius: 18px;
-  padding: 32px;
-  width: 100%;
-  max-width: 460px;
-}
-.brain-email-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-.brain-email-sub {
-  font-size: 13px;
-  color: var(--gray);
-  margin-bottom: 20px;
-  line-height: 1.6;
-}
-
-/* VERSION BADGE */
-.brain-version-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: var(--green-dim);
-  border: 1px solid var(--green-border);
-  font-size: 11px;
-  font-family: 'DM Mono', monospace;
-  color: var(--green);
-  margin-left: 8px;
-}
-
-@media(max-width:700px) {
-  .brain-field-row { grid-template-columns: 1fr; }
-  .brain-header { flex-direction: column; }
-  .brain-actions-row { flex-direction: column; }
-}
-
 </style>
 </head>
 <body>
@@ -2342,15 +1324,18 @@ body {
 <div id="tab-brain" class="detail-tab-content">
   <div class="brain-wrap">
 
-    <!-- HEADER -->
-    <div class="brain-header">
+    <!-- MODULE NAV -->
+    <div class="brain-module-nav" id="brain-module-nav"></div>
+
+    <!-- DYNAMIC HEADER -->
+    <div class="brain-header" id="brain-header">
       <div class="brain-header-left">
-        <div class="brain-eyebrow">Brain Generator · Módulo 01 de 08</div>
-        <div class="brain-title">
-          Identidad estratégica
+        <div class="brain-eyebrow" id="brain-eyebrow">Brain Generator · Módulo 01 de 08</div>
+        <div class="brain-title" id="brain-mod-title">
+          Identidad Estratégica
           <span class="brain-version-badge" id="brain-version-badge" style="display:none;">v1.0</span>
         </div>
-        <div class="brain-sub">Completá el formulario junto al cliente. La IA genera el Master completo. Descargalo como PDF o MD y envialo por correo.</div>
+        <div class="brain-sub" id="brain-mod-sub">Completá el formulario junto al cliente. La IA genera el Master completo.</div>
       </div>
       <div class="brain-header-stats">
         <div class="brain-stat">
@@ -2358,7 +1343,7 @@ body {
           <div class="brain-stat-lbl">respondidas</div>
         </div>
         <div class="brain-stat">
-          <div class="brain-stat-val" style="color:var(--gray)">26</div>
+          <div class="brain-stat-val" id="brain-total-count" style="color:var(--gray)">—</div>
           <div class="brain-stat-lbl">total</div>
         </div>
       </div>
@@ -2366,195 +1351,24 @@ body {
 
     <!-- PROGRESS -->
     <div class="brain-progress-wrap">
-      <div class="brain-progress-count" id="brain-progress-count">0 de 26 campos</div>
+      <div class="brain-progress-count" id="brain-progress-count">0 de — campos</div>
       <div class="brain-progress-bar">
         <div class="brain-progress-fill" id="brain-progress-fill" style="width:0%"></div>
       </div>
       <div class="brain-progress-pct" id="brain-progress-pct">0%</div>
     </div>
 
-    <!-- SECCIÓN A: INFORMACIÓN GENERAL -->
-    <div class="brain-section" id="brain-sec-a">
-      <div class="brain-section-header" onclick="toggleBrainSection('a')">
-        <div class="brain-section-num" id="brain-num-a">A</div>
-        <div class="brain-section-title">Información general del negocio</div>
-        <div class="brain-section-meta" id="brain-meta-a">0 / 9</div>
-        <svg class="brain-section-chevron open" id="brain-chev-a" viewBox="0 0 16 16" fill="none">
-          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="brain-section-body open" id="brain-body-a">
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">Nombre de la marca <span class="req">*</span></div>
-            <input class="brain-input" id="bi-nombre" type="text" placeholder="Ej: Villamo Growth" oninput="brainUpdate()" />
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">Industria <span class="req">*</span></div>
-            <input class="brain-input" id="bi-industria" type="text" placeholder="Ej: Consultoría ecommerce" oninput="brainUpdate()" />
-          </div>
-        </div>
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">Nicho específico <span class="req">*</span></div>
-            <input class="brain-input" id="bi-nicho" type="text" placeholder="Ej: Marcas físicas LATAM" oninput="brainUpdate()" />
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">Tipo de negocio</div>
-            <input class="brain-input" id="bi-tipo" type="text" placeholder="Ej: Consultoría B2B, SaaS..." oninput="brainUpdate()" />
-          </div>
-        </div>
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">País / mercado</div>
-            <input class="brain-input" id="bi-pais" type="text" placeholder="Ej: Costa Rica / LATAM" oninput="brainUpdate()" />
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">Tiempo operando</div>
-            <input class="brain-input" id="bi-tiempo" type="text" placeholder="Ej: 2 años" oninput="brainUpdate()" />
-          </div>
-        </div>
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">Sitio web</div>
-            <input class="brain-input" id="bi-web" type="text" placeholder="https://..." oninput="brainUpdate()" />
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">Redes sociales</div>
-            <input class="brain-input" id="bi-redes" type="text" placeholder="@usuario en IG, TikTok..." oninput="brainUpdate()" />
-          </div>
-        </div>
-        <div class="brain-field full">
-          <div class="brain-label">Estado actual del negocio <span class="req">*</span></div>
-          <div class="brain-hint">¿Dónde está parado hoy? ¿Factura? ¿Tiene clientes? Sé específico.</div>
-          <textarea class="brain-textarea" id="bi-estado" rows="3" placeholder="Ej: Tengo clientes activos, facturo $X al mes, pero todo depende de mí..." oninput="brainUpdate()"></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECCIÓN B: CONTEXTO PROFUNDO -->
-    <div class="brain-section" id="brain-sec-b">
-      <div class="brain-section-header" onclick="toggleBrainSection('b')">
-        <div class="brain-section-num" id="brain-num-b">B</div>
-        <div class="brain-section-title">Contexto profundo de la marca</div>
-        <div class="brain-section-meta" id="brain-meta-b">0 / 17</div>
-        <svg class="brain-section-chevron" id="brain-chev-b" viewBox="0 0 16 16" fill="none">
-          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="brain-section-body" id="brain-body-b">
-
-        <div class="brain-field full">
-          <div class="brain-label">¿Qué es esta marca? <span class="req">*</span></div>
-          <div class="brain-hint">En sus propias palabras, sin frases de marketing. ¿Qué hace, para quién, qué la hace diferente?</div>
-          <textarea class="brain-textarea" id="bi-que-es" rows="3" placeholder="Ej: Es un sistema de implementación ecommerce para marcas físicas..." oninput="brainUpdate()"></textarea>
-        </div>
-
-        <div class="brain-field full">
-          <div class="brain-label">¿Qué vende exactamente? <span class="req">*</span></div>
-          <div class="brain-hint">Producto, servicio, programa. Precio si existe. Cómo funciona.</div>
-          <textarea class="brain-textarea" id="bi-vende" rows="3" placeholder="Ej: Programa de 90 días a $3,000 USD que incluye Shopify, automatizaciones, SEO..." oninput="brainUpdate()"></textarea>
-        </div>
-
-        <div class="brain-field full">
-          <div class="brain-label">¿Por qué nació este negocio? <span class="req">*</span></div>
-          <div class="brain-hint">La historia real. El momento, el problema que vio, la frustración que lo movió a crear esto.</div>
-          <textarea class="brain-textarea" id="bi-origen" rows="3" placeholder="Ej: En 2019 empecé vendiendo cámaras Instax..." oninput="brainUpdate()"></textarea>
-        </div>
-
-        <div class="brain-field full">
-          <div class="brain-label">¿Qué problema concreto resuelve? <span class="req">*</span></div>
-          <div class="brain-hint">El problema real del cliente. ¿De qué lo libera? ¿Qué deja de sufrir?</div>
-          <textarea class="brain-textarea" id="bi-problema" rows="3" placeholder="Ej: Libera al dueño de responder chats todo el día, de depender de pauta..." oninput="brainUpdate()"></textarea>
-        </div>
-
-        <div class="brain-field full">
-          <div class="brain-label">¿Qué hace diferente a esta marca? <span class="req">*</span></div>
-          <textarea class="brain-textarea" id="bi-diferente" rows="3" placeholder="Ej: No es agencia ni curso. Hacemos implementación directa..." oninput="brainUpdate()"></textarea>
-        </div>
-
-        <div class="brain-field full">
-          <div class="brain-label">¿Qué visión tiene el fundador?</div>
-          <textarea class="brain-textarea" id="bi-vision" rows="3" placeholder="Ej: Quiero que sea el referente en ecommerce estructurado para LATAM..." oninput="brainUpdate()"></textarea>
-        </div>
-
-        <div class="brain-field full">
-          <div class="brain-label">¿Qué impacto quiere generar?</div>
-          <textarea class="brain-textarea" id="bi-impacto" rows="2" placeholder="Ej: Que las marcas latinoamericanas dejen de operar en el caos..." oninput="brainUpdate()"></textarea>
-        </div>
-
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">¿Qué emociones debe transmitir? <span class="req">*</span></div>
-            <textarea class="brain-textarea" id="bi-emociones" rows="3" placeholder="Ej: Confianza, autoridad, claridad, alivio..." oninput="brainUpdate()"></textarea>
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">¿Cómo quiere que la perciban? <span class="req">*</span></div>
-            <textarea class="brain-textarea" id="bi-percepcion" rows="3" placeholder="Ej: Como el operador más confiable de ecommerce en LATAM..." oninput="brainUpdate()"></textarea>
-          </div>
-        </div>
-
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">¿Qué marcas admira?</div>
-            <textarea class="brain-textarea" id="bi-admira" rows="3" placeholder="Ej: Apple, Notion, Shopify, Alex Hormozi..." oninput="brainUpdate()"></textarea>
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">¿Qué NO quiere que parezca? <span class="req">*</span></div>
-            <textarea class="brain-textarea" id="bi-no-parecer" rows="3" placeholder="Ej: No quiere parecer gurú, agencia genérica, curso de dropshipping..." oninput="brainUpdate()"></textarea>
-          </div>
-        </div>
-
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">¿Qué personalidad debería tener? <span class="req">*</span></div>
-            <textarea class="brain-textarea" id="bi-personalidad" rows="3" placeholder="Ej: Directa, estratégica, minimalista, moderna, realista..." oninput="brainUpdate()"></textarea>
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">¿Qué tono de comunicación? <span class="req">*</span></div>
-            <textarea class="brain-textarea" id="bi-tono" rows="3" placeholder="Ej: Ustedeo/voseo, nunca tuteo. Frases cortas, sin hipérboles..." oninput="brainUpdate()"></textarea>
-          </div>
-        </div>
-
-        <div class="brain-field full">
-          <div class="brain-label">¿Qué palabras describen mejor la marca?</div>
-          <textarea class="brain-textarea" id="bi-palabras" rows="2" placeholder="Ej: Sistemas, estructura, escalar, conversión, automatización..." oninput="brainUpdate()"></textarea>
-        </div>
-
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">¿Qué valores son importantes?</div>
-            <textarea class="brain-textarea" id="bi-valores" rows="3" placeholder="Ej: Honestidad sobre resultados, sistemas antes que improvisación..." oninput="brainUpdate()"></textarea>
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">¿Qué filosofía tiene el proyecto?</div>
-            <textarea class="brain-textarea" id="bi-filosofia" rows="3" placeholder="Ej: Los negocios no necesitan más esfuerzo, necesitan mejores sistemas..." oninput="brainUpdate()"></textarea>
-          </div>
-        </div>
-
-        <div class="brain-field-row">
-          <div class="brain-field">
-            <div class="brain-label">¿Qué comunidad quiere construir?</div>
-            <textarea class="brain-textarea" id="bi-comunidad" rows="3" placeholder="Ej: Dueños de marca física en LATAM que quieren escalar con estructura..." oninput="brainUpdate()"></textarea>
-          </div>
-          <div class="brain-field">
-            <div class="brain-label">¿Qué arquetipo encaja mejor? <span class="req">*</span></div>
-            <div class="brain-hint">Héroe, sabio, gobernante, creador, explorador...</div>
-            <textarea class="brain-textarea" id="bi-arquetipo" rows="3" placeholder="Ej: El Sabio + El Gobernante. Claridad + estructura + ejecución..." oninput="brainUpdate()"></textarea>
-          </div>
-        </div>
-
-      </div>
-    </div>
+    <!-- DYNAMIC FORM -->
+    <div id="brain-module-content"></div>
 
     <!-- ACCIONES -->
     <div class="brain-actions">
-      <div class="brain-actions-title">Generar documento Master</div>
-      <div class="brain-actions-sub">Con los campos completados la IA construye el documento completo. Luego descargás el PDF o el .md y lo enviás por correo al cliente.</div>
+      <div class="brain-actions-title" id="brain-actions-title">Generar documento Master</div>
+      <div class="brain-actions-sub" id="brain-actions-sub">Con los campos completados la IA construye el documento completo. Luego descargás el PDF o el .md y lo enviás por correo al cliente.</div>
       <div class="brain-actions-row">
         <button class="btn-brain-generate" id="btn-brain-gen" onclick="generateBrainMaster()">
           <svg viewBox="0 0 16 16" fill="none" style="width:15px;height:15px;"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5 6.5 5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-          Generar Identidad_MASTER con IA
+          <span id="btn-brain-gen-label">Generar Master con IA</span>
         </button>
         <button class="btn-brain-download" id="btn-dl-pdf" onclick="downloadBrainPDF()" disabled>
           <svg viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -2579,7 +1393,7 @@ body {
       <!-- OUTPUT -->
       <div class="brain-output-wrap" id="brain-output-wrap">
         <div class="brain-output-header">
-          <div class="brain-output-title">IDENTIDAD_MASTER.MD — GENERADO</div>
+          <div class="brain-output-title" id="brain-output-title">MASTER.MD — GENERADO</div>
           <div class="brain-output-actions">
             <button class="btn-ghost" onclick="copyBrainOutput()" style="font-size:11px;padding:5px 10px;">Copiar</button>
           </div>
@@ -2930,6 +1744,135 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
     </div>
 
 <!-- ============================================================ MODALS -->
+<!-- ============================================================ MODAL: EDITAR CLIENTE -->
+<div class="ec-modal-overlay" id="ec-modal" onclick="ecModalBgClose(event)">
+  <div class="ec-modal">
+    <div class="ec-modal-header">
+      <div class="ec-modal-title">Editar cliente</div>
+      <button class="ec-modal-close" onclick="closeEditClientModal()">✕</button>
+    </div>
+    <div class="ec-modal-body">
+
+      <!-- Foto de perfil -->
+      <div class="ec-section-label">Foto de perfil</div>
+      <div class="ec-avatar-row">
+        <div class="ec-avatar-preview" id="ec-avatar-preview">—</div>
+        <div>
+          <button class="ec-avatar-btn" onclick="document.getElementById('ec-photo-file').click()">
+            <svg viewBox="0 0 16 16" fill="none" style="width:13px;height:13px;"><path d="M2 13h12M8 3v7M5 7l3-3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Subir foto / logo
+          </button>
+          <input type="file" id="ec-photo-file" accept="image/*" style="display:none;" onchange="ecPhotoSelected(event)" />
+          <div style="font-size:11px;color:var(--gray);margin-top:6px;">JPG, PNG o WebP · Máx 2MB</div>
+        </div>
+      </div>
+
+      <!-- Datos principales -->
+      <div class="ec-section-label">Información principal</div>
+      <div class="ec-grid">
+        <div class="ec-field full">
+          <div class="ec-label">Nombre del cliente / empresa</div>
+          <input class="ec-input" type="text" id="ec-name" placeholder="Ej: María García · Zoé Brand" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Correo electrónico</div>
+          <input class="ec-input" type="email" id="ec-email" placeholder="cliente@email.com" readonly style="opacity:.6;cursor:not-allowed;" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Teléfono / WhatsApp</div>
+          <input class="ec-input" type="tel" id="ec-phone" placeholder="+506 8888 1234" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Industria</div>
+          <input class="ec-input" type="text" id="ec-industry" placeholder="Ej: Moda, joyería, calzado..." />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Nicho específico</div>
+          <input class="ec-input" type="text" id="ec-nicho" placeholder="Ej: Joyería femenina LATAM" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Tipo de negocio</div>
+          <input class="ec-input" type="text" id="ec-business-type" placeholder="Ej: DTC, Marketplace, Físico..." />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">País / mercado principal</div>
+          <input class="ec-input" type="text" id="ec-country" placeholder="Ej: Costa Rica / LATAM" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Sitio web</div>
+          <input class="ec-input" type="text" id="ec-website" placeholder="https://..." />
+        </div>
+      </div>
+
+      <!-- Redes sociales -->
+      <div class="ec-section-label">Redes sociales</div>
+      <div class="ec-grid">
+        <div class="ec-field">
+          <div class="ec-label">Instagram</div>
+          <input class="ec-input" type="text" id="ec-instagram" placeholder="@marca" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">TikTok</div>
+          <input class="ec-input" type="text" id="ec-tiktok" placeholder="@marca" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Facebook</div>
+          <input class="ec-input" type="text" id="ec-facebook" placeholder="facebook.com/marca" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Otras redes</div>
+          <input class="ec-input" type="text" id="ec-other-socials" placeholder="YouTube, LinkedIn, X..." />
+        </div>
+      </div>
+
+      <!-- Programa -->
+      <div class="ec-section-label">Programa y estado</div>
+      <div class="ec-grid">
+        <div class="ec-field">
+          <div class="ec-label">Fecha de inicio</div>
+          <input class="ec-input" type="date" id="ec-start-date" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Fecha de fin</div>
+          <input class="ec-input" type="date" id="ec-end-date" />
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Estado del cliente</div>
+          <select class="ec-select" id="ec-client-status">
+            <option value="activo">Activo</option>
+            <option value="pausado">Pausado</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="completado">Completado</option>
+          </select>
+        </div>
+        <div class="ec-field">
+          <div class="ec-label">Responsable interno</div>
+          <input class="ec-input" type="text" id="ec-assigned-to" placeholder="Ej: Pablo Villamo" />
+        </div>
+        <div class="ec-field full">
+          <div class="ec-label">Estado actual del negocio</div>
+          <textarea class="ec-textarea" id="ec-business-status" rows="2" placeholder="¿Dónde está parado el negocio hoy?"></textarea>
+        </div>
+      </div>
+
+      <!-- Notas internas -->
+      <div class="ec-section-label">Notas internas (solo admin)</div>
+      <div class="ec-field" style="margin-bottom:4px;">
+        <textarea class="ec-textarea" id="ec-internal-notes" rows="3" placeholder="Observaciones, contexto del cliente, notas de reuniones..."></textarea>
+      </div>
+
+    </div>
+    <div class="ec-modal-footer">
+      <button class="btn-cancel" onclick="closeEditClientModal()">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" id="ec-save-btn" onclick="saveEditClient()">Guardar cambios</button>
+      <div class="ec-save-indicator" id="ec-save-indicator">
+        <svg viewBox="0 0 14 14" fill="none" style="width:13px;height:13px;"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="ec-save-text">Guardado</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-new-client">
   <div class="modal">
     <div class="modal-title">Agregar cliente</div>
@@ -2965,6 +1908,9 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 </div>
 
 <!-- ============================================================ JAVASCRIPT -->
+<script src="/js/brain-data.js"></script>
+<script src="/js/brain-prompts.js"></script>
+<script src="/js/brain.js"></script>
 <script>
 const SUPABASE_URL = 'https://crgtdkbobxfbiicuxrfj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyZ3Rka2JvYnhmYmlpY3V4cmZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0ODE5ODEsImV4cCI6MjA5NTA1Nzk4MX0.iXSvOrqaEpC-Gw1pdOCOO90pYejzZEJjF0AUR7oEpAA';
@@ -3225,23 +2171,11 @@ async function openClientDetail(clientId) {
   const { data: progress } = await sb.from('client_modules').select('*').eq('client_id', clientId);
   const { data: tasks } = await sb.from('tasks').select('*,modules(name,number)').eq('client_id', clientId).order('created_at', { ascending: false });
 
-  const avatarEl = document.getElementById('detail-avatar');
-  if(avatarEl) avatarEl.textContent = (client.full_name || client.email || 'VG').substring(0,2).toUpperCase();
-  document.getElementById('detail-client-name').textContent = client.full_name || client.email;
+  // Render header using shared function
+  ecRefreshDetailHeader(client);
 
-  const startStr = client.start_date ? new Date(client.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : 'Sin definir';
-  const endStr = client.end_date ? new Date(client.end_date).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : 'Sin definir';
-  let dayNum = '—';
-  if (client.start_date) {
-    const diff = Math.floor((Date.now() - new Date(client.start_date).getTime()) / 86400000) + 1;
-    dayNum = Math.min(90, Math.max(1, diff));
-  }
-  document.getElementById('detail-client-meta').innerHTML = `
-    <div class="detail-meta-item">Nicho: <strong>${client.nicho || '—'}</strong></div>
-    <div class="detail-meta-item">Inicio: <strong>${startStr}</strong></div>
-    <div class="detail-meta-item">Fin: <strong>${endStr}</strong></div>
-    <div class="detail-meta-item mono" style="color:var(--green)">Día ${dayNum} de 90</div>
-  `;
+  // Pre-fill Brain Generator module 01 fields if empty
+  brainPrefillFromProfile(client);
 
   const doneMap = {};
   (progress || []).forEach(p => { doneMap[p.module_id] = p.completed; });
@@ -3382,7 +2316,15 @@ function switchDetailTab(tab, btn) {
   if(el) el.classList.add('active');
   if(tab === 'shopify') renderShopifyChecklist();
   if(tab === 'notas') renderNotes();
-  if(tab === 'brain') { brainLoadFromLocal(); brainUpdate(); }
+  if(tab === 'brain') {
+    brainLoadFromLocal();
+    brainUpdate();
+    // Si el módulo de identidad está activo, pre-llenamos desde el perfil
+    if (currentBrainModulo === 'identidad') {
+      const client = (allClientsData || []).find(c => c.id === selectedClientId);
+      if (client) brainPrefillFromProfile(client);
+    }
+  }
 }
 
 // ============================================================
@@ -3778,8 +2720,194 @@ function openAuditoria(num) {
   alert('Auditoría ' + num + ' — Próximamente podrás documentar reuniones aquí.');
 }
 
-function openEditClientModal() {
-  alert('Edición de cliente — Próximamente.');
+// ── Editar cliente ────────────────────────────────────────────────────────────
+let ecPhotoFile = null;
+
+async function openEditClientModal() {
+  if (!selectedClientId) return;
+  ecPhotoFile = null;
+
+  const { data: client, error } = await sb.from('profiles').select('*').eq('id', selectedClientId).single();
+  if (error || !client) { alert('No se pudo cargar el cliente.'); return; }
+
+  // Poblar campos
+  const s = id => document.getElementById(id);
+  s('ec-name').value           = client.full_name || '';
+  s('ec-email').value          = client.email || '';
+  s('ec-phone').value          = client.phone || '';
+  s('ec-industry').value       = client.industry || '';
+  s('ec-nicho').value          = client.nicho || '';
+  s('ec-business-type').value  = client.business_type || '';
+  s('ec-country').value        = client.country_market || '';
+  s('ec-website').value        = client.website || '';
+  s('ec-instagram').value      = client.instagram || '';
+  s('ec-tiktok').value         = client.tiktok || '';
+  s('ec-facebook').value       = client.facebook || '';
+  s('ec-other-socials').value  = client.other_socials || '';
+  s('ec-start-date').value     = client.start_date || '';
+  s('ec-end-date').value       = client.end_date || '';
+  s('ec-client-status').value  = client.client_status || 'activo';
+  s('ec-assigned-to').value    = client.assigned_to || '';
+  s('ec-business-status').value= client.business_status || '';
+  s('ec-internal-notes').value = client.internal_notes || '';
+
+  // Avatar
+  const preview = s('ec-avatar-preview');
+  if (client.profile_image_url) {
+    preview.innerHTML = `<img src="${client.profile_image_url}" alt="foto" />`;
+  } else {
+    const initials = (client.full_name || client.email || 'VG').substring(0, 2).toUpperCase();
+    preview.innerHTML = initials;
+  }
+
+  // Reset indicador
+  const ind = s('ec-save-indicator');
+  if (ind) { ind.classList.remove('visible', 'error'); }
+  const btn = s('ec-save-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
+
+  document.getElementById('ec-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditClientModal() {
+  document.getElementById('ec-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  ecPhotoFile = null;
+}
+
+function ecModalBgClose(e) {
+  if (e.target === document.getElementById('ec-modal')) closeEditClientModal();
+}
+
+function ecPhotoSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { alert('La imagen no puede superar 2MB.'); return; }
+  ecPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('ec-avatar-preview');
+    preview.innerHTML = `<img src="${e.target.result}" alt="preview" />`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveEditClient() {
+  if (!selectedClientId) return;
+  const s = id => document.getElementById(id);
+  const btn = s('ec-save-btn');
+  const ind = s('ec-save-indicator');
+  const indText = s('ec-save-text');
+
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  ind.classList.remove('visible', 'error');
+
+  try {
+    let imageUrl = null;
+
+    // Subir foto si se seleccionó una
+    if (ecPhotoFile) {
+      const ext  = ecPhotoFile.name.split('.').pop();
+      const path = `${selectedClientId}/avatar.${ext}`;
+      const { error: uploadErr } = await sb.storage
+        .from('client-avatars')
+        .upload(path, ecPhotoFile, { upsert: true, contentType: ecPhotoFile.type });
+      if (uploadErr) throw new Error('Error subiendo foto: ' + uploadErr.message);
+      const { data: urlData } = sb.storage.from('client-avatars').getPublicUrl(path);
+      imageUrl = urlData?.publicUrl || null;
+    }
+
+    const updates = {
+      full_name:         s('ec-name').value.trim() || null,
+      phone:             s('ec-phone').value.trim() || null,
+      industry:          s('ec-industry').value.trim() || null,
+      nicho:             s('ec-nicho').value.trim() || null,
+      business_type:     s('ec-business-type').value.trim() || null,
+      country_market:    s('ec-country').value.trim() || null,
+      website:           s('ec-website').value.trim() || null,
+      instagram:         s('ec-instagram').value.trim() || null,
+      tiktok:            s('ec-tiktok').value.trim() || null,
+      facebook:          s('ec-facebook').value.trim() || null,
+      other_socials:     s('ec-other-socials').value.trim() || null,
+      start_date:        s('ec-start-date').value || null,
+      end_date:          s('ec-end-date').value || null,
+      client_status:     s('ec-client-status').value,
+      assigned_to:       s('ec-assigned-to').value.trim() || null,
+      business_status:   s('ec-business-status').value.trim() || null,
+      internal_notes:    s('ec-internal-notes').value.trim() || null,
+      updated_at:        new Date().toISOString(),
+    };
+    if (imageUrl) updates.profile_image_url = imageUrl;
+
+    const { error: updateErr } = await sb.from('profiles').update(updates).eq('id', selectedClientId);
+    if (updateErr) throw new Error(updateErr.message);
+
+    // Actualizar allClientsData en memoria
+    const idx = allClientsData.findIndex(c => c.id === selectedClientId);
+    if (idx !== -1) allClientsData[idx] = { ...allClientsData[idx], ...updates };
+
+    // Refrescar header del perfil sin cerrar el modal todavía
+    ecRefreshDetailHeader({ ...allClientsData[idx] || {}, ...updates, profile_image_url: imageUrl || allClientsData[idx]?.profile_image_url });
+
+    // Éxito
+    btn.disabled = false;
+    btn.textContent = 'Guardar cambios';
+    ind.classList.add('visible');
+    indText.textContent = 'Guardado correctamente';
+    setTimeout(() => {
+      ind.classList.remove('visible');
+      closeEditClientModal();
+    }, 1600);
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Guardar cambios';
+    ind.classList.add('visible', 'error');
+    indText.textContent = err.message || 'Error al guardar';
+  }
+}
+
+function ecRefreshDetailHeader(client) {
+  const avatarEl = document.getElementById('detail-avatar');
+  const nameEl   = document.getElementById('detail-client-name');
+  const metaEl   = document.getElementById('detail-client-meta');
+  if (!avatarEl || !nameEl) return;
+
+  // Avatar — foto o iniciales
+  if (client.profile_image_url) {
+    avatarEl.innerHTML = `<img src="${client.profile_image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="" />`;
+    avatarEl.style.padding = '0';
+  } else {
+    const initials = (client.full_name || client.email || 'VG').substring(0, 2).toUpperCase();
+    avatarEl.innerHTML = initials;
+    avatarEl.style.padding = '';
+  }
+
+  nameEl.textContent = client.full_name || client.email || '—';
+
+  if (metaEl) {
+    const startStr = client.start_date ? new Date(client.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : 'Sin definir';
+    const endStr   = client.end_date   ? new Date(client.end_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : 'Sin definir';
+    let dayNum = '—';
+    if (client.start_date) {
+      const diff = Math.floor((Date.now() - new Date(client.start_date).getTime()) / 86400000) + 1;
+      dayNum = Math.min(90, Math.max(1, diff));
+    }
+    const nicho     = client.nicho     ? `<div class="detail-meta-item">Nicho: <strong>${client.nicho}</strong></div>` : '';
+    const industry  = client.industry  ? `<div class="detail-meta-item">Industria: <strong>${client.industry}</strong></div>` : '';
+    const statusMap = { activo:'Activo', pausado:'Pausado', pendiente:'Pendiente', completado:'Completado' };
+    const statusColor = { activo:'var(--green)', pausado:'var(--amber)', pendiente:'var(--gray)', completado:'#818CF8' };
+    const st = client.client_status || 'activo';
+    metaEl.innerHTML = `
+      ${nicho}${industry}
+      <div class="detail-meta-item">Inicio: <strong>${startStr}</strong></div>
+      <div class="detail-meta-item">Fin: <strong>${endStr}</strong></div>
+      <div class="detail-meta-item mono" style="color:var(--green)">Día ${dayNum} de 90</div>
+      <div class="detail-meta-item" style="color:${statusColor[st]||'var(--green)'}">● ${statusMap[st]||st}</div>
+    `;
+  }
 }
 
 // ============================================================ FRASES
@@ -4083,461 +3211,6 @@ async function saveConfig() {
     }
   }
 }
-
-// ── Estado global del brain ──────────────────────────────────────────────────
-let brainMasterContent = '';
-let brainCurrentClientEmail = '';
-
-const BRAIN_FIELDS_A = ['bi-nombre','bi-industria','bi-nicho','bi-tipo','bi-pais','bi-tiempo','bi-web','bi-redes','bi-estado'];
-const BRAIN_FIELDS_B = ['bi-que-es','bi-vende','bi-origen','bi-problema','bi-diferente','bi-vision','bi-impacto','bi-emociones','bi-percepcion','bi-admira','bi-no-parecer','bi-personalidad','bi-tono','bi-palabras','bi-valores','bi-filosofia','bi-comunidad','bi-arquetipo'];
-const BRAIN_ALL_FIELDS = [...BRAIN_FIELDS_A, ...BRAIN_FIELDS_B];
-const BRAIN_REQUIRED = ['bi-nombre','bi-industria','bi-nicho','bi-estado','bi-que-es','bi-vende','bi-origen','bi-problema','bi-diferente','bi-emociones','bi-percepcion','bi-no-parecer','bi-personalidad','bi-tono','bi-arquetipo'];
-
-// ── Progreso ─────────────────────────────────────────────────────────────────
-function brainUpdate() {
-  const filled = BRAIN_ALL_FIELDS.filter(id => {
-    const el = document.getElementById(id);
-    return el && el.value.trim().length > 2;
-  }).length;
-  const pct = Math.round((filled / BRAIN_ALL_FIELDS.length) * 100);
-
-  const fillEl = document.getElementById('brain-progress-fill');
-  const pctEl  = document.getElementById('brain-progress-pct');
-  const cntEl  = document.getElementById('brain-progress-count');
-  const numEl  = document.getElementById('brain-filled-count');
-  if (fillEl) fillEl.style.width = pct + '%';
-  if (pctEl)  pctEl.textContent  = pct + '%';
-  if (cntEl)  cntEl.textContent  = filled + ' de ' + BRAIN_ALL_FIELDS.length + ' campos';
-  if (numEl)  numEl.textContent  = filled;
-
-  const filledA = BRAIN_FIELDS_A.filter(id => { const el = document.getElementById(id); return el && el.value.trim().length > 2; }).length;
-  const filledB = BRAIN_FIELDS_B.filter(id => { const el = document.getElementById(id); return el && el.value.trim().length > 2; }).length;
-  const metaA = document.getElementById('brain-meta-a');
-  const metaB = document.getElementById('brain-meta-b');
-  const numA  = document.getElementById('brain-num-a');
-  const numB  = document.getElementById('brain-num-b');
-  if (metaA) metaA.textContent = filledA + ' / ' + BRAIN_FIELDS_A.length;
-  if (metaB) metaB.textContent = filledB + ' / ' + BRAIN_FIELDS_B.length;
-  if (numA)  numA.classList.toggle('done-num', filledA === BRAIN_FIELDS_A.length);
-  if (numB)  numB.classList.toggle('done-num', filledB === BRAIN_FIELDS_B.length);
-}
-
-// ── Acordeones ───────────────────────────────────────────────────────────────
-function toggleBrainSection(sec) {
-  const body = document.getElementById('brain-body-' + sec);
-  const chev = document.getElementById('brain-chev-' + sec);
-  if (!body) return;
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  if (chev) chev.classList.toggle('open', !isOpen);
-}
-
-// ── Obtener todos los valores del formulario ──────────────────────────────────
-function getBrainValues() {
-  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
-  return {
-    nombre:      g('bi-nombre'),
-    industria:   g('bi-industria'),
-    nicho:       g('bi-nicho'),
-    tipo:        g('bi-tipo'),
-    pais:        g('bi-pais'),
-    tiempo:      g('bi-tiempo'),
-    web:         g('bi-web'),
-    redes:       g('bi-redes'),
-    estado:      g('bi-estado'),
-    queEs:       g('bi-que-es'),
-    vende:       g('bi-vende'),
-    origen:      g('bi-origen'),
-    problema:    g('bi-problema'),
-    diferente:   g('bi-diferente'),
-    vision:      g('bi-vision'),
-    impacto:     g('bi-impacto'),
-    emociones:   g('bi-emociones'),
-    percepcion:  g('bi-percepcion'),
-    admira:      g('bi-admira'),
-    noParecer:   g('bi-no-parecer'),
-    personalidad:g('bi-personalidad'),
-    tono:        g('bi-tono'),
-    palabras:    g('bi-palabras'),
-    valores:     g('bi-valores'),
-    filosofia:   g('bi-filosofia'),
-    comunidad:   g('bi-comunidad'),
-    arquetipo:   g('bi-arquetipo'),
-  };
-}
-
-// ── Construir prompt para la API ──────────────────────────────────────────────
-function buildBrainPrompt(v) {
-  return `Eres un estratega senior de marca con experiencia en branding, posicionamiento y construcción de marcas premium en Latinoamérica.
-
-Con la siguiente información del negocio, construye el documento completo "Identidad_MASTER.md" con profundidad estratégica real. Las 13 secciones completas. Sin resumir, sin clichés, sin frases vacías.
-
-INFORMACIÓN DEL NEGOCIO:
-Nombre: ${v.nombre || '—'}
-Industria: ${v.industria || '—'}
-Nicho: ${v.nicho || '—'}
-Tipo de negocio: ${v.tipo || '—'}
-País / mercado: ${v.pais || '—'}
-Tiempo operando: ${v.tiempo || '—'}
-Sitio web: ${v.web || '—'}
-Redes sociales: ${v.redes || '—'}
-Estado actual: ${v.estado || '—'}
-
-CONTEXTO DE MARCA:
-¿Qué es la marca? ${v.queEs || '—'}
-¿Qué vende? ${v.vende || '—'}
-¿Por qué nació? ${v.origen || '—'}
-¿Qué problema resuelve? ${v.problema || '—'}
-¿Qué la hace diferente? ${v.diferente || '—'}
-Visión del fundador: ${v.vision || '—'}
-Impacto que quiere generar: ${v.impacto || '—'}
-Emociones que debe transmitir: ${v.emociones || '—'}
-Percepción deseada: ${v.percepcion || '—'}
-Marcas que admira: ${v.admira || '—'}
-Lo que NO quiere parecer: ${v.noParecer || '—'}
-Personalidad: ${v.personalidad || '—'}
-Tono de comunicación: ${v.tono || '—'}
-Palabras que la describen: ${v.palabras || '—'}
-Valores: ${v.valores || '—'}
-Filosofía: ${v.filosofia || '—'}
-Comunidad que quiere construir: ${v.comunidad || '—'}
-Arquetipo: ${v.arquetipo || '—'}
-
-ESTRUCTURA REQUERIDA — genera exactamente estas 13 secciones en Markdown:
-
-# Identidad_MASTER.md — ${v.nombre || 'La marca'}
-
-## 01. ¿Qué es la marca?
-## 02. Historia de la marca
-## 03. Misión
-## 04. Visión
-## 05. Valores
-## 06. Filosofía de marca
-## 07. Manifiesto
-## 08. Arquetipo de marca
-## 09. Personalidad de marca
-## 10. Voz y tono
-## 11. Percepción deseada
-## 12. Cultura de marca
-## 13. Emociones que transmite
-
-Reglas de redacción:
-- Ustedeo y voseo siempre — nunca tuteo
-- Frases directas, sin hipérboles ni lenguaje de gurú
-- Profundidad estratégica real, pensamiento premium
-- Autoridad basada en experiencia, no en promesas
-- Manifiesto emocional y poderoso
-- Palabras prohibidas: gurú, transformación mágica, éxito garantizado, hack, fórmula secreta
-- Al final incluye: *${v.nombre || 'La marca'} · Identidad_MASTER.md · v1.0 · Documento de uso interno*`;
-}
-
-// ── Generar con Claude API ────────────────────────────────────────────────────
-async function generateBrainMaster() {
-  const v = getBrainValues();
-  const missing = BRAIN_REQUIRED.filter(id => {
-    const el = document.getElementById(id);
-    return !el || el.value.trim().length < 3;
-  });
-  if (missing.length > 0) {
-    alert('Completá los campos obligatorios (marcados con *) antes de generar.');
-    return;
-  }
-
-  const btnGen    = document.getElementById('btn-brain-gen');
-  const genWrap   = document.getElementById('brain-generating');
-  const genText   = document.getElementById('brain-generating-text');
-  const outWrap   = document.getElementById('brain-output-wrap');
-  const outContent= document.getElementById('brain-output-content');
-  const btnPDF    = document.getElementById('btn-dl-pdf');
-  const btnMD     = document.getElementById('btn-dl-md');
-  const btnEmail  = document.getElementById('btn-send-email');
-  const badge     = document.getElementById('brain-version-badge');
-
-  btnGen.disabled = true;
-  btnGen.textContent = 'Generando...';
-  genWrap.classList.add('visible');
-  outWrap.classList.remove('visible');
-  brainMasterContent = '';
-
-  const messages = [{ role: 'user', content: buildBrainPrompt(v) }];
-  const statusMessages = [
-    'La IA está analizando el contexto de la marca...',
-    'Construyendo identidad estratégica...',
-    'Redactando manifiesto y arquetipos...',
-    'Definiendo voz, tono y percepción...',
-    'Finalizando el documento Master...'
-  ];
-  let si = 0;
-  const statusInterval = setInterval(() => {
-    si = (si + 1) % statusMessages.length;
-    if (genText) genText.textContent = statusMessages[si];
-  }, 3000);
-
-  try {
-    // Llamada via Supabase Edge Function (evita CORS y mantiene la API key segura)
-    const { data, error } = await sb.functions.invoke('generate-brain', {
-      body: { prompt: buildBrainPrompt(v) }
-    });
-
-    clearInterval(statusInterval);
-    if (error) throw new Error(error.message || 'Error en la Edge Function');
-    const text = data.content?.map(b => b.text || '').join('') || '';
-
-    if (!text) throw new Error('Sin respuesta de la IA');
-
-    brainMasterContent = text;
-    outContent.textContent = text;
-    outWrap.classList.add('visible');
-    genWrap.classList.remove('visible');
-
-    btnPDF.disabled   = false;
-    btnMD.disabled    = false;
-    btnEmail.disabled = false;
-    if (badge) { badge.textContent = 'v1.0'; badge.style.display = 'inline-flex'; }
-
-    // Pre-fill email
-    const emailEl = document.getElementById('brain-email-to');
-    if (emailEl && selectedClientId) {
-      const client = (typeof allClientsData !== 'undefined' ? allClientsData : []).find(c => c.id === selectedClientId);
-      if (client && client.email) {
-        emailEl.value = client.email;
-        brainCurrentClientEmail = client.email;
-      }
-    }
-
-  } catch (err) {
-    clearInterval(statusInterval);
-    genWrap.classList.remove('visible');
-    alert('Error generando el documento: ' + err.message);
-  } finally {
-    btnGen.disabled = false;
-    btnGen.innerHTML = '<svg viewBox="0 0 16 16" fill="none" style="width:15px;height:15px;"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5 6.5 5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg> Regenerar Master';
-  }
-}
-
-// ── Descargar .md ─────────────────────────────────────────────────────────────
-function downloadBrainMD() {
-  if (!brainMasterContent) return;
-  const v = getBrainValues();
-  const filename = (v.nombre || 'Marca').replace(/\s+/g, '_') + '_Identidad_MASTER.md';
-  const blob = new Blob([brainMasterContent], { type: 'text/markdown;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ── Descargar PDF (html2pdf) ──────────────────────────────────────────────────
-async function downloadBrainPDF() {
-  if (!brainMasterContent) return;
-  const v = getBrainValues();
-  const filename = (v.nombre || 'Marca').replace(/\s+/g, '_') + '_Identidad_MASTER.pdf';
-  const btnPDF = document.getElementById('btn-dl-pdf');
-  btnPDF.disabled = true;
-  btnPDF.textContent = 'Generando PDF...';
-
-  if (typeof html2pdf === 'undefined') {
-    await new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      s.onload = res; s.onerror = rej;
-      document.head.appendChild(s);
-    });
-  }
-
-  const htmlContent = mdToHtmlBrain(brainMasterContent, v.nombre || 'Marca');
-  const container   = document.createElement('div');
-  container.innerHTML = htmlContent;
-  container.style.cssText = 'position:absolute;left:-9999px;top:0;';
-  document.body.appendChild(container);
-
-  const opt = {
-    margin:     [15, 15, 15, 15],
-    filename:   filename,
-    image:      { type: 'jpeg', quality: 0.95 },
-    html2canvas:{ scale: 2, useCORS: true, letterRendering: true },
-    jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:  { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  await html2pdf().set(opt).from(container).save();
-  document.body.removeChild(container);
-
-  btnPDF.disabled = false;
-  btnPDF.innerHTML = '<svg viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Descargar PDF';
-}
-
-// ── Convertir Markdown a HTML para PDF ───────────────────────────────────────
-function mdToHtmlBrain(md, brandName) {
-  const now = new Date().toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' });
-  let html = `
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; font-size:11pt; color:#0A0A0A; background:#fff; line-height:1.7; }
-    .cover { padding:60px 50px 40px; border-bottom:3px solid #22C55E; margin-bottom:30px; }
-    .cover-brand { font-size:28pt; font-weight:700; color:#0A0A0A; letter-spacing:-0.02em; margin-bottom:6px; }
-    .cover-doc { font-size:16pt; font-weight:600; color:#22C55E; margin-bottom:20px; }
-    .cover-meta { font-family:'JetBrains Mono',monospace; font-size:9pt; color:#888780; }
-    .cover-meta div { margin-bottom:3px; }
-    h1 { font-size:18pt; font-weight:700; color:#0A0A0A; margin:32px 0 12px; padding-bottom:8px; border-bottom:2px solid #22C55E; letter-spacing:-0.01em; page-break-after:avoid; }
-    h2 { font-size:13pt; font-weight:600; color:#16A34A; margin:22px 0 8px; page-break-after:avoid; }
-    h3 { font-size:11pt; font-weight:600; color:#0A0A0A; margin:16px 0 6px; page-break-after:avoid; }
-    p { margin:8px 0; }
-    blockquote { border-left:3px solid #22C55E; padding:10px 16px; margin:14px 0; background:#F0FDF4; border-radius:0 6px 6px 0; font-style:italic; color:#1A1A1A; }
-    ul, ol { padding-left:20px; margin:8px 0; }
-    li { margin:4px 0; }
-    strong { font-weight:600; }
-    em { font-style:italic; }
-    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:10pt; }
-    th { background:#0A0A0A; color:#fff; padding:8px 12px; text-align:left; font-weight:600; }
-    td { padding:8px 12px; border-bottom:1px solid #E5E5E3; }
-    tr:nth-child(even) td { background:#F9F9F8; }
-    del { color:#EF4444; text-decoration:line-through; }
-    code { font-family:'JetBrains Mono',monospace; background:#F3F4F6; padding:1px 5px; border-radius:3px; font-size:9pt; }
-    .footer { margin-top:40px; padding-top:12px; border-top:1px solid #E5E5E3; font-family:'JetBrains Mono',monospace; font-size:8pt; color:#888780; }
-  </style>
-  <div class="cover">
-    <div class="cover-brand">VILLAMO GROWTH</div>
-    <div class="cover-doc">Identidad_MASTER.md</div>
-    <div class="cover-meta">
-      <div>Brain Generator · Módulo 01 de 08</div>
-      <div>Cliente: ${brandName}</div>
-      <div>Generado: ${now}</div>
-      <div>Documento confidencial de uso interno</div>
-    </div>
-  </div>`;
-
-  let body = md
-    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^\*\*(.+)\*\*$/gm, '<p><strong>$1</strong></p>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/~~(.+?)~~/g, '<del>$1</del>')
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-    .replace(/^> \*\*(.+?)\*\*$/gm, '<blockquote><strong>$1</strong></blockquote>')
-    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-    .replace(/^\| (.+) \|$/gm, (match) => {
-      const cells = match.split('|').filter(c => c.trim() !== '');
-      const isHeader = match.includes('---');
-      if (isHeader) return '';
-      return '<tr>' + cells.map(c => '<td>' + c.trim() + '</td>').join('') + '</tr>';
-    })
-    .replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid #E5E5E3;margin:20px 0;">')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
-    .replace(/(<li>.*<\/li>\n?)+/g, m => '<ul>' + m + '</ul>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(?!<[hupbdl]).+$/gm, m => m ? '<p>' + m + '</p>' : '')
-    .replace(/<p><\/p>/g, '')
-    .replace(/<p>(<[hul])/g, '$1')
-    .replace(/(<\/[hul][^>]*>)<\/p>/g, '$1');
-
-  body = body.replace(/(<tr>.*?<\/tr>\s*)+/gs, m => '<table>' + m + '</table>');
-
-  html += body;
-  html += '<div class="footer">Villamo Growth · Identidad_MASTER.md · v1.0 · Confidencial</div>';
-  return html;
-}
-
-// ── Copiar output ─────────────────────────────────────────────────────────────
-function copyBrainOutput() {
-  if (!brainMasterContent) return;
-  navigator.clipboard.writeText(brainMasterContent).then(() => {
-    const btn = document.querySelector('.brain-output-header .btn-ghost');
-    if (btn) {
-      const orig = btn.textContent;
-      btn.textContent = '¡Copiado!';
-      setTimeout(() => { btn.textContent = orig; }, 2000);
-    }
-  });
-}
-
-// ── Email modal ───────────────────────────────────────────────────────────────
-function openBrainEmailModal() {
-  const modal = document.getElementById('brain-email-modal');
-  if (modal) modal.classList.add('open');
-}
-
-function closeBrainEmailModal() {
-  const modal = document.getElementById('brain-email-modal');
-  if (modal) modal.classList.remove('open');
-}
-
-async function sendBrainEmail() {
-  const to      = document.getElementById('brain-email-to') ? document.getElementById('brain-email-to').value.trim() : '';
-  const subject = document.getElementById('brain-email-subject') ? document.getElementById('brain-email-subject').value.trim() : '';
-  const body    = document.getElementById('brain-email-body') ? document.getElementById('brain-email-body').value.trim() : '';
-  if (!to) { alert('Ingresá el correo del cliente'); return; }
-
-  const btn = document.querySelector('#brain-email-modal .btn-primary');
-  btn.disabled = true; btn.textContent = 'Enviando...';
-
-  try {
-    await downloadBrainPDF();
-    if (typeof sb !== 'undefined') {
-      try {
-        await sb.functions.invoke('send-brain-doc', {
-          body: {
-            to,
-            subject,
-            message: body,
-            client_id: selectedClientId,
-            doc_type: 'identidad_master',
-            doc_content: brainMasterContent
-          }
-        });
-      } catch(e) { console.log('Edge fn no disponible:', e); }
-    }
-    btn.disabled = false;
-    btn.textContent = '¡Enviado!';
-    setTimeout(() => {
-      closeBrainEmailModal();
-      btn.textContent = 'Enviar con adjunto PDF';
-    }, 1500);
-  } catch(e) {
-    btn.disabled = false;
-    btn.textContent = 'Enviar con adjunto PDF';
-    alert('Error enviando. El PDF se descargó localmente.');
-    closeBrainEmailModal();
-  }
-}
-
-// ── Auto-guardar en localStorage por cliente ──────────────────────────────────
-function brainSaveToLocal() {
-  if (!selectedClientId) return;
-  const data = {};
-  BRAIN_ALL_FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) data[id] = el.value;
-  });
-  localStorage.setItem('brain_01_' + selectedClientId, JSON.stringify(data));
-}
-
-function brainLoadFromLocal() {
-  if (!selectedClientId) return;
-  const saved = localStorage.getItem('brain_01_' + selectedClientId);
-  if (!saved) return;
-  try {
-    const data = JSON.parse(saved);
-    Object.entries(data).forEach(function(entry) {
-      const el = document.getElementById(entry[0]);
-      if (el) el.value = entry[1];
-    });
-    brainUpdate();
-  } catch(e) {}
-}
-
-// Guardar automáticamente cada vez que se escribe
-document.addEventListener('DOMContentLoaded', function() {
-  BRAIN_ALL_FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', brainSaveToLocal);
-  });
-  brainUpdate();
-});
 
 // ============================================================ START
 document.getElementById('app-loading').style.display = 'flex';
