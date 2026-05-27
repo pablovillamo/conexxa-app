@@ -1,88 +1,84 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", {
-      headers: corsHeaders(),
+      headers: corsHeaders,
     });
   }
 
   try {
-    if (req.method !== "POST") {
-      return jsonResponse({ success: false, error: "Método no permitido" }, 405);
+    const body = await req.json();
+
+    const { shop } = body;
+
+    if (!shop) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Shop domain requerido",
+        }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
 
-    const { shop_domain, access_token } = await req.json();
+    const SHOPIFY_CLIENT_ID = Deno.env.get("SHOPIFY_CLIENT_ID");
+    const SHOPIFY_CLIENT_SECRET = Deno.env.get("SHOPIFY_CLIENT_SECRET");
 
-    if (!shop_domain || !access_token) {
-      return jsonResponse({
-        success: false,
-        error: "Faltan shop_domain o access_token",
-      }, 400);
-    }
+    const tokenResponse = await fetch(
+      `https://${shop}/admin/oauth/access_token`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: SHOPIFY_CLIENT_ID,
+          client_secret: SHOPIFY_CLIENT_SECRET,
+          grant_type: "client_credentials",
+        }),
+      }
+    );
 
-    const cleanDomain = String(shop_domain)
-      .replace("https://", "")
-      .replace("http://", "")
-      .replace(/\/$/, "")
-      .trim();
+    const tokenData = await tokenResponse.json();
 
-    const shopifyUrl = `https://${cleanDomain}/admin/api/2026-01/shop.json`;
-
-    const response = await fetch(shopifyUrl, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Shopify-Access-Token": access_token,
-      },
-    });
-
-    if (!response.ok) {
-      return jsonResponse({
-        success: false,
-        status: response.status,
-        error: "Shopify rechazó la conexión. Revisá dominio o token.",
-      }, 401);
-    }
-
-    const data = await response.json();
-    const shop = data.shop;
-
-    return jsonResponse({
-      success: true,
-      message: "Conexión Shopify válida",
-      shop: {
-        name: shop?.name,
-        email: shop?.email,
-        domain: shop?.domain,
-        myshopify_domain: shop?.myshopify_domain,
-        plan_name: shop?.plan_name,
-        currency: shop?.currency,
-        timezone: shop?.iana_timezone,
-      },
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        tokenData,
+      }),
+      {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
   } catch (error) {
-    return jsonResponse({
-      success: false,
-      error: error?.message || "Error inesperado en shopify-test",
-    }, 500);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message,
+      }),
+      {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 });
-
-function corsHeaders() {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-}
-
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      ...corsHeaders(),
-      "Content-Type": "application/json",
-    },
-  });
-}

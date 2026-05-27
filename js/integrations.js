@@ -144,8 +144,7 @@ async function testShopifyConnection() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        shop_domain,
-        access_token
+        shop: shop_domain
       })
     });
 
