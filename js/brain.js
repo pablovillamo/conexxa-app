@@ -1,3 +1,4 @@
+console.log("[Brain] version 2026-05-26-v2");
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function getBrainModulo(slug) {
   return BRAIN_MODULOS.find(m => m.slug === slug);
@@ -273,16 +274,20 @@ async function generateBrainMaster() {
 
   const t0 = Date.now();
   try {
-    console.log('[Brain] Invocando generate-brain...');
-    const { data, error } = await sb.functions.invoke('generate-brain', {
+    const invokePromise = sb.functions.invoke('generate-brain', {
       body: { prompt }
     });
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('TIMEOUT')), 155000)
+    );
+
+    console.log('[Brain] Invocando generate-brain...');
+    const { data, error } = await Promise.race([invokePromise, timeoutPromise]);
     console.log('[Brain] Respuesta en', ((Date.now() - t0) / 1000).toFixed(1) + 's');
     console.log('[Brain] error obj:', error);
     console.log('[Brain] data keys:', data ? Object.keys(data) : null);
     if (data) console.log('[Brain] data.ok:', data.ok, '| content blocks:', (data.content || []).length);
 
-    clearInterval(statusInterval);
     if (error) throw new Error(error.message || 'Error en la Edge Function');
     if (!data) throw new Error('Sin respuesta del servidor');
     if (data.ok === false) throw new Error(data.error || 'Error en el servidor');
@@ -293,7 +298,6 @@ async function generateBrainMaster() {
     brainMasterContent = text;
     outContent.textContent = text;
     outWrap.classList.add('visible');
-    genWrap.classList.remove('visible');
     if (outTitle) outTitle.textContent = `${mod.docName.toUpperCase()}.MD — GENERADO`;
 
     if (btnPDF)   btnPDF.disabled   = false;
@@ -310,15 +314,15 @@ async function generateBrainMaster() {
       }
     }
   } catch (err) {
-    clearInterval(statusInterval);
-    genWrap.classList.remove('visible');
     console.error('[Brain] Error después de', ((Date.now() - t0) / 1000).toFixed(1) + 's:', err.message);
-    const isTimeout = (Date.now() - t0) > 145000;
+    const isTimeout = err.message === 'TIMEOUT' || (Date.now() - t0) > 145000;
     const msg = isTimeout
       ? 'El servidor tardó demasiado generando el documento (timeout ~150s). El documento Identidad es muy extenso. Intentalo nuevamente — suele funcionar al segundo intento.'
       : 'Error generando el documento: ' + err.message;
     alert(msg);
   } finally {
+    clearInterval(statusInterval);
+    genWrap.classList.remove('visible');
     btnGen.disabled = false;
     if (btnGenLbl) btnGenLbl.textContent = 'Regenerar con IA';
   }
@@ -758,4 +762,6 @@ document.addEventListener('DOMContentLoaded', function() {
   renderBrainForm('identidad');
   brainUpdate();
 });
+
+console.log("[Brain] loaded");
 
