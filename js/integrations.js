@@ -80,9 +80,39 @@ function renderIntegrationsModule() {
 }
 
 function openShopifyConnectionModal() {
-  alert("Próximo paso: aquí abriremos el formulario para conectar Shopify.");
+  const modal = `
+    <div class="shopify-modal-overlay" id="shopifyModal">
+      <div class="shopify-modal">
+        <div class="shopify-modal-header">
+          <h2>Conectar Shopify</h2>
+          <button onclick="closeShopifyModal()">✕</button>
+        </div>
+
+        <div class="shopify-modal-body">
+          <label>Dominio Shopify</label>
+          <input type="text" id="shopifyDomain" placeholder="mitienda.myshopify.com">
+
+          <label>Admin API Access Token</label>
+          <input type="password" id="shopifyToken" placeholder="shpat_...">
+
+          <button class="btn-primary" onclick="testShopifyConnection()">
+            Validar conexión
+          </button>
+
+          <div id="shopifyTestResult"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", modal);
+}
+function closeShopifyModal() {
+  const modal = document.getElementById("shopifyModal");
+  if (modal) modal.remove();
 }
 
+window.closeShopifyModal = closeShopifyModal;
 window.renderIntegrationsModule = renderIntegrationsModule;
 window.openShopifyConnectionModal = openShopifyConnectionModal;
 // ============================================================
