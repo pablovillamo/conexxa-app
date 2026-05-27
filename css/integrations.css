@@ -225,7 +225,7 @@
   border-color: #22c55e;
 }
 
-.btn-primary {
+.shopify-modal-body .btn-primary {
   width: 100%;
   border: none;
   border-radius: 14px;
@@ -235,9 +235,4 @@
   font-weight: 700;
   cursor: pointer;
   margin-top: 8px;
-}
-
-#shopifyTestResult {
-  margin-top: 12px;
-  color: white;
 }

@@ -80,6 +80,9 @@ function renderIntegrationsModule() {
 }
 
 function openShopifyConnectionModal() {
+  const existingModal = document.getElementById("shopifyModal");
+  if (existingModal) existingModal.remove();
+
   const modal = `
     <div class="shopify-modal-overlay" id="shopifyModal">
       <div class="shopify-modal">
