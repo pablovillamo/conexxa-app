@@ -6,10 +6,10 @@
 console.log("✅ integrations.js cargado correctamente");
 
 function renderIntegrationsModule() {
-  const mainContent = document.getElementById("mainContent");
+  const mainContent = document.getElementById("integrations-root");
 
   if (!mainContent) {
-    console.error("❌ No se encontró #mainContent para renderizar Integraciones");
+    console.error("❌ No se encontró #integrations-root para renderizar Integraciones");
     return;
   }
 
