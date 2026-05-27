@@ -247,27 +247,70 @@ function openNewClientModal() {
 }
 
 async function crearCliente() {
-  const name = document.getElementById('nc-name').value.trim();
+  console.log('[crearCliente] iniciado');
+  const name  = document.getElementById('nc-name').value.trim();
   const email = document.getElementById('nc-email').value.trim();
-  const pass = document.getElementById('nc-password').value;
+  const pass  = document.getElementById('nc-password').value;
   const nicho = document.getElementById('nc-nicho').value.trim();
   const start = document.getElementById('nc-start').value;
-  const end = document.getElementById('nc-end').value;
-  const msg = document.getElementById('nc-msg');
-  if (!name || !email || !pass) { showMsg(msg,'error','Nombre, email y contraseña son requeridos'); return; }
-  if (pass.length < 8) { showMsg(msg,'error','La contraseña debe tener mínimo 8 caracteres'); return; }
+  const end   = document.getElementById('nc-end').value;
+  const msg   = document.getElementById('nc-msg');
+
+  if (!name || !email || !pass) { showMsg(msg, 'error', 'Nombre, email y contraseña son requeridos'); return; }
+  if (pass.length < 8) { showMsg(msg, 'error', 'La contraseña debe tener mínimo 8 caracteres'); return; }
+
   const btn = document.querySelector('#modal-new-client .btn-primary');
-  btn.disabled = true; btn.textContent = 'Creando...';
-  const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name, nicho, role: 'client' } } });
-  if (authErr) { btn.disabled = false; btn.textContent = 'Crear cliente'; showMsg(msg,'error', authErr.message); return; }
-  if (authData.user) {
-    await sb.from('profiles').update({ nicho, start_date: start || null, end_date: end || null }).eq('id', authData.user.id);
+  if (!btn) { console.error('[crearCliente] botón no encontrado en #modal-new-client'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Creando...';
+
+  try {
+    // 1 — crear usuario en Supabase Auth
+    console.log('[crearCliente] llamando sb.auth.signUp, email:', email);
+    const { data: authData, error: authErr } = await sb.auth.signUp({
+      email,
+      password: pass,
+      options: { data: { full_name: name, nicho, role: 'client' } }
+    });
+    console.log('[crearCliente] signUp respuesta — user:', authData?.user?.id, '| error:', authErr);
+
+    if (authErr) {
+      console.error('[crearCliente] error en signUp:', authErr);
+      showMsg(msg, 'error', authErr.message);
+      return;
+    }
+
+    if (!authData?.user) {
+      console.warn('[crearCliente] signUp sin user — email en uso o confirmación requerida. authData:', authData);
+      showMsg(msg, 'error', 'No se pudo crear el usuario. El email puede estar en uso.');
+      return;
+    }
+
+    // 2 — actualizar perfil con fechas y nicho
+    console.log('[crearCliente] actualizando perfil para uid:', authData.user.id);
+    const { error: profileErr } = await sb.from('profiles')
+      .update({ nicho: nicho || null, start_date: start || null, end_date: end || null })
+      .eq('id', authData.user.id);
+    if (profileErr) {
+      console.error('[crearCliente] error actualizando perfil (no bloquea):', profileErr);
+    } else {
+      console.log('[crearCliente] perfil actualizado');
+    }
+
+    // 3 — éxito
+    showMsg(msg, 'success', '¡Cliente creado! Ya puede acceder con su email y contraseña.');
+    console.log('[crearCliente] éxito completo');
+    setTimeout(async () => {
+      closeModal('modal-new-client');
+      ['nc-name', 'nc-email', 'nc-password', 'nc-nicho'].forEach(id => { document.getElementById(id).value = ''; });
+      await loadAdminClients();
+    }, 1800);
+
+  } catch (err) {
+    console.error('[crearCliente] excepción inesperada:', err);
+    showMsg(msg, 'error', err.message || 'Error inesperado al crear el cliente');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Crear cliente';
   }
-  btn.disabled = false; btn.textContent = 'Crear cliente';
-  showMsg(msg,'success','¡Cliente creado! Ya puede acceder con su email y contraseña.');
-  setTimeout(async () => {
-    closeModal('modal-new-client');
-    ['nc-name','nc-email','nc-password','nc-nicho'].forEach(id => { document.getElementById(id).value = ''; });
-    await loadAdminClients();
-  }, 1800);
 }
