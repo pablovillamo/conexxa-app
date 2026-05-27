@@ -131,3 +131,57 @@ function openIntegrationsView() {
 }
 
 window.openIntegrationsView = openIntegrationsView;
+async function testShopifyConnection() {
+  const domainInput = document.getElementById("shopifyDomain");
+  const tokenInput = document.getElementById("shopifyToken");
+  const resultBox = document.getElementById("shopifyTestResult");
+
+  const shop_domain = domainInput?.value.trim();
+  const access_token = tokenInput?.value.trim();
+
+  if (!shop_domain || !access_token) {
+    resultBox.innerHTML = `<span style="color:#fca5a5;">Completá dominio y token.</span>`;
+    return;
+  }
+
+  resultBox.innerHTML = `<span style="color:#a3a3a3;">Validando conexión...</span>`;
+
+  try {
+    const response = await fetch(
+      "https://crgtdkbobxfbiicuxrfj.supabase.co/functions/v1/shopify-test",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          shop_domain,
+          access_token
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      resultBox.innerHTML = `<span style="color:#fca5a5;">${data.error || "No se pudo conectar."}</span>`;
+      return;
+    }
+
+    resultBox.innerHTML = `
+      <div style="color:#86efac;font-weight:700;margin-bottom:6px;">
+        Shopify conectado correctamente
+      </div>
+      <div style="font-size:13px;color:#a3a3a3;">
+        Tienda: ${data.shop?.name || "Sin nombre"}<br>
+        Dominio: ${data.shop?.myshopify_domain || data.shop?.domain || shop_domain}<br>
+        Moneda: ${data.shop?.currency || "—"}
+      </div>
+    `;
+  } catch (error) {
+    console.error("Error validando Shopify:", error);
+    resultBox.innerHTML = `<span style="color:#fca5a5;">Error inesperado validando Shopify.</span>`;
+  }
+}
+
+window.testShopifyConnection = testShopifyConnection;
