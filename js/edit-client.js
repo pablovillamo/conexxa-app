@@ -33,8 +33,10 @@ async function openEditClientModal() {
 
   // Avatar
   const preview = s('ec-avatar-preview');
-  if (client.profile_image_url) {
-    preview.innerHTML = `<img src="${client.profile_image_url}" alt="foto" />`;
+  console.log('[EditClient] campos de imagen desde DB:', { profile_image_url: client.profile_image_url, photo_url: client.photo_url, avatar_url: client.avatar_url, logo_url: client.logo_url });
+  const existingImgUrl = getClientImageUrl(client);
+  if (existingImgUrl) {
+    preview.innerHTML = `<img src="${existingImgUrl}" alt="foto" />`;
   } else {
     const initials = (client.full_name || client.email || 'VG').substring(0, 2).toUpperCase();
     preview.innerHTML = initials;
@@ -131,6 +133,9 @@ async function saveEditClient() {
     // Refrescar header del perfil sin cerrar el modal todavía
     ecRefreshDetailHeader({ ...allClientsData[idx] || {}, ...updates, profile_image_url: imageUrl || allClientsData[idx]?.profile_image_url });
 
+    // Refrescar tabla admin para reflejar el avatar actualizado
+    renderClientsTable(allClientsData);
+
     // Éxito
     btn.disabled = false;
     btn.textContent = 'Guardar cambios';
@@ -156,8 +161,9 @@ function ecRefreshDetailHeader(client) {
   if (!avatarEl || !nameEl) return;
 
   // Avatar — foto o iniciales
-  if (client.profile_image_url) {
-    avatarEl.innerHTML = `<img src="${client.profile_image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="" />`;
+  const imgUrl = getClientImageUrl(client);
+  if (imgUrl) {
+    avatarEl.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="" />`;
     avatarEl.style.padding = '0';
   } else {
     const initials = (client.full_name || client.email || 'VG').substring(0, 2).toUpperCase();

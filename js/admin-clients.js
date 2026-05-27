@@ -5,6 +5,11 @@ let allClientsData = [];
 let allProgressData = [];
 let allTasksData = [];
 
+function getClientImageUrl(client) {
+  if (!client) return null;
+  return client.profile_image_url || client.photo_url || client.avatar_url || client.logo_url || client.image_url || null;
+}
+
 async function loadAdminClients() {
   const { data: clients } = await sb.from('profiles').select('*').eq('role','client').order('created_at',{ascending:false});
   const { data: allProgress } = await sb.from('client_modules').select('*');
@@ -13,6 +18,19 @@ async function loadAdminClients() {
   allClientsData = clients || [];
   allProgressData = allProgress || [];
   allTasksData = allTasks || [];
+
+  // DEBUG: ver qué campos de imagen trae Supabase
+  if (allClientsData.length > 0) {
+    const sample = allClientsData[0];
+    console.log('[AdminClients] keys del primer cliente:', Object.keys(sample));
+    console.log('[AdminClients] campos de imagen:', {
+      profile_image_url: sample.profile_image_url,
+      photo_url: sample.photo_url,
+      avatar_url: sample.avatar_url,
+      logo_url: sample.logo_url,
+      image_url: sample.image_url
+    });
+  }
 
   const total = allClientsData.length;
   let activos=0, completados=0, pausados=0, proxFinish=0, totalPct=0;
@@ -62,6 +80,7 @@ async function loadAdminClients() {
 
 function renderClientsTable(clients) {
   const tbody = document.getElementById('clients-tbody');
+  if (!tbody) return;
   if(!clients || clients.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--gray);">Sin clientes aún. Agrega el primero.</td></tr>';
     return;
@@ -72,6 +91,16 @@ function renderClientsTable(clients) {
     const done = prog.filter(p => p.completed).length;
     const pct = Math.round((done/9)*100);
     const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+    console.log('[Client image debug]', c.full_name || c.email, { profile_image_url: c.profile_image_url, photo_url: c.photo_url, avatar_url: c.avatar_url, logo_url: c.logo_url });
+    const imgUrl = getClientImageUrl(c);
+    let avatarContent, avatarStyleAttr;
+    if (imgUrl) {
+      avatarContent = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="" onerror="this.parentElement.style.padding='';this.parentElement.textContent='${initials}';" />`;
+      avatarStyleAttr = ' style="padding:0;"';
+    } else {
+      avatarContent = initials;
+      avatarStyleAttr = '';
+    }
     const startStr = c.start_date ? new Date(c.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
     let dayNum = '—', daysLeft = '—', daysClass = '';
     if(c.start_date) {
@@ -88,7 +117,7 @@ function renderClientsTable(clients) {
     const statusLabel = {activo:'Activo',pausado:'Pausado',finalizado:'Finalizado',pendiente:'Pendiente'};
     return `<tr onclick="openClientDetail('${c.id}')">
       <td><div style="display:flex;align-items:center;gap:10px;">
-        <div class="client-avatar-cell">${initials}</div>
+        <div class="client-avatar-cell"${avatarStyleAttr}>${avatarContent}</div>
         <div><div class="client-name-cell">${c.full_name || c.email}</div><div class="client-nicho-cell">${c.email}</div></div>
       </div></td>
       <td style="color:var(--gray);font-size:12px;">${c.nicho || '—'}</td>
