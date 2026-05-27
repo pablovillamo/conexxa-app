@@ -86,16 +86,18 @@
 }
 
 .integration-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
   display: grid;
   place-items: center;
-  background: #22c55e;
-  color: #08110b;
-  font-weight: 800;
-  font-size: 22px;
+  background: #95BF47;
   flex-shrink: 0;
+}
+
+.integration-icon svg {
+  width: 28px;
+  height: 28px;
 }
 
 .integration-info {
