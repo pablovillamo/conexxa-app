@@ -71,3 +71,16 @@ function openShopifyConnectionModal() {
 
 window.renderIntegrationsModule = renderIntegrationsModule;
 window.openShopifyConnectionModal = openShopifyConnectionModal;
+// ============================================================
+// OPEN INTEGRATIONS VIEW
+// ============================================================
+
+function openIntegrationsView() {
+  showView("view-client-integrations");
+
+  setTimeout(() => {
+    renderIntegrationsModule();
+  }, 50);
+}
+
+window.openIntegrationsView = openIntegrationsView;

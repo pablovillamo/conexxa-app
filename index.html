@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="/css/auth.css">
 <link rel="stylesheet" href="/css/app.css">
 <link rel="stylesheet" href="/css/client.css">
+<link rel="stylesheet" href="/css/integrations.css">
 </head>
 <body>
 
@@ -546,8 +547,23 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
           <div class="dash-module-card locked"><div class="dash-module-icon" style="background:rgba(34,197,94,0.08)"><svg viewBox="0 0 20 20" fill="none"><path d="M10 3c-3.87 0-7 3.13-7 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7z" stroke="#22C55E" stroke-width="1.5"/><path d="M8 9c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2M10 13h.01" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round"/></svg></div><div><div class="dash-module-name">Cerebro Clonado IA</div><div class="dash-module-desc">IA entrenada con tu marca y estrategia.</div></div><div class="dash-module-lock">🔒 Próximamente</div></div>
           <div class="dash-module-card locked"><div class="dash-module-icon" style="background:rgba(168,85,247,0.12)"><svg viewBox="0 0 20 20" fill="none"><path d="M4 4h5v5H4zM11 4h5v5h-5zM4 11h5v5H4zM11 11h5v5h-5z" stroke="#A855F7" stroke-width="1.5" stroke-linejoin="round"/></svg></div><div><div class="dash-module-name">Generador de Contenido</div><div class="dash-module-desc">Contenido especializado para tu marca.</div></div><div class="dash-module-lock">🔒 Próximamente</div></div>
           <div class="dash-module-card" onclick="showView('view-client-shopify')"><div class="dash-module-icon" style="background:rgba(99,102,241,0.12)"><svg viewBox="0 0 20 20" fill="none"><rect x="2" y="6" width="6" height="8" rx="2" stroke="#6366F1" stroke-width="1.5"/><rect x="12" y="6" width="6" height="8" rx="2" stroke="#6366F1" stroke-width="1.5"/><path d="M8 10h4" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/></svg></div><div><div class="dash-module-name">Métricas Shopify</div><div class="dash-module-desc">Business intelligence de tu tienda en tiempo real.</div></div><div class="dash-module-arrow">→</div></div>
-          <div class="dash-module-card locked"><div class="dash-module-icon" style="background:rgba(20,184,166,0.12)"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" stroke="#14B8A6" stroke-width="1.5"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="#14B8A6" stroke-width="1.5" stroke-linecap="round"/></svg></div><div><div class="dash-module-name">Integraciones</div><div class="dash-module-desc">Conecta tus herramientas y plataformas.</div></div><div class="dash-module-lock">🔒 Próximamente</div></div>
-        </div>
+<div class="dash-module-card" onclick="openIntegrationsView()">
+  <div class="dash-module-icon" style="background:rgba(20,184,166,0.12)">
+    <svg viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="3" stroke="#14B8A6" stroke-width="1.5"/>
+      <path d="M10 3v2M10 15v2M3 10h2M15 10h2" stroke="#14B8A6" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div>
+    <div class="dash-module-name">Integraciones</div>
+    <div class="dash-module-desc">
+      Conecta Shopify y otras herramientas ecommerce.
+    </div>
+  </div>
+
+  <div class="dash-module-arrow">→</div>
+</div>        </div>
       </div>
     </div>
 
@@ -656,6 +672,27 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
     </div>
 
     <!-- CLIENT: CONFIGURACIÓN -->
+     <!-- CLIENT: INTEGRACIONES -->
+<div id="view-client-integrations" class="view">
+
+  <div class="integrations-page-wrap">
+
+    <button class="back-btn" onclick="showView('view-client-sistema')">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M10 3L5 8l5 5"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+      </svg>
+      Volver al sistema
+    </button>
+
+    <div id="integrations-root"></div>
+
+  </div>
+
+</div>
     <div id="view-client-config" class="view">
       <div class="config-section">
         <button class="back-btn" onclick="closeDropdown();showView('view-client-dashboard')">
@@ -905,5 +942,6 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/dashboard.js"></script>
 <script src="/js/admin-clients.js"></script>
 <script src="/js/brain.js"></script>
+<script src="/js/integrations.js"></script>
 </body>
 </html>
