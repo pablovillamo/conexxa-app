@@ -1,6 +1,5 @@
 // ============================================================
 // VILLAMO GROWTH — INTEGRATIONS MODULE
-// FASE 1 + FASE 2: Shopify UI + Edge Function
 // ============================================================
 
 console.log("✅ integrations.js cargado correctamente");
@@ -22,16 +21,23 @@ function renderIntegrationsModule() {
 
   mainContent.innerHTML = `
     <section class="integrations-page">
+
       <div class="integrations-header">
         <div>
-          <p class="section-kicker">Integraciones</p>
 
-          <h1>Conexiones Ecommerce</h1>
+          <p class="section-kicker">
+            Integraciones
+          </p>
+
+          <h1>
+            Conexiones Ecommerce
+          </h1>
 
           <p class="section-description">
-            Conectá herramientas externas para convertir el tracker
-            en un sistema operativo ecommerce.
+            Conectá herramientas externas para convertir
+            el tracker en un sistema operativo ecommerce.
           </p>
+
         </div>
       </div>
 
@@ -42,6 +48,7 @@ function renderIntegrationsModule() {
           <div class="integration-card-header">
 
             <div>
+
               <span class="integration-badge disconnected">
                 Desconectado
               </span>
@@ -49,9 +56,10 @@ function renderIntegrationsModule() {
               <h2>Shopify</h2>
 
               <p>
-                Conectá una tienda Shopify para sincronizar ventas,
-                productos, clientes y métricas.
+                Conectá una tienda Shopify para sincronizar
+                ventas, productos, clientes y métricas.
               </p>
+
             </div>
 
           </div>
@@ -60,6 +68,7 @@ function renderIntegrationsModule() {
 
             <div>
               <span>Dominio</span>
+
               <strong class="shopify-domain">
                 No conectado
               </strong>
@@ -67,6 +76,7 @@ function renderIntegrationsModule() {
 
             <div>
               <span>Última sincronización</span>
+
               <strong class="shopify-sync">
                 Sin sincronizar
               </strong>
@@ -74,6 +84,7 @@ function renderIntegrationsModule() {
 
             <div>
               <span>Estado</span>
+
               <strong class="shopify-state">
                 Esperando conexión
               </strong>
@@ -90,7 +101,10 @@ function renderIntegrationsModule() {
               Conectar Shopify
             </button>
 
-            <button class="btn-secondary" disabled>
+            <button
+              class="btn-secondary"
+              disabled
+            >
               Sincronizar
             </button>
 
@@ -99,23 +113,29 @@ function renderIntegrationsModule() {
         </article>
 
       </div>
+
     </section>
   `;
 }
 
 // ============================================================
-// MODAL
+// OPEN MODAL
 // ============================================================
 
 function openShopifyConnectionModal() {
-  const existingModal = document.getElementById("shopifyModal");
+
+  const existingModal =
+    document.getElementById("shopifyModal");
 
   if (existingModal) {
     existingModal.remove();
   }
 
   const modal = `
-    <div class="shopify-modal-overlay" id="shopifyModal">
+    <div
+      class="shopify-modal-overlay"
+      id="shopifyModal"
+    >
 
       <div class="shopify-modal">
 
@@ -131,7 +151,9 @@ function openShopifyConnectionModal() {
 
         <div class="shopify-modal-body">
 
-          <label>Dominio Shopify</label>
+          <label>
+            Dominio Shopify
+          </label>
 
           <input
             type="text"
@@ -139,7 +161,9 @@ function openShopifyConnectionModal() {
             placeholder="mitienda.myshopify.com"
           >
 
-          <label>Admin API Access Token</label>
+          <label>
+            Admin API Access Token
+          </label>
 
           <input
             type="password"
@@ -163,11 +187,20 @@ function openShopifyConnectionModal() {
     </div>
   `;
 
-  document.body.insertAdjacentHTML("beforeend", modal);
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    modal
+  );
 }
 
+// ============================================================
+// CLOSE MODAL
+// ============================================================
+
 function closeShopifyModal() {
-  const modal = document.getElementById("shopifyModal");
+
+  const modal =
+    document.getElementById("shopifyModal");
 
   if (modal) {
     modal.remove();
@@ -175,10 +208,11 @@ function closeShopifyModal() {
 }
 
 // ============================================================
-// VIEW
+// OPEN VIEW
 // ============================================================
 
 function openIntegrationsView() {
+
   showView("view-client-integrations");
 
   setTimeout(() => {
@@ -187,19 +221,31 @@ function openIntegrationsView() {
 }
 
 // ============================================================
-// SHOPIFY TEST
+// TEST SHOPIFY CONNECTION
 // ============================================================
 
 async function testShopifyConnection() {
 
-  const domainInput = document.getElementById("shopifyDomain");
-  const tokenInput = document.getElementById("shopifyToken");
-  const resultBox = document.getElementById("shopifyTestResult");
+  const domainInput =
+    document.getElementById("shopifyDomain");
 
-  const shop_domain = domainInput?.value.trim();
-  const access_token = tokenInput?.value.trim();
+  const tokenInput =
+    document.getElementById("shopifyToken");
+
+  const resultBox =
+    document.getElementById("shopifyTestResult");
+
+  const shop_domain =
+    domainInput?.value.trim();
+
+  const access_token =
+    tokenInput?.value.trim();
 
   if (!resultBox) return;
+
+  // ==========================================================
+  // VALIDATIONS
+  // ==========================================================
 
   if (!shop_domain || !access_token) {
 
@@ -220,6 +266,10 @@ async function testShopifyConnection() {
 
   try {
 
+    // ========================================================
+    // FETCH EDGE FUNCTION
+    // ========================================================
+
     const response = await fetch(
       SHOPIFY_EDGE_FUNCTION_URL,
       {
@@ -238,7 +288,7 @@ async function testShopifyConnection() {
     const data = await response.json();
 
     // ========================================================
-    // ERROR SHOPIFY
+    // SHOPIFY ERROR
     // ========================================================
 
     if (!data.success) {
@@ -253,7 +303,7 @@ async function testShopifyConnection() {
     }
 
     // ========================================================
-    // DATA SHOPIFY
+    // SHOP DATA
     // ========================================================
 
     const {
@@ -266,26 +316,46 @@ async function testShopifyConnection() {
     } = data.shop;
 
     // ========================================================
-    // USER AUTH
+    // SUPABASE CLIENT
+    // ========================================================
+
+    const supabaseClient =
+      window.supabaseClient ||
+      window.supabase ||
+      supabase;
+
+    if (!supabaseClient) {
+      throw new Error(
+        "Supabase client no disponible"
+      );
+    }
+
+    // ========================================================
+    // GET USER
     // ========================================================
 
     const {
       data: userData,
-    } = await supabase.auth.getUser();
+    } = await supabaseClient.auth.getUser();
 
     const user = userData?.user;
 
     if (!user) {
-      throw new Error("Usuario no autenticado");
+      throw new Error(
+        "Usuario no autenticado"
+      );
     }
 
     // ========================================================
-    // SAVE SUPABASE
+    // SAVE CONNECTION
     // ========================================================
 
-    const { error: saveError } = await supabase
+    const {
+      error: saveError
+    } = await supabaseClient
       .from("shopify_connections")
       .upsert({
+
         user_id: user.id,
 
         provider: "shopify",
@@ -308,7 +378,9 @@ async function testShopifyConnection() {
 
         access_token,
 
-        updated_at: new Date().toISOString(),
+        updated_at:
+          new Date().toISOString(),
+
       });
 
     // ========================================================
@@ -359,7 +431,10 @@ async function testShopifyConnection() {
     // UPDATE CARD
     // ========================================================
 
-    updateShopifyCardState(data, shop_domain);
+    updateShopifyCardState(
+      data,
+      shop_domain
+    );
 
   } catch (error) {
 
@@ -377,30 +452,46 @@ async function testShopifyConnection() {
 }
 
 // ============================================================
-// UPDATE CARD
+// UPDATE CARD UI
 // ============================================================
 
-function updateShopifyCardState(data, fallbackDomain) {
+function updateShopifyCardState(
+  data,
+  fallbackDomain
+) {
 
   const statusBadge =
-    document.querySelector(".integration-badge");
+    document.querySelector(
+      ".integration-badge"
+    );
 
   const domainText =
-    document.querySelector(".shopify-domain");
+    document.querySelector(
+      ".shopify-domain"
+    );
 
   const syncText =
-    document.querySelector(".shopify-sync");
+    document.querySelector(
+      ".shopify-sync"
+    );
 
   const stateText =
-    document.querySelector(".shopify-state");
+    document.querySelector(
+      ".shopify-state"
+    );
 
   if (statusBadge) {
 
-    statusBadge.classList.remove("disconnected");
+    statusBadge.classList.remove(
+      "disconnected"
+    );
 
-    statusBadge.classList.add("connected");
+    statusBadge.classList.add(
+      "connected"
+    );
 
-    statusBadge.innerText = "Conectado";
+    statusBadge.innerText =
+      "Conectado";
   }
 
   if (domainText) {
@@ -412,18 +503,20 @@ function updateShopifyCardState(data, fallbackDomain) {
   }
 
   if (syncText) {
+
     syncText.innerText =
       "Sincronización inicial lista";
   }
 
   if (stateText) {
+
     stateText.innerText =
       "Shopify conectado";
   }
 }
 
 // ============================================================
-// WINDOW EXPORTS
+// EXPORTS
 // ============================================================
 
 window.renderIntegrationsModule =
