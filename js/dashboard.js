@@ -7,8 +7,21 @@ function switchDetailTab(tab, btn) {
   btn.classList.add('active');
   const el = document.getElementById('tab-' + tab);
   if(el) el.classList.add('active');
-  if(tab === 'shopify') renderShopifyChecklist();
-  if(tab === 'notas') renderNotes();
+if(tab === 'shopify') {
+
+  if (
+    typeof loadShopifyDashboard === 'function' &&
+    selectedClientId
+  ) {
+
+    loadShopifyDashboard(
+      selectedClientId,
+      'admin'
+    );
+  }
+
+  renderShopifyChecklist();
+}  if(tab === 'notas') renderNotes();
   if(tab === 'brain') {
     brainLoadFromLocal();
     brainUpdate();
