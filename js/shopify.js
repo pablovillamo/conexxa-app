@@ -333,3 +333,96 @@ function autoSaveNote(key) {
 function filterShopifyTasks(val) {
   renderShopifyChecklist(val);
 }
+
+// ============================================================
+// SHOPIFY PRODUCTS DASHBOARD
+// ============================================================
+
+function openShopifyMetrics() {
+  showView('view-client-shopify');
+  loadShopifyProducts();
+}
+
+async function loadShopifyProducts() {
+  const section = document.getElementById('shopify-products-section');
+  if (!section) return;
+
+  section.innerHTML = `<div style="font-size:13px;color:var(--gray);padding:12px 0;">Cargando productos...</div>`;
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session?.user) { section.innerHTML = ''; return; }
+
+    const { data: products, error } = await sb
+      .from('shopify_products')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('title', { ascending: true });
+
+    if (error) throw error;
+    renderShopifyProducts(products || []);
+  } catch (err) {
+    console.error('[ShopifyProducts] error:', err);
+    const section = document.getElementById('shopify-products-section');
+    if (section) section.innerHTML = `<div style="font-size:13px;color:var(--red);padding:12px 0;">Error cargando productos.</div>`;
+  }
+}
+
+function renderShopifyProducts(products) {
+  const section = document.getElementById('shopify-products-section');
+  if (!section) return;
+
+  const total = products.length;
+  const active = products.filter(p => (p.status || '').toLowerCase() === 'active').length;
+
+  if (total === 0) {
+    section.innerHTML = `
+      <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:32px;text-align:center;color:var(--gray);font-size:14px;">
+        No hay productos sincronizados todavía.
+      </div>`;
+    return;
+  }
+
+  const cardsHTML = products.map(p => {
+    const img = p.image_url || p.image || '';
+    const title = p.title || 'Sin título';
+    const vendor = p.vendor || '—';
+    const price = p.price != null ? `$${parseFloat(p.price).toFixed(2)}` : '—';
+    const inventory = p.inventory_quantity != null ? p.inventory_quantity : '—';
+    const status = (p.status || 'unknown').toLowerCase();
+    const statusColor = status === 'active' ? '#22C55E' : status === 'draft' ? '#F59E0B' : '#888780';
+    const statusLabel = status === 'active' ? 'Activo' : status === 'draft' ? 'Borrador' : status;
+
+    return `
+      <div class="sp-card">
+        <div class="sp-card-img">
+          ${img
+            ? `<img src="${img}" alt="${title}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="sp-card-img-fallback" style="display:none;">📦</div>`
+            : `<div class="sp-card-img-fallback">📦</div>`}
+        </div>
+        <div class="sp-card-body">
+          <div class="sp-card-title">${title}</div>
+          <div class="sp-card-vendor">${vendor}</div>
+          <div class="sp-card-meta">
+            <span class="sp-card-price">${price}</span>
+            <span class="sp-card-inventory">Stock: ${inventory}</span>
+            <span class="sp-card-status" style="color:${statusColor};">● ${statusLabel}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  section.innerHTML = `
+    <div class="sp-header">
+      <div class="sp-header-title">Productos sincronizados</div>
+      <div class="sp-header-counts">
+        <span>${total} total</span>
+        <span style="color:#22C55E;">${active} activos</span>
+      </div>
+    </div>
+    <div class="sp-grid">${cardsHTML}</div>`;
+}
+
+window.openShopifyMetrics = openShopifyMetrics;
+window.loadShopifyProducts = loadShopifyProducts;
+window.renderShopifyProducts = renderShopifyProducts;
