@@ -162,6 +162,45 @@ async function testShopifyConnection() {
       return;
     }
 
+    const {
+      data: { session },
+      error: sessionError
+    } = await sb.auth.getSession();
+
+    if (sessionError || !session?.user) {
+      throw new Error("Usuario no autenticado");
+    }
+
+    const user = session.user;
+
+    const { error: saveError } = await sb
+      .from("shopify_connections")
+      .upsert({
+        user_id: user.id,
+        provider: "shopify",
+        status: "connected",
+        shop_domain,
+        myshopify_domain: data.shop?.myshopify_domain || null,
+        shop_name: data.shop?.name || null,
+        shop_email: data.shop?.email || null,
+        currency: data.shop?.currency || null,
+        plan_name: data.shop?.plan_name || null,
+        connection_type: "client_credentials",
+        updated_at: new Date().toISOString()
+      });
+
+    if (saveError) {
+      console.error(saveError);
+
+      resultBox.innerHTML = `
+        <span style="color:#fca5a5;">
+          Error guardando conexión Shopify
+        </span>
+      `;
+
+      return;
+    }
+
     resultBox.innerHTML = `
       <div style="color:#86efac;font-weight:700;margin-bottom:6px;">
         Shopify conectado correctamente
