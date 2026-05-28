@@ -3,80 +3,59 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return jsonResponse({ success: true, message: "CORS OK" });
+    return jsonResponse({ success: true });
   }
 
   try {
     const body = await req.json();
-
     const shopDomain = normalizeShopDomain(body.shop_domain);
     const userId = body.user_id;
 
     if (!shopDomain || !userId) {
-      return jsonResponse(
-        {
-          success: false,
-          error: "Faltan shop_domain o user_id.",
-        },
-        400
-      );
+      return jsonResponse({ success: false, error: "Faltan shop_domain o user_id." }, 400);
     }
 
+    const SHOPIFY_CLIENT_ID = Deno.env.get("SHOPIFY_CLIENT_ID");
+    const SHOPIFY_CLIENT_SECRET = Deno.env.get("SHOPIFY_CLIENT_SECRET");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
+    if (!SHOPIFY_CLIENT_ID || !SHOPIFY_CLIENT_SECRET) {
+      return jsonResponse({ success: false, error: "Faltan credenciales Shopify en Supabase Secrets." }, 500);
+    }
+
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return jsonResponse(
-        {
-          success: false,
-          error:
-            "Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en Supabase Secrets.",
-        },
-        500
-      );
+      return jsonResponse({ success: false, error: "Faltan credenciales Supabase." }, 500);
     }
 
-    const supabaseAdmin = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY
-    );
+    const tokenResponse = await fetch(`https://${shopDomain}/admin/oauth/access_token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        client_id: SHOPIFY_CLIENT_ID,
+        client_secret: SHOPIFY_CLIENT_SECRET,
+        grant_type: "client_credentials",
+      }),
+    });
 
-    const { data: connection, error: connectionError } = await supabaseAdmin
-      .from("shopify_connections")
-      .select("*")
-      .eq("user_id", userId)
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const tokenData = await tokenResponse.json();
 
-    if (connectionError || !connection) {
-      return jsonResponse(
-        {
-          success: false,
-          error: "No se encontró conexión Shopify guardada.",
-          detail: connectionError,
-        },
-        404
-      );
-    }
-
-    const accessToken = connection.access_token;
-
-    if (!accessToken) {
-      return jsonResponse(
-        {
-          success: false,
-          error: "La conexión Shopify no tiene access_token guardado.",
-        },
-        400
-      );
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      return jsonResponse({
+        success: false,
+        status: tokenResponse.status,
+        error: tokenData.error_description || tokenData.error || "No se pudo generar token Shopify.",
+        detail: tokenData,
+      }, 401);
     }
 
     const productsResponse = await fetch(
@@ -86,45 +65,27 @@ serve(async (req) => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-Shopify-Access-Token": accessToken,
+          "X-Shopify-Access-Token": tokenData.access_token,
         },
       }
     );
 
-    const productsText = await productsResponse.text();
-
-    let productsData;
-
-    try {
-      productsData = JSON.parse(productsText);
-    } catch {
-      return jsonResponse(
-        {
-          success: false,
-          status: productsResponse.status,
-          error: "Shopify products.json no devolvió JSON.",
-          detail: productsText.slice(0, 500),
-        },
-        500
-      );
-    }
+    const productsData = await productsResponse.json();
 
     if (!productsResponse.ok) {
-      return jsonResponse(
-        {
-          success: false,
-          status: productsResponse.status,
-          error: "Shopify rechazó la consulta de productos.",
-          detail: productsData,
-        },
-        401
-      );
+      return jsonResponse({
+        success: false,
+        status: productsResponse.status,
+        error: "Shopify rechazó la consulta de productos.",
+        detail: productsData,
+      }, 401);
     }
 
     const products = productsData.products || [];
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const rows = products.map((product: any) => {
-      const firstVariant = product.variants?.[0] || null;
+      const firstVariant = product.variants?.[0] || {};
 
       return {
         user_id: userId,
@@ -134,12 +95,10 @@ serve(async (req) => {
         vendor: product.vendor || null,
         product_type: product.product_type || null,
         status: product.status || null,
-        price: firstVariant?.price ? Number(firstVariant.price) : 0,
-        compare_at_price: firstVariant?.compare_at_price
-          ? Number(firstVariant.compare_at_price)
-          : null,
+        price: firstVariant.price ? Number(firstVariant.price) : 0,
+        compare_at_price: firstVariant.compare_at_price ? Number(firstVariant.compare_at_price) : null,
         inventory_quantity:
-          typeof firstVariant?.inventory_quantity === "number"
+          typeof firstVariant.inventory_quantity === "number"
             ? firstVariant.inventory_quantity
             : 0,
         image_url: product.image?.src || null,
@@ -148,56 +107,36 @@ serve(async (req) => {
     });
 
     if (rows.length > 0) {
-      const { error: upsertError } = await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from("shopify_products")
-        .upsert(rows, {
-          onConflict: "user_id,shopify_product_id",
-        });
+        .upsert(rows, { onConflict: "user_id,shopify_product_id" });
 
-      if (upsertError) {
-        return jsonResponse(
-          {
-            success: false,
-            error: "Error guardando productos en Supabase.",
-            detail: upsertError,
-          },
-          500
-        );
+      if (error) {
+        return jsonResponse({ success: false, error: "Error guardando productos.", detail: error }, 500);
       }
     }
 
     return jsonResponse({
       success: true,
-      message: "Productos sincronizados correctamente.",
       synced_products: rows.length,
     });
+
   } catch (error) {
-    return jsonResponse(
-      {
-        success: false,
-        error: error?.message || "Error inesperado sincronizando productos.",
-      },
-      500
-    );
+    return jsonResponse({
+      success: false,
+      error: error?.message || "Error inesperado sincronizando productos.",
+    }, 500);
   }
 });
 
 function normalizeShopDomain(value: unknown): string {
   if (!value) return "";
-
-  return String(value)
-    .replace("https://", "")
-    .replace("http://", "")
-    .replace(/\/+$/, "")
-    .trim();
+  return String(value).replace("https://", "").replace("http://", "").replace(/\/+$/, "").trim();
 }
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: {
-      ...corsHeaders,
-      "Content-Type": "application/json",
-    },
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
