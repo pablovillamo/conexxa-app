@@ -96,11 +96,65 @@ function renderIntegrationsModule() {
   `;
 }
 
-function openIntegrationsView() {
+async function openIntegrationsView() {
+
   showView("view-client-integrations");
 
-  setTimeout(() => {
+  setTimeout(async () => {
+
     renderIntegrationsModule();
+
+    try {
+
+      const {
+        data: { session },
+        error: sessionError
+      } = await sb.auth.getSession();
+
+      if (sessionError || !session?.user) {
+        return;
+      }
+
+      const user = session.user;
+
+      const {
+        data: connection,
+        error: connectionError
+      } = await sb
+        .from("shopify_connections")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (connectionError || !connection) {
+        return;
+      }
+
+      updateShopifyCardState({
+        shop: {
+          myshopify_domain:
+            connection.myshopify_domain,
+
+          domain:
+            connection.shop_domain,
+
+          name:
+            connection.shop_name,
+
+          currency:
+            connection.currency
+        }
+      },
+      connection.shop_domain);
+
+    } catch (error) {
+
+      console.error(
+        "Error cargando conexión Shopify:",
+        error
+      );
+    }
+
   }, 50);
 }
 
