@@ -355,7 +355,23 @@ async function testShopifyConnection() {
 
 async function syncShopifyProducts() {
 
+  const syncButton =
+    document.querySelector(".btn-secondary");
+
+  const syncText =
+    document.querySelector(".shopify-sync");
+
   try {
+
+    if (syncButton) {
+      syncButton.disabled = true;
+      syncButton.innerText = "Sincronizando...";
+    }
+
+    if (syncText) {
+      syncText.innerText =
+        "Sincronizando productos...";
+    }
 
     const {
       data: { session },
@@ -363,7 +379,9 @@ async function syncShopifyProducts() {
     } = await sb.auth.getSession();
 
     if (sessionError || !session?.user) {
+
       alert("Usuario no autenticado");
+
       return;
     }
 
@@ -379,19 +397,21 @@ async function syncShopifyProducts() {
       .single();
 
     if (connectionError || !connection) {
+
       alert("No existe conexión Shopify");
+
       return;
     }
-
-    alert("Sincronizando productos Shopify...");
 
     const response = await fetch(
       SHOPIFY_SYNC_PRODUCTS_URL,
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
           shop_domain: connection.shop_domain,
           access_token: connection.access_token,
@@ -410,27 +430,53 @@ async function syncShopifyProducts() {
         data.error || "Error sincronizando productos"
       );
 
+      if (syncText) {
+        syncText.innerText =
+          "Error sincronizando";
+      }
+
       return;
     }
 
-    alert(
-      `Productos sincronizados: ${data.synced_products}`
-    );
+    const now = new Date();
 
-    const sync = document.querySelector(".shopify-sync");
+    const formattedDate =
+      now.toLocaleDateString("es-CR") +
+      " " +
+      now.toLocaleTimeString("es-CR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
 
-    if (sync) {
-      sync.innerText =
-        `${data.synced_products} productos sincronizados`;
+    if (syncText) {
+      syncText.innerText =
+        `${data.synced_products} productos · ${formattedDate}`;
     }
+
+    alert(
+      `✅ ${data.synced_products} productos sincronizados`
+    );
 
   } catch (error) {
 
     console.error(error);
 
+    if (syncText) {
+      syncText.innerText =
+        "Error inesperado";
+    }
+
     alert(
       "Error inesperado sincronizando productos"
     );
+
+  } finally {
+
+    if (syncButton) {
+      syncButton.disabled = false;
+      syncButton.innerText =
+        "Sincronizar productos";
+    }
   }
 }
 
