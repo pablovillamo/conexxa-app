@@ -5,107 +5,249 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: corsHeaders,
-    });
+    return jsonResponse({ success: true, message: "CORS OK" });
   }
 
   try {
-    const body = await req.json();
-
-    const { shop_domain, access_token, user_id } = body;
-
-    if (!shop_domain || !access_token || !user_id) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Datos incompletos",
-        }),
+    if (req.method !== "POST") {
+      return jsonResponse(
         {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
+          success: false,
+          error: "Método no permitido. Usá POST.",
+        },
+        405
       );
     }
 
-    const shopifyResponse = await fetch(
-      `https://${shop_domain}/admin/api/2024-01/products.json`,
+    const body = await req.json();
+
+    const shopDomain = normalizeShopDomain(body.shop_domain);
+    const userId = body.user_id;
+
+    if (!shopDomain || !userId) {
+      return jsonResponse(
+        {
+          success: false,
+          error: "Faltan shop_domain o user_id.",
+        },
+        400
+      );
+    }
+
+    const SHOPIFY_CLIENT_ID = Deno.env.get("SHOPIFY_CLIENT_ID");
+    const SHOPIFY_CLIENT_SECRET = Deno.env.get("SHOPIFY_CLIENT_SECRET");
+
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!SHOPIFY_CLIENT_ID || !SHOPIFY_CLIENT_SECRET) {
+      return jsonResponse(
+        {
+          success: false,
+          error:
+            "Faltan SHOPIFY_CLIENT_ID o SHOPIFY_CLIENT_SECRET en Supabase Secrets.",
+        },
+        500
+      );
+    }
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return jsonResponse(
+        {
+          success: false,
+          error:
+            "Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en Supabase Secrets.",
+        },
+        500
+      );
+    }
+
+    const tokenResponse = await fetch(
+      `https://${shopDomain}/admin/oauth/access_token`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          client_id: SHOPIFY_CLIENT_ID,
+          client_secret: SHOPIFY_CLIENT_SECRET,
+          grant_type: "client_credentials",
+        }),
+      }
+    );
+
+    const tokenText = await tokenResponse.text();
+
+    let tokenData;
+
+    try {
+      tokenData = JSON.parse(tokenText);
+    } catch {
+      return jsonResponse(
+        {
+          success: false,
+          status: tokenResponse.status,
+          error:
+            "Shopify no devolvió JSON al generar token. Revisá dominio, instalación de app y scopes.",
+          detail: tokenText.slice(0, 500),
+        },
+        500
+      );
+    }
+
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      return jsonResponse(
+        {
+          success: false,
+          status: tokenResponse.status,
+          error:
+            tokenData.error_description ||
+            tokenData.error ||
+            "No se pudo generar access token Shopify.",
+          detail: tokenData,
+        },
+        401
+      );
+    }
+
+    const productsResponse = await fetch(
+      `https://${shopDomain}/admin/api/2026-01/products.json?limit=250`,
       {
         method: "GET",
         headers: {
-          "X-Shopify-Access-Token": access_token,
           "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-Shopify-Access-Token": tokenData.access_token,
         },
       }
     );
 
-    const shopifyData = await shopifyResponse.json();
+    const productsText = await productsResponse.text();
 
-    const products = shopifyData.products || [];
+    let productsData;
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    try {
+      productsData = JSON.parse(productsText);
+    } catch {
+      return jsonResponse(
+        {
+          success: false,
+          status: productsResponse.status,
+          error: "Shopify products.json no devolvió JSON.",
+          detail: productsText.slice(0, 500),
+        },
+        500
+      );
+    }
+
+    if (!productsResponse.ok) {
+      return jsonResponse(
+        {
+          success: false,
+          status: productsResponse.status,
+          error: "Shopify rechazó la consulta de productos.",
+          detail: productsData,
+        },
+        401
+      );
+    }
+
+    const products = productsData.products || [];
+
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
     );
 
-    for (const product of products) {
-      await supabase.from("shopify_products").upsert({
-        user_id,
+    const rows = products.map((product: any) => {
+      const firstVariant = product.variants?.[0] || null;
+
+      return {
+        user_id: userId,
 
         shopify_product_id: String(product.id),
 
-        title: product.title,
-        handle: product.handle,
-        vendor: product.vendor,
-        product_type: product.product_type,
-        status: product.status,
+        title: product.title || null,
+        handle: product.handle || null,
+        vendor: product.vendor || null,
+        product_type: product.product_type || null,
+        status: product.status || null,
 
-        price: product.variants?.[0]?.price || 0,
+        price: firstVariant?.price ? Number(firstVariant.price) : 0,
 
-        compare_at_price:
-          product.variants?.[0]?.compare_at_price || 0,
+        compare_at_price: firstVariant?.compare_at_price
+          ? Number(firstVariant.compare_at_price)
+          : null,
 
         inventory_quantity:
-          product.variants?.[0]?.inventory_quantity || 0,
+          typeof firstVariant?.inventory_quantity === "number"
+            ? firstVariant.inventory_quantity
+            : 0,
 
         image_url: product.image?.src || null,
 
         updated_at: new Date().toISOString(),
-      });
+      };
+    });
+
+    if (rows.length > 0) {
+      const { error: upsertError } = await supabaseAdmin
+        .from("shopify_products")
+        .upsert(rows, {
+          onConflict: "user_id,shopify_product_id",
+        });
+
+      if (upsertError) {
+        return jsonResponse(
+          {
+            success: false,
+            error: "Error guardando productos en Supabase.",
+            detail: upsertError,
+          },
+          500
+        );
+      }
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        synced_products: products.length,
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    return jsonResponse({
+      success: true,
+      message: "Productos sincronizados correctamente.",
+      synced_products: rows.length,
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
+    return jsonResponse(
       {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
+        success: false,
+        error: error?.message || "Error inesperado sincronizando productos.",
+      },
+      500
     );
   }
 });
+
+function normalizeShopDomain(value: unknown): string {
+  if (!value) return "";
+
+  return String(value)
+    .replace("https://", "")
+    .replace("http://", "")
+    .replace(/\/+$/, "")
+    .trim();
+}
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    },
+  });
+}

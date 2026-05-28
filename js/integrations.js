@@ -3,6 +3,9 @@ console.log("✅ integrations.js cargado correctamente");
 const SHOPIFY_EDGE_FUNCTION_URL =
   "https://crgtdkbobxfbiicuxrfj.supabase.co/functions/v1/shopify-test";
 
+const SHOPIFY_SYNC_PRODUCTS_URL =
+  "https://crgtdkbobxfbiicuxrfj.supabase.co/functions/v1/shopify-sync-products";
+
 function renderIntegrationsModule() {
   const root = document.getElementById("integrations-root");
 
@@ -15,7 +18,9 @@ function renderIntegrationsModule() {
     <section class="integrations-page">
       <div class="integrations-header">
         <p class="section-kicker">Integraciones</p>
+
         <h1>Conexiones Ecommerce</h1>
+
         <p class="section-description">
           Conectá herramientas externas para convertir el tracker
           en un sistema operativo ecommerce.
@@ -23,11 +28,17 @@ function renderIntegrationsModule() {
       </div>
 
       <div class="integrations-grid">
+
         <article class="integration-card">
+
           <div class="integration-card-header">
             <div>
-              <span class="integration-badge disconnected">Desconectado</span>
+              <span class="integration-badge disconnected">
+                Desconectado
+              </span>
+
               <h2>Shopify</h2>
+
               <p>
                 Conectá una tienda Shopify para sincronizar ventas,
                 productos, clientes y métricas.
@@ -36,29 +47,50 @@ function renderIntegrationsModule() {
           </div>
 
           <div class="integration-info">
+
             <div>
               <span>Dominio</span>
-              <strong class="shopify-domain">No conectado</strong>
+              <strong class="shopify-domain">
+                No conectado
+              </strong>
             </div>
+
             <div>
               <span>Última sincronización</span>
-              <strong class="shopify-sync">Sin sincronizar</strong>
+              <strong class="shopify-sync">
+                Sin sincronizar
+              </strong>
             </div>
+
             <div>
               <span>Estado</span>
-              <strong class="shopify-state">Esperando conexión</strong>
+              <strong class="shopify-state">
+                Esperando conexión
+              </strong>
             </div>
+
           </div>
 
           <div class="integration-actions">
-            <button class="btn-primary" onclick="openShopifyConnectionModal()">
+
+            <button
+              class="btn-primary"
+              onclick="openShopifyConnectionModal()"
+            >
               Conectar Shopify
             </button>
-            <button class="btn-secondary" disabled>
-              Sincronizar
+
+            <button
+              class="btn-secondary"
+              onclick="syncShopifyProducts()"
+            >
+              Sincronizar productos
             </button>
+
           </div>
+
         </article>
+
       </div>
     </section>
   `;
@@ -74,18 +106,26 @@ function openIntegrationsView() {
 
 function openShopifyConnectionModal() {
   const existing = document.getElementById("shopifyModal");
+
   if (existing) existing.remove();
 
   const modal = `
     <div class="shopify-modal-overlay" id="shopifyModal">
+
       <div class="shopify-modal">
+
         <div class="shopify-modal-header">
           <h2>Conectar Shopify</h2>
-          <button onclick="closeShopifyModal()">✕</button>
+
+          <button onclick="closeShopifyModal()">
+            ✕
+          </button>
         </div>
 
         <div class="shopify-modal-body">
+
           <label>Dominio Shopify</label>
+
           <input
             type="text"
             id="shopifyDomain"
@@ -93,19 +133,26 @@ function openShopifyConnectionModal() {
           >
 
           <label>Admin API Access Token</label>
+
           <input
             type="password"
             id="shopifyToken"
-            placeholder="temporal"
+            placeholder="shpat_xxxxx"
           >
 
-          <button class="btn-primary" onclick="testShopifyConnection()">
+          <button
+            class="btn-primary"
+            onclick="testShopifyConnection()"
+          >
             Validar conexión
           </button>
 
           <div id="shopifyTestResult"></div>
+
         </div>
+
       </div>
+
     </div>
   `;
 
@@ -114,6 +161,7 @@ function openShopifyConnectionModal() {
 
 function closeShopifyModal() {
   const modal = document.getElementById("shopifyModal");
+
   if (modal) modal.remove();
 }
 
@@ -141,15 +189,19 @@ async function testShopifyConnection() {
   `;
 
   try {
-    const response = await fetch(SHOPIFY_EDGE_FUNCTION_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        shop: shop_domain
-      })
-    });
+
+    const response = await fetch(
+      SHOPIFY_EDGE_FUNCTION_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          shop: shop_domain
+        })
+      }
+    );
 
     const data = await response.json();
 
@@ -177,16 +229,35 @@ async function testShopifyConnection() {
       .from("shopify_connections")
       .upsert({
         user_id: user.id,
+
         provider: "shopify",
+
         status: "connected",
+
         shop_domain,
-        myshopify_domain: data.shop?.myshopify_domain || null,
-        shop_name: data.shop?.name || null,
-        shop_email: data.shop?.email || null,
-        currency: data.shop?.currency || null,
-        plan_name: data.shop?.plan_name || null,
-        connection_type: "client_credentials",
-        updated_at: new Date().toISOString()
+
+        access_token,
+
+        myshopify_domain:
+          data.shop?.myshopify_domain || null,
+
+        shop_name:
+          data.shop?.name || null,
+
+        shop_email:
+          data.shop?.email || null,
+
+        currency:
+          data.shop?.currency || null,
+
+        plan_name:
+          data.shop?.plan_name || null,
+
+        connection_type:
+          "custom_app",
+
+        updated_at:
+          new Date().toISOString()
       });
 
     if (saveError) {
@@ -208,8 +279,10 @@ async function testShopifyConnection() {
 
       <div style="font-size:13px;color:#a3a3a3;">
         Tienda: ${data.shop?.name || "Sin nombre"}<br>
-        Dominio: ${data.shop?.myshopify_domain || shop_domain}<br>
-        Moneda: ${data.shop?.currency || "--"}
+        Dominio:
+        ${data.shop?.myshopify_domain || shop_domain}<br>
+        Moneda:
+        ${data.shop?.currency || "--"}
       </div>
     `;
 
@@ -226,15 +299,106 @@ async function testShopifyConnection() {
   }
 }
 
+async function syncShopifyProducts() {
+
+  try {
+
+    const {
+      data: { session },
+      error: sessionError
+    } = await sb.auth.getSession();
+
+    if (sessionError || !session?.user) {
+      alert("Usuario no autenticado");
+      return;
+    }
+
+    const user = session.user;
+
+    const {
+      data: connection,
+      error: connectionError
+    } = await sb
+      .from("shopify_connections")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (connectionError || !connection) {
+      alert("No existe conexión Shopify");
+      return;
+    }
+
+    alert("Sincronizando productos Shopify...");
+
+    const response = await fetch(
+      SHOPIFY_SYNC_PRODUCTS_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          shop_domain: connection.shop_domain,
+          access_token: connection.access_token,
+          user_id: user.id
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      console.error(data);
+
+      alert(
+        data.error || "Error sincronizando productos"
+      );
+
+      return;
+    }
+
+    alert(
+      `Productos sincronizados: ${data.synced_products}`
+    );
+
+    const sync = document.querySelector(".shopify-sync");
+
+    if (sync) {
+      sync.innerText =
+        `${data.synced_products} productos sincronizados`;
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Error inesperado sincronizando productos"
+    );
+  }
+}
+
 function updateShopifyCardState(data, fallbackDomain) {
-  const badge = document.querySelector(".integration-badge");
-  const domain = document.querySelector(".shopify-domain");
-  const sync = document.querySelector(".shopify-sync");
-  const state = document.querySelector(".shopify-state");
+
+  const badge =
+    document.querySelector(".integration-badge");
+
+  const domain =
+    document.querySelector(".shopify-domain");
+
+  const sync =
+    document.querySelector(".shopify-sync");
+
+  const state =
+    document.querySelector(".shopify-state");
 
   if (badge) {
     badge.classList.remove("disconnected");
+
     badge.classList.add("connected");
+
     badge.innerText = "Conectado";
   }
 
@@ -246,16 +410,30 @@ function updateShopifyCardState(data, fallbackDomain) {
   }
 
   if (sync) {
-    sync.innerText = "Sincronización inicial lista";
+    sync.innerText =
+      "Sincronización inicial lista";
   }
 
   if (state) {
-    state.innerText = "Shopify conectado";
+    state.innerText =
+      "Shopify conectado";
   }
 }
 
-window.renderIntegrationsModule = renderIntegrationsModule;
-window.openIntegrationsView = openIntegrationsView;
-window.openShopifyConnectionModal = openShopifyConnectionModal;
-window.closeShopifyModal = closeShopifyModal;
-window.testShopifyConnection = testShopifyConnection;
+window.renderIntegrationsModule =
+  renderIntegrationsModule;
+
+window.openIntegrationsView =
+  openIntegrationsView;
+
+window.openShopifyConnectionModal =
+  openShopifyConnectionModal;
+
+window.closeShopifyModal =
+  closeShopifyModal;
+
+window.testShopifyConnection =
+  testShopifyConnection;
+
+window.syncShopifyProducts =
+  syncShopifyProducts;
