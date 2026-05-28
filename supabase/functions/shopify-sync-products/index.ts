@@ -14,16 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    if (req.method !== "POST") {
-      return jsonResponse(
-        {
-          success: false,
-          error: "Método no permitido. Usá POST.",
-        },
-        405
-      );
-    }
-
     const body = await req.json();
 
     const shopDomain = normalizeShopDomain(body.shop_domain);
@@ -39,22 +29,8 @@ serve(async (req) => {
       );
     }
 
-    const SHOPIFY_CLIENT_ID = Deno.env.get("SHOPIFY_CLIENT_ID");
-    const SHOPIFY_CLIENT_SECRET = Deno.env.get("SHOPIFY_CLIENT_SECRET");
-
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SHOPIFY_CLIENT_ID || !SHOPIFY_CLIENT_SECRET) {
-      return jsonResponse(
-        {
-          success: false,
-          error:
-            "Faltan SHOPIFY_CLIENT_ID o SHOPIFY_CLIENT_SECRET en Supabase Secrets.",
-        },
-        500
-      );
-    }
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       return jsonResponse(
@@ -67,53 +43,39 @@ serve(async (req) => {
       );
     }
 
-    const tokenResponse = await fetch(
-      `https://${shopDomain}/admin/oauth/access_token`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          client_id: SHOPIFY_CLIENT_ID,
-          client_secret: SHOPIFY_CLIENT_SECRET,
-          grant_type: "client_credentials",
-        }),
-      }
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
     );
 
-    const tokenText = await tokenResponse.text();
+    const { data: connection, error: connectionError } = await supabaseAdmin
+      .from("shopify_connections")
+      .select("*")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    let tokenData;
-
-    try {
-      tokenData = JSON.parse(tokenText);
-    } catch {
+    if (connectionError || !connection) {
       return jsonResponse(
         {
           success: false,
-          status: tokenResponse.status,
-          error:
-            "Shopify no devolvió JSON al generar token. Revisá dominio, instalación de app y scopes.",
-          detail: tokenText.slice(0, 500),
+          error: "No se encontró conexión Shopify guardada.",
+          detail: connectionError,
         },
-        500
+        404
       );
     }
 
-    if (!tokenResponse.ok || !tokenData.access_token) {
+    const accessToken = connection.access_token;
+
+    if (!accessToken) {
       return jsonResponse(
         {
           success: false,
-          status: tokenResponse.status,
-          error:
-            tokenData.error_description ||
-            tokenData.error ||
-            "No se pudo generar access token Shopify.",
-          detail: tokenData,
+          error: "La conexión Shopify no tiene access_token guardado.",
         },
-        401
+        400
       );
     }
 
@@ -124,7 +86,7 @@ serve(async (req) => {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          "X-Shopify-Access-Token": tokenData.access_token,
+          "X-Shopify-Access-Token": accessToken,
         },
       }
     );
@@ -161,38 +123,26 @@ serve(async (req) => {
 
     const products = productsData.products || [];
 
-    const supabaseAdmin = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY
-    );
-
     const rows = products.map((product: any) => {
       const firstVariant = product.variants?.[0] || null;
 
       return {
         user_id: userId,
-
         shopify_product_id: String(product.id),
-
         title: product.title || null,
         handle: product.handle || null,
         vendor: product.vendor || null,
         product_type: product.product_type || null,
         status: product.status || null,
-
         price: firstVariant?.price ? Number(firstVariant.price) : 0,
-
         compare_at_price: firstVariant?.compare_at_price
           ? Number(firstVariant.compare_at_price)
           : null,
-
         inventory_quantity:
           typeof firstVariant?.inventory_quantity === "number"
             ? firstVariant.inventory_quantity
             : 0,
-
         image_url: product.image?.src || null,
-
         updated_at: new Date().toISOString(),
       };
     });
