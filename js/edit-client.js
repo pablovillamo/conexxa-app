@@ -78,18 +78,18 @@ function ecPhotoSelected(event) {
 async function saveEditClient() {
   if (!selectedClientId) return;
   const s = id => document.getElementById(id);
-  const btn = s('ec-save-btn');
-  const ind = s('ec-save-indicator');
+  const btn     = s('ec-save-btn');
+  const ind     = s('ec-save-indicator');
   const indText = s('ec-save-text');
 
-  btn.disabled = true;
-  btn.textContent = 'Guardando...';
-  ind.classList.remove('visible', 'error');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  if (ind)  ind.classList.remove('visible', 'error');
+
+  console.log('[EditClient] guardando cliente:', selectedClientId);
 
   try {
     let imageUrl = null;
 
-    // Subir foto si se seleccionó una
     if (ecPhotoFile) {
       const ext  = ecPhotoFile.name.split('.').pop();
       const path = `${selectedClientId}/avatar.${ext}`;
@@ -102,55 +102,67 @@ async function saveEditClient() {
     }
 
     const updates = {
-      full_name:         s('ec-name').value.trim() || null,
-      phone:             s('ec-phone').value.trim() || null,
-      industry:          s('ec-industry').value.trim() || null,
-      nicho:             s('ec-nicho').value.trim() || null,
-      business_type:     s('ec-business-type').value.trim() || null,
-      country_market:    s('ec-country').value.trim() || null,
-      website:           s('ec-website').value.trim() || null,
-      instagram:         s('ec-instagram').value.trim() || null,
-      tiktok:            s('ec-tiktok').value.trim() || null,
-      facebook:          s('ec-facebook').value.trim() || null,
-      other_socials:     s('ec-other-socials').value.trim() || null,
-      start_date:        s('ec-start-date').value || null,
-      end_date:          s('ec-end-date').value || null,
-      client_status:     s('ec-client-status').value,
-      assigned_to:       s('ec-assigned-to').value.trim() || null,
-      business_status:   s('ec-business-status').value.trim() || null,
-      internal_notes:    s('ec-internal-notes').value.trim() || null,
+      full_name:         s('ec-name')?.value.trim() || null,
+      phone:             s('ec-phone')?.value.trim() || null,
+      industry:          s('ec-industry')?.value.trim() || null,
+      nicho:             s('ec-nicho')?.value.trim() || null,
+      business_type:     s('ec-business-type')?.value.trim() || null,
+      country_market:    s('ec-country')?.value.trim() || null,
+      website:           s('ec-website')?.value.trim() || null,
+      instagram:         s('ec-instagram')?.value.trim() || null,
+      tiktok:            s('ec-tiktok')?.value.trim() || null,
+      facebook:          s('ec-facebook')?.value.trim() || null,
+      other_socials:     s('ec-other-socials')?.value.trim() || null,
+      start_date:        s('ec-start-date')?.value || null,
+      end_date:          s('ec-end-date')?.value || null,
+      client_status:     s('ec-client-status')?.value || 'activo',
+      assigned_to:       s('ec-assigned-to')?.value.trim() || null,
+      business_status:   s('ec-business-status')?.value.trim() || null,
+      internal_notes:    s('ec-internal-notes')?.value.trim() || null,
       updated_at:        new Date().toISOString(),
     };
     if (imageUrl) updates.profile_image_url = imageUrl;
 
+    console.log('[EditClient] updates:', updates);
+
     const { error: updateErr } = await sb.from('profiles').update(updates).eq('id', selectedClientId);
     if (updateErr) throw new Error(updateErr.message);
+
+    console.log('[EditClient] cliente actualizado correctamente');
 
     // Actualizar allClientsData en memoria
     const idx = allClientsData.findIndex(c => c.id === selectedClientId);
     if (idx !== -1) allClientsData[idx] = { ...allClientsData[idx], ...updates };
 
-    // Refrescar header del perfil sin cerrar el modal todavía
-    ecRefreshDetailHeader({ ...allClientsData[idx] || {}, ...updates, profile_image_url: imageUrl || allClientsData[idx]?.profile_image_url });
+    // Refrescar header del perfil de forma segura
+    const safeClient = idx !== -1 ? allClientsData[idx] : {};
+    ecRefreshDetailHeader({
+      ...safeClient,
+      ...updates,
+      profile_image_url: imageUrl || safeClient?.profile_image_url
+    });
 
-    // Refrescar tabla admin para reflejar el avatar actualizado
-    renderClientsTable(allClientsData);
+    // Refrescar tabla admin de forma segura
+    if (typeof renderClientsTable === 'function') {
+      renderClientsTable(allClientsData);
+    } else {
+      console.warn('[EditClient] renderClientsTable no disponible');
+    }
 
-    // Éxito
-    btn.disabled = false;
-    btn.textContent = 'Guardar cambios';
-    ind.classList.add('visible');
-    indText.textContent = 'Guardado correctamente';
+    // Éxito — mostrar indicador y cerrar
+    if (ind)  ind.classList.add('visible');
+    if (indText) indText.textContent = 'Guardado correctamente';
     setTimeout(() => {
-      ind.classList.remove('visible');
+      if (ind) ind.classList.remove('visible');
       closeEditClientModal();
     }, 1600);
 
   } catch (err) {
-    btn.disabled = false;
-    btn.textContent = 'Guardar cambios';
-    ind.classList.add('visible', 'error');
-    indText.textContent = err.message || 'Error al guardar';
+    console.error('[EditClient] error guardando:', err);
+    if (ind)  ind.classList.add('visible', 'error');
+    if (indText) indText.textContent = err.message || 'Error al guardar';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
   }
 }
 
