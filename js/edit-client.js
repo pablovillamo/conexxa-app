@@ -125,31 +125,44 @@ async function saveEditClient() {
 
     console.log('[EditClient] updates:', updates);
 
-    const { error: updateErr } = await sb.from('profiles').update(updates).eq('id', selectedClientId);
+    // PASO 1 — enviar update a Supabase
+    console.log('[EditClient] paso 1 — enviando update a Supabase...');
+    const { data: updatedRows, error: updateErr } = await sb
+      .from('profiles')
+      .update(updates)
+      .eq('id', selectedClientId)
+      .select();
+    console.log('[EditClient] respuesta update:', { updatedRows, updateErr });
     if (updateErr) throw new Error(updateErr.message);
 
     console.log('[EditClient] cliente actualizado correctamente');
 
-    // Actualizar allClientsData en memoria
+    // PASO 2 — actualizar allClientsData en memoria
+    console.log('[EditClient] paso 2 — actualizando allClientsData...');
     const idx = allClientsData.findIndex(c => c.id === selectedClientId);
     if (idx !== -1) allClientsData[idx] = { ...allClientsData[idx], ...updates };
 
-    // Refrescar header del perfil de forma segura
+    // PASO 3 — refrescar header del perfil de forma segura
+    console.log('[EditClient] paso 3 — ecRefreshDetailHeader...');
     const safeClient = idx !== -1 ? allClientsData[idx] : {};
     ecRefreshDetailHeader({
       ...safeClient,
       ...updates,
       profile_image_url: imageUrl || safeClient?.profile_image_url
     });
+    console.log('[EditClient] paso 3 completo');
 
-    // Refrescar tabla admin de forma segura
+    // PASO 4 — refrescar tabla admin de forma segura
+    console.log('[EditClient] paso 4 — renderClientsTable...');
     if (typeof renderClientsTable === 'function') {
       renderClientsTable(allClientsData);
     } else {
       console.warn('[EditClient] renderClientsTable no disponible');
     }
+    console.log('[EditClient] paso 4 completo');
 
-    // Éxito — mostrar indicador y cerrar
+    // PASO 5 — mostrar indicador y cerrar
+    console.log('[EditClient] paso 5 — mostrando éxito...');
     if (ind)  ind.classList.add('visible');
     if (indText) indText.textContent = 'Guardado correctamente';
     setTimeout(() => {
