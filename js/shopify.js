@@ -324,6 +324,38 @@ function renderShopifyDashboard(products = [], options = {}) {
     return (order.fulfillment_status || '').toLowerCase() === 'fulfilled';
   }).length;
 
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const sales7Days = paidOrders
+    .filter(order =>
+      order.created_at_shopify &&
+      new Date(order.created_at_shopify) >= sevenDaysAgo
+    )
+    .reduce((sum, order) =>
+      sum + Number(order.total_price || 0), 0);
+
+  const sales30Days = paidOrders
+    .filter(order =>
+      order.created_at_shopify &&
+      new Date(order.created_at_shopify) >= thirtyDaysAgo
+    )
+    .reduce((sum, order) =>
+      sum + Number(order.total_price || 0), 0);
+
+  const pendingOrders = orders.filter(order => {
+    const status = (order.financial_status || '').toLowerCase();
+
+    return (
+      status !== 'paid' &&
+      status !== 'partially_paid' &&
+      status !== 'refunded'
+    );
+  }).length;
+
   const topProducts = products.slice(0, mode === 'admin' ? 6 : 24);
 
   if (totalProducts === 0 && totalOrders === 0) {
@@ -359,7 +391,10 @@ function renderShopifyDashboard(products = [], options = {}) {
 
       <div class="metrics-preview-grid" style="margin-bottom:20px;">
         ${renderShopifyMetricCard('VENTAS TOTALES', formatMoney(totalSales), `${paidOrders.length} pedidos pagados`)}
+        ${renderShopifyMetricCard('VENTAS 7 DÍAS', formatMoney(sales7Days), 'Última semana')}
+        ${renderShopifyMetricCard('VENTAS 30 DÍAS', formatMoney(sales30Days), 'Últimos 30 días')}
         ${renderShopifyMetricCard('PEDIDOS', totalOrders, `${fulfilledOrders} entregados`)}
+        ${renderShopifyMetricCard('PENDIENTES', pendingOrders, 'Pago pendiente')}
         ${renderShopifyMetricCard('TICKET PROM.', formatMoney(avgTicket), 'Promedio por pedido')}
         ${renderShopifyMetricCard('PRODUCTOS', totalProducts, `${activeProducts} activos`)}
         ${renderShopifyMetricCard('INVENTARIO', inventory, `${outOfStock} sin stock`)}
@@ -375,6 +410,14 @@ function renderShopifyDashboard(products = [], options = {}) {
           ${totalSales > 0
             ? renderInsightLine(`La tienda registra ${formatMoney(totalSales)} en ventas pagadas sincronizadas.`)
             : renderInsightLine('Aún no se detectan ventas pagadas sincronizadas.')}
+
+          ${sales7Days > 0
+            ? renderInsightLine(`En los últimos 7 días se registran ${formatMoney(sales7Days)} en ventas.`)
+            : renderInsightLine('No se detectan ventas pagadas en los últimos 7 días.')}
+
+          ${sales30Days > 0
+            ? renderInsightLine(`En los últimos 30 días se registran ${formatMoney(sales30Days)} en ventas.`)
+            : renderInsightLine('No se detectan ventas pagadas en los últimos 30 días.')}
 
           ${avgTicket > 0
             ? renderInsightLine(`El ticket promedio actual es de ${formatMoney(avgTicket)}.`)
@@ -407,94 +450,7 @@ function renderShopifyDashboard(products = [], options = {}) {
       </div>
     </div>
   `;
-}  const { mode = 'client' } = options;
-  const container = getShopifyDashboardContainer(mode);
-  if (!container) return;
-
-  const totalProducts = products.length;
-  const activeProducts = products.filter(p => (p.status || '').toLowerCase() === 'active').length;
-  const draftProducts = products.filter(p => (p.status || '').toLowerCase() === 'draft').length;
-
-  const inventory = products.reduce((acc, p) => {
-    return acc + Number(p.inventory_quantity || p.inventory || 0);
-  }, 0);
-
-  const outOfStock = products.filter(p => Number(p.inventory_quantity || p.inventory || 0) <= 0).length;
-  const withoutImage = products.filter(p => !(p.image_url || p.image || p.image_src)).length;
-
-  const prices = products
-    .map(p => Number(p.price || 0))
-    .filter(v => v > 0);
-
-  const avgPrice = prices.length
-    ? prices.reduce((a, b) => a + b, 0) / prices.length
-    : 0;
-
-  const topProducts = products.slice(0, mode === 'admin' ? 6 : 24);
-
-  if (totalProducts === 0) {
-    container.innerHTML = `
-      <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:24px;color:var(--gray);font-size:13px;margin-bottom:20px;">
-        No hay productos sincronizados todavía.
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = `
-    <div style="background:var(--black-card);border:1px solid var(--border);border-radius:18px;padding:22px;margin-bottom:24px;">
-      <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px;">
-        <div>
-          <div style="font-size:12px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:6px;">
-            Shopify Metrics Engine
-          </div>
-          <h3 style="margin:0;font-size:20px;">
-            ${mode === 'admin' ? 'Mini dashboard Shopify del cliente' : 'Dashboard Shopify'}
-          </h3>
-          <p style="margin:6px 0 0;color:var(--gray);font-size:13px;">
-            Productos, inventario e insights iniciales sincronizados desde Shopify.
-          </p>
-        </div>
-        <div style="font-size:12px;color:var(--gray);font-family:'DM Mono',monospace;">
-          ${totalProducts} productos · ${activeProducts} activos
-        </div>
-      </div>
-
-      <div class="metrics-preview-grid" style="margin-bottom:20px;">
-        ${renderShopifyMetricCard('PRODUCTOS', totalProducts, `${activeProducts} activos`)}
-        ${renderShopifyMetricCard('INVENTARIO', inventory, `${outOfStock} sin stock`)}
-        ${renderShopifyMetricCard('PRECIO PROM.', formatMoney(avgPrice), 'Promedio catálogo')}
-        ${renderShopifyMetricCard('SIN IMAGEN', withoutImage, 'Revisar SEO visual')}
-        ${renderShopifyMetricCard('BORRADORES', draftProducts, 'Productos no activos')}
-        ${renderShopifyMetricCard('VENTAS', '₡0', 'Pendiente órdenes')}
-      </div>
-
-      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.22);border-radius:14px;padding:16px;margin-bottom:20px;">
-        <div style="font-size:12px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:10px;">
-          Insights iniciales
-        </div>
-        <div style="display:grid;gap:8px;">
-          ${withoutImage > 0 ? renderInsightLine(`Hay ${withoutImage} productos sin imagen. Esto puede afectar confianza, SEO y conversión.`) : renderInsightLine('Todos los productos tienen imagen principal.')}
-          ${outOfStock > 0 ? renderInsightLine(`Hay ${outOfStock} productos sin stock. Revisar si son productos estratégicos.`) : renderInsightLine('No se detectan productos sin stock.')}
-          ${draftProducts > 0 ? renderInsightLine(`Hay ${draftProducts} productos en borrador. Revisar si deben activarse.`) : renderInsightLine('No hay productos en borrador detectados.')}
-        </div>
-      </div>
-
-      <div class="sp-header">
-        <div class="sp-header-title">Productos sincronizados</div>
-        <div class="sp-header-counts">
-          <span>${totalProducts} total</span>
-          <span style="color:#22C55E;">${activeProducts} activos</span>
-        </div>
-      </div>
-
-      <div class="sp-grid">
-        ${topProducts.map(renderShopifyProductCard).join('')}
-      </div>
-    </div>
-  `;
 }
-
 function renderShopifyMetricCard(label, value, sub) {
   return `
     <div class="metric-preview-card">
