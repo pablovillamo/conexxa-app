@@ -794,6 +794,21 @@ document.addEventListener('DOMContentLoaded', function() {
   renderBrainForm('identidad');
   brainUpdate();
 });
-
+window.getBrainModulo = getBrainModulo;
+window.renderBrainNav = renderBrainNav;
+window.renderBrainForm = renderBrainForm;
+window.switchBrainModule = switchBrainModule;
+window.brainUpdate = brainUpdate;
+window.toggleBrainSection = toggleBrainSection;
+window.generateBrainMaster = generateBrainMaster;
+window.downloadBrainMD = downloadBrainMD;
+window.downloadBrainPDF = downloadBrainPDF;
+window.copyBrainOutput = copyBrainOutput;
+window.openBrainEmailModal = openBrainEmailModal;
+window.closeBrainEmailModal = closeBrainEmailModal;
+window.sendBrainEmail = sendBrainEmail;
+window.brainSaveToLocal = brainSaveToLocal;
+window.brainLoadFromLocal = brainLoadFromLocal;
+window.brainPrefillFromProfile = brainPrefillFromProfile;
 console.log("[Brain] loaded");
 
