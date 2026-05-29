@@ -174,6 +174,60 @@ async function loadShopifyDashboard(userId, mode = 'client') {
   `;
 
   try {
+    const { data: products, error: productsError } = await sb
+      .from('shopify_products')
+      .select('*')
+      .eq('user_id', userId)
+      .order('title', { ascending: true });
+
+    if (productsError) throw productsError;
+
+    const { data: orders, error: ordersError } = await sb
+      .from('shopify_orders')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at_shopify', { ascending: false });
+
+    if (ordersError) throw ordersError;
+
+    renderShopifyDashboard(products || [], {
+      userId,
+      mode,
+      orders: orders || []
+    });
+
+  } catch (err) {
+    console.error('[ShopifyDashboard] error:', err);
+
+    section.innerHTML = `
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:14px;padding:20px;color:#fca5a5;font-size:13px;">
+        Error cargando dashboard Shopify.
+      </div>
+    `;
+  }
+}  const section = getShopifyDashboardContainer(mode);
+
+  if (!section) {
+    console.warn('[ShopifyDashboard] contenedor no encontrado:', mode);
+    return;
+  }
+
+  if (!userId) {
+    section.innerHTML = `
+      <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:24px;color:var(--gray);font-size:13px;">
+        No se encontró el usuario/cliente.
+      </div>
+    `;
+    return;
+  }
+
+  section.innerHTML = `
+    <div style="font-size:13px;color:var(--gray);padding:12px 0;">
+      Cargando dashboard Shopify...
+    </div>
+  `;
+
+  try {
     const { data: products, error } = await sb
       .from('shopify_products')
       .select('*')
@@ -220,7 +274,140 @@ function getShopifyDashboardContainer(mode = 'client') {
 }
 
 function renderShopifyDashboard(products = [], options = {}) {
-  const { mode = 'client' } = options;
+  const { mode = 'client', orders = [] } = options;
+
+  const container = getShopifyDashboardContainer(mode);
+  if (!container) return;
+
+  const totalProducts = products.length;
+
+  const activeProducts = products.filter(
+    p => (p.status || '').toLowerCase() === 'active'
+  ).length;
+
+  const draftProducts = products.filter(
+    p => (p.status || '').toLowerCase() === 'draft'
+  ).length;
+
+  const inventory = products.reduce((acc, p) => {
+    return acc + Number(p.inventory_quantity || p.inventory || 0);
+  }, 0);
+
+  const outOfStock = products.filter(
+    p => Number(p.inventory_quantity || p.inventory || 0) <= 0
+  ).length;
+
+  const withoutImage = products.filter(
+    p => !(p.image_url || p.image || p.image_src)
+  ).length;
+
+  const totalOrders = orders.length;
+
+  const paidOrders = orders.filter(order => {
+    const status = (order.financial_status || '').toLowerCase();
+    return status === 'paid' || status === 'partially_paid';
+  });
+
+  const totalSales = paidOrders.reduce((sum, order) => {
+    return sum + Number(order.total_price || 0);
+  }, 0);
+
+  const avgTicket = paidOrders.length > 0
+    ? totalSales / paidOrders.length
+    : 0;
+
+  const refundedOrders = orders.filter(order => {
+    return (order.financial_status || '').toLowerCase() === 'refunded';
+  }).length;
+
+  const fulfilledOrders = orders.filter(order => {
+    return (order.fulfillment_status || '').toLowerCase() === 'fulfilled';
+  }).length;
+
+  const topProducts = products.slice(0, mode === 'admin' ? 6 : 24);
+
+  if (totalProducts === 0 && totalOrders === 0) {
+    container.innerHTML = `
+      <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:24px;color:var(--gray);font-size:13px;margin-bottom:20px;">
+        No hay datos Shopify sincronizados todavía.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="background:var(--black-card);border:1px solid var(--border);border-radius:18px;padding:22px;margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px;">
+        <div>
+          <div style="font-size:12px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:6px;">
+            Shopify Metrics Engine
+          </div>
+
+          <h3 style="margin:0;font-size:20px;">
+            ${mode === 'admin' ? 'Mini dashboard Shopify del cliente' : 'Dashboard Shopify'}
+          </h3>
+
+          <p style="margin:6px 0 0;color:var(--gray);font-size:13px;">
+            Ventas, pedidos, productos e insights sincronizados desde Shopify.
+          </p>
+        </div>
+
+        <div style="font-size:12px;color:var(--gray);font-family:'DM Mono',monospace;">
+          ${totalProducts} productos · ${totalOrders} pedidos
+        </div>
+      </div>
+
+      <div class="metrics-preview-grid" style="margin-bottom:20px;">
+        ${renderShopifyMetricCard('VENTAS TOTALES', formatMoney(totalSales), `${paidOrders.length} pedidos pagados`)}
+        ${renderShopifyMetricCard('PEDIDOS', totalOrders, `${fulfilledOrders} entregados`)}
+        ${renderShopifyMetricCard('TICKET PROM.', formatMoney(avgTicket), 'Promedio por pedido')}
+        ${renderShopifyMetricCard('PRODUCTOS', totalProducts, `${activeProducts} activos`)}
+        ${renderShopifyMetricCard('INVENTARIO', inventory, `${outOfStock} sin stock`)}
+        ${renderShopifyMetricCard('SIN IMAGEN', withoutImage, 'Revisar SEO visual')}
+      </div>
+
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.22);border-radius:14px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:12px;font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:10px;">
+          Insights iniciales
+        </div>
+
+        <div style="display:grid;gap:8px;">
+          ${totalSales > 0
+            ? renderInsightLine(`La tienda registra ${formatMoney(totalSales)} en ventas pagadas sincronizadas.`)
+            : renderInsightLine('Aún no se detectan ventas pagadas sincronizadas.')}
+
+          ${avgTicket > 0
+            ? renderInsightLine(`El ticket promedio actual es de ${formatMoney(avgTicket)}.`)
+            : renderInsightLine('El ticket promedio aparecerá cuando existan pedidos pagados.')}
+
+          ${withoutImage > 0
+            ? renderInsightLine(`Hay ${withoutImage} productos sin imagen. Esto puede afectar confianza, SEO y conversión.`)
+            : renderInsightLine('Todos los productos tienen imagen principal.')}
+
+          ${outOfStock > 0
+            ? renderInsightLine(`Hay ${outOfStock} productos sin stock. Revisar si son productos estratégicos.`)
+            : renderInsightLine('No se detectan productos sin stock.')}
+
+          ${refundedOrders > 0
+            ? renderInsightLine(`Hay ${refundedOrders} pedidos reembolsados. Revisar causas de devolución o cancelación.`)
+            : renderInsightLine('No se detectan pedidos reembolsados en esta sincronización.')}
+        </div>
+      </div>
+
+      <div class="sp-header">
+        <div class="sp-header-title">Productos sincronizados</div>
+        <div class="sp-header-counts">
+          <span>${totalProducts} total</span>
+          <span style="color:#22C55E;">${activeProducts} activos</span>
+        </div>
+      </div>
+
+      <div class="sp-grid">
+        ${topProducts.map(renderShopifyProductCard).join('')}
+      </div>
+    </div>
+  `;
+}  const { mode = 'client' } = options;
   const container = getShopifyDashboardContainer(mode);
   if (!container) return;
 
