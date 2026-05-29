@@ -205,48 +205,7 @@ async function loadShopifyDashboard(userId, mode = 'client') {
       </div>
     `;
   }
-}  const section = getShopifyDashboardContainer(mode);
-
-  if (!section) {
-    console.warn('[ShopifyDashboard] contenedor no encontrado:', mode);
-    return;
-  }
-
-  if (!userId) {
-    section.innerHTML = `
-      <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:24px;color:var(--gray);font-size:13px;">
-        No se encontró el usuario/cliente.
-      </div>
-    `;
-    return;
-  }
-
-  section.innerHTML = `
-    <div style="font-size:13px;color:var(--gray);padding:12px 0;">
-      Cargando dashboard Shopify...
-    </div>
-  `;
-
-  try {
-    const { data: products, error } = await sb
-      .from('shopify_products')
-      .select('*')
-      .eq('user_id', userId)
-      .order('title', { ascending: true });
-
-    if (error) throw error;
-
-    renderShopifyDashboard(products || [], { userId, mode });
-  } catch (err) {
-    console.error('[ShopifyDashboard] error:', err);
-    section.innerHTML = `
-      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:14px;padding:20px;color:#fca5a5;font-size:13px;">
-        Error cargando dashboard Shopify.
-      </div>
-    `;
-  }
 }
-
 function getShopifyDashboardContainer(mode = 'client') {
   if (mode === 'admin') {
     let adminContainer = document.getElementById('admin-shopify-dashboard');
