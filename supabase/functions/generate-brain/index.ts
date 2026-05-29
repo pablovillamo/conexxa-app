@@ -8,9 +8,8 @@ const corsHeaders = {
 };
 
 // Supabase Edge Functions hard limit: 150s
-// Claude claude-sonnet-4-5 at ~4000 output tokens: ~50-80s — safe
-// claude-haiku-4-5 at ~4000 output tokens: ~15-30s — very safe
-const MODEL = "claude-sonnet-4-5-20251001";
+// Claude claude-sonnet-4-6 at ~4000 output tokens: ~50-80s — safe
+const MODEL = ""claude-sonnet-4-6";
 const MAX_TOKENS = 4096;
 
 serve(async (req) => {
