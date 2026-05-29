@@ -272,53 +272,41 @@ async function generateBrainMaster() {
     if (genText) genText.textContent = statusMessages[si];
   }, 3000);
 
-const t0 = Date.now();
+  const t0 = Date.now();
 
-try {
+  try {
+    const invokePromise = fetch(
+      'https://crgtdkbobxfbiicuxrfj.supabase.co/functions/v1/generate-brain',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt })
+      }
+    ).then(async (res) => {
+      const data = await res.json();
 
-  const invokePromise = fetch(
-    'https://crgtdkbobxfbiicuxrfj.supabase.co/functions/v1/generate-brain',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ prompt })
-    }
-  ).then(async (res) => {
+      if (!res.ok) {
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
 
-    const data = await res.json();
+      return {
+        data,
+        error: null
+      };
+    });
 
-    if (!res.ok) {
-      throw new Error(data?.error || `HTTP ${res.status}`);
-    }
-
-    return {
-      data,
-      error: null
-    };
-
-  });
-
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('TIMEOUT')), 140000)
-  );
-
-  console.log('[Brain] Invocando generate-brain...');
-
-  const { data, error } = await Promise.race([
-    invokePromise,
-    timeoutPromise
-  ]);
-
-});
-    // Hard limit Supabase Edge Functions = 150s. Abortamos en 140s en frontend.
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('TIMEOUT')), 140000)
     );
 
     console.log('[Brain] Invocando generate-brain...');
-    const { data, error } = await Promise.race([invokePromise, timeoutPromise]);
+
+    const { data, error } = await Promise.race([
+      invokePromise,
+      timeoutPromise
+    ]);
     const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
     console.log('[Brain] Respuesta en', elapsed + 's');
     console.log('[Brain] error obj:', error);
