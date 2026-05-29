@@ -277,23 +277,31 @@ async function generateBrainMaster() {
     const invokePromise = sb.functions.invoke('generate-brain', {
       body: { prompt }
     });
+    // Hard limit Supabase Edge Functions = 150s. Abortamos en 140s en frontend.
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('TIMEOUT')), 155000)
+      setTimeout(() => reject(new Error('TIMEOUT')), 140000)
     );
 
     console.log('[Brain] Invocando generate-brain...');
     const { data, error } = await Promise.race([invokePromise, timeoutPromise]);
-    console.log('[Brain] Respuesta en', ((Date.now() - t0) / 1000).toFixed(1) + 's');
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+    console.log('[Brain] Respuesta en', elapsed + 's');
     console.log('[Brain] error obj:', error);
     console.log('[Brain] data keys:', data ? Object.keys(data) : null);
-    if (data) console.log('[Brain] data.ok:', data.ok, '| content blocks:', (data.content || []).length);
+    if (data) {
+      console.log('[Brain] data.ok:', data.ok, '| content blocks:', (data.content || []).length);
+      console.log('[Brain] model:', data.model, '| stop_reason:', data.stop_reason, '| usage:', data.usage);
+    }
 
     if (error) throw new Error(error.message || 'Error en la Edge Function');
     if (!data) throw new Error('Sin respuesta del servidor');
     if (data.ok === false) throw new Error(data.error || 'Error en el servidor');
     const text = (data.content || []).map(b => b.text || '').join('');
     if (!text) throw new Error('La IA no devolvió contenido');
-    console.log('[Brain] Tokens generados ~', Math.round(text.length / 4), '| chars:', text.length);
+    if (data.stop_reason === 'max_tokens') {
+      console.warn('[Brain] Documento cortado por max_tokens — output limitado a 4096 tokens');
+    }
+    console.log('[Brain] Output tokens:', data.usage?.output_tokens, '| chars:', text.length);
 
     brainMasterContent = text;
     outContent.textContent = text;
@@ -315,9 +323,10 @@ async function generateBrainMaster() {
     }
   } catch (err) {
     console.error('[Brain] Error después de', ((Date.now() - t0) / 1000).toFixed(1) + 's:', err.message);
-    const isTimeout = err.message === 'TIMEOUT' || (Date.now() - t0) > 145000;
+    const elapsed2 = ((Date.now() - t0) / 1000).toFixed(1);
+    const isTimeout = err.message === 'TIMEOUT' || (Date.now() - t0) > 130000;
     const msg = isTimeout
-      ? 'El servidor tardó demasiado generando el documento (timeout ~150s). El documento Identidad es muy extenso. Intentalo nuevamente — suele funcionar al segundo intento.'
+      ? `Timeout después de ${elapsed2}s. La Edge Function superó el límite de Supabase (150s). Intentá nuevamente — suele funcionar al segundo intento.`
       : 'Error generando el documento: ' + err.message;
     alert(msg);
   } finally {
