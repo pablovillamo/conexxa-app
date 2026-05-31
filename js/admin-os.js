@@ -7,17 +7,17 @@ console.log('[AdminOS] loaded');
 // ── Sidebar nav items ─────────────────────────────────────
 
 const SIDEBAR_CORE = [
-  { id:'os',       icon:'⚡', label:'Dashboard',        status:'active',  action:() => showAdminView('os')      },
-  { id:'clients',  icon:'👥', label:'Clientes',          status:'active',  action:() => showAdminView('clients') },
-  { id:'brain',    icon:'🧠', label:'Brain IA',          status:'active',  action:() => showAdminView('clients') },
-  { id:'tasks',    icon:'✅', label:'Tareas',             status:'active',  action:() => showAdminView('clients') },
-  { id:'notes',    icon:'📝', label:'Notas',              status:'coming'   },
-  { id:'crm',      icon:'🗃️', label:'CRM',               status:'coming'   },
-  { id:'docs',     icon:'📄', label:'Documentos',        status:'coming'   },
-  { id:'resources',icon:'📚', label:'Recursos',           status:'coming'   },
-  { id:'meetings', icon:'🎙️', label:'Reuniones',         status:'coming'   },
-  { id:'kpis',     icon:'📊', label:'KPIs',              status:'coming'   },
-  { id:'ia',       icon:'🤖', label:'IA',                status:'coming'   },
+  { id:'os',       icon:'⚡', label:'Dashboard',   status:'active', action:() => showAdminView('os')      },
+  { id:'clients',  icon:'👥', label:'Clientes',    status:'active', action:() => showAdminView('clients') },
+  { id:'brain',    icon:'🧠', label:'Brain IA',    status:'active', action:() => showAdminView('brain')   },
+  { id:'tasks',    icon:'✅', label:'Tareas',       status:'active', action:() => showAdminView('tasks')  },
+  { id:'notes',    icon:'📝', label:'Notas',        status:'coming' },
+  { id:'crm',      icon:'🗃️', label:'CRM',         status:'coming' },
+  { id:'docs',     icon:'📄', label:'Documentos',  status:'coming' },
+  { id:'resources',icon:'📚', label:'Recursos',    status:'coming' },
+  { id:'meetings', icon:'🎙️', label:'Reuniones',   status:'coming' },
+  { id:'kpis',     icon:'📊', label:'KPIs',        status:'coming' },
+  { id:'ia',       icon:'🤖', label:'IA',           status:'coming' },
 ];
 
 const SIDEBAR_MODULES = [
@@ -265,6 +265,179 @@ function showOSToast(msg, cls = '') {
     setTimeout(() => t.remove(), 300);
   }, 2500);
 }
+
+// ── Brain Admin View ─────────────────────────────────────
+
+function renderAdminBrainView() {
+  const root = document.getElementById('view-admin-brain');
+  if (!root) return;
+
+  if (selectedClientId) {
+    // Cliente seleccionado: ir a su brain directamente
+    showView('view-admin-detail');
+    if (typeof switchDetailTab === 'function') {
+      switchDetailTab('brain', null);
+      if (typeof brainLoadFromLocal === 'function') brainLoadFromLocal();
+    }
+    if (typeof setSidebarActive === 'function') setSidebarActive('brain');
+    return;
+  }
+
+  // Sin cliente seleccionado: mostrar selector
+  const clients = typeof allClientsData !== 'undefined' ? allClientsData : [];
+
+  const clientListHTML = clients.length
+    ? clients.map(c => `
+        <button class="admin-brain-client-btn" onclick="selectClientForBrain('${c.id}')">
+          <span class="admin-brain-client-avatar">${(c.full_name || c.email || 'VG').substring(0,2).toUpperCase()}</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--white);">${c.full_name || c.email || '—'}</div>
+            <div style="font-size:11px;color:var(--gray);">${c.nicho || 'Sin nicho'}</div>
+          </div>
+          <span style="margin-left:auto;color:var(--green);font-size:14px;">→</span>
+        </button>
+      `).join('')
+    : `<div style="color:var(--gray);font-size:13px;padding:16px 0;">No hay clientes activos.</div>`;
+
+  root.innerHTML = `
+    <div class="cc-body">
+      <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:24px;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al OS
+      </button>
+      <div style="margin-bottom:8px;">
+        <p style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-family:'DM Mono',monospace;margin-bottom:8px;">Brain Empresarial</p>
+        <h1 style="font-size:26px;font-weight:700;color:var(--white);margin-bottom:6px;">Brain IA</h1>
+        <p style="font-size:13px;color:var(--gray);">Seleccioná un cliente para ver y generar sus documentos estratégicos.</p>
+      </div>
+      <div style="margin-top:28px;display:flex;flex-direction:column;gap:8px;max-width:540px;">
+        ${clientListHTML}
+      </div>
+    </div>
+  `;
+}
+
+function selectClientForBrain(clientId) {
+  if (typeof openClientDetail === 'function') {
+    openClientDetail(clientId).then(() => {
+      if (typeof switchDetailTab === 'function') {
+        switchDetailTab('brain', null);
+        if (typeof brainLoadFromLocal === 'function') brainLoadFromLocal();
+      }
+      if (typeof setSidebarActive === 'function') setSidebarActive('brain');
+    });
+  }
+}
+
+// ── Tasks Admin View ──────────────────────────────────────
+
+async function renderAdminTasksView() {
+  const root = document.getElementById('view-admin-tasks');
+  if (!root) return;
+
+  root.innerHTML = `
+    <div class="cc-body">
+      <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:24px;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al OS
+      </button>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;">
+        <div>
+          <p style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-family:'DM Mono',monospace;margin-bottom:8px;">Gestión de Tareas</p>
+          <h1 style="font-size:26px;font-weight:700;color:var(--white);margin-bottom:4px;">Tareas</h1>
+          <p style="font-size:13px;color:var(--gray);">Todas las tareas asignadas a clientes activos.</p>
+        </div>
+        <button class="btn-action" onclick="adminCreateTask()" style="flex-shrink:0;">+ Crear tarea</button>
+      </div>
+      <div id="admin-tasks-content" style="color:var(--gray);font-size:13px;">Cargando tareas...</div>
+    </div>
+  `;
+
+  try {
+    const { data: tasks, error } = await sb
+      .from('tasks')
+      .select('*, profiles:client_id(id, full_name, email)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const all = tasks || [];
+    const pending  = all.filter(t => !t.completed);
+    const done     = all.filter(t =>  t.completed);
+    const today    = new Date(); today.setHours(0,0,0,0);
+    const overdue  = pending.filter(t => t.due_date && new Date(t.due_date) < today);
+
+    const statsHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:28px;">
+        <div style="background:var(--black-card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+          <div style="font-size:24px;font-weight:700;color:var(--white);">${all.length}</div>
+          <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;">Total</div>
+        </div>
+        <div style="background:var(--black-card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+          <div style="font-size:24px;font-weight:700;color:var(--amber);">${pending.length}</div>
+          <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;">Pendientes</div>
+        </div>
+        <div style="background:var(--black-card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+          <div style="font-size:24px;font-weight:700;color:var(--green);">${done.length}</div>
+          <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;">Completadas</div>
+        </div>
+        <div style="background:var(--black-card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+          <div style="font-size:24px;font-weight:700;color:var(--red);">${overdue.length}</div>
+          <div style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;">Vencidas</div>
+        </div>
+      </div>
+    `;
+
+    const tasksHTML = all.length === 0
+      ? `<div style="background:var(--black-card);border:1px solid var(--border);border-radius:12px;padding:32px;text-align:center;color:var(--gray);font-size:14px;">No hay tareas todavía. Creá la primera desde el perfil de un cliente.</div>`
+      : all.map(t => {
+          const clientName = t.profiles?.full_name || t.profiles?.email || 'Cliente desconocido';
+          const dueDate = t.due_date ? new Date(t.due_date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : null;
+          const isOverdue = !t.completed && t.due_date && new Date(t.due_date) < today;
+          const statusDot = t.completed
+            ? `<span style="color:var(--green);font-size:12px;">✓ Completada</span>`
+            : isOverdue
+              ? `<span style="color:var(--red);font-size:12px;">⚠ Vencida</span>`
+              : `<span style="color:var(--amber);font-size:12px;">● Pendiente</span>`;
+          return `
+            <div style="background:var(--black-card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px;${t.completed?'opacity:.5':''}">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px;${t.completed?'text-decoration:line-through':''}">${t.title}</div>
+                ${t.description ? `<div style="font-size:12px;color:var(--gray);margin-bottom:3px;">${t.description}</div>` : ''}
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                  <span style="font-size:11px;color:var(--gray);">👤 ${clientName}</span>
+                  ${dueDate ? `<span style="font-size:11px;color:${isOverdue?'var(--red)':'var(--gray)'};">📅 ${dueDate}</span>` : ''}
+                  ${statusDot}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+    document.getElementById('admin-tasks-content').innerHTML = statsHTML + `
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);font-family:'DM Mono',monospace;margin-bottom:12px;">Todas las tareas</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">${tasksHTML}</div>
+    `;
+
+  } catch (err) {
+    console.error('[AdminTasks] error:', err);
+    document.getElementById('admin-tasks-content').innerHTML =
+      `<div style="color:var(--red);font-size:13px;">Error cargando tareas: ${err.message}</div>`;
+  }
+}
+
+function adminCreateTask() {
+  if (!selectedClientId) {
+    showOSToast('Seleccioná un cliente primero para asignarle una tarea', 'os-toast-soon');
+    return;
+  }
+  if (typeof openNewTaskModal === 'function') openNewTaskModal();
+}
+
+window.renderAdminBrainView  = renderAdminBrainView;
+window.renderAdminTasksView  = renderAdminTasksView;
+window.selectClientForBrain  = selectClientForBrain;
+window.adminCreateTask       = adminCreateTask;
 
 window.renderAdminOS        = renderAdminOS;
 window.handleOSModuleClick  = handleOSModuleClick;

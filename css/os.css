@@ -688,3 +688,39 @@
   .cc-roadmap-track { gap: 0; }
   .os-toast { left: 50%; }
 }
+
+/* ── Brain client selector ──────────────────────────────── */
+.admin-brain-client-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+}
+
+.admin-brain-client-btn:hover {
+  border-color: rgba(34,197,94,0.3);
+  background: rgba(255,255,255,0.02);
+}
+
+.admin-brain-client-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--green-dim);
+  border: 1px solid var(--green-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+  flex-shrink: 0;
+}

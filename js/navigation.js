@@ -12,6 +12,14 @@ function showAdminView(view) {
   } else if (view === 'clients') {
     showView('view-admin-clients');
     if (typeof setSidebarActive === 'function') setSidebarActive('clients');
+  } else if (view === 'brain') {
+    showView('view-admin-brain');
+    if (typeof renderAdminBrainView === 'function') renderAdminBrainView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('brain');
+  } else if (view === 'tasks') {
+    showView('view-admin-tasks');
+    if (typeof renderAdminTasksView === 'function') renderAdminTasksView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('tasks');
   } else if (view === 'detail') {
     showView('view-admin-detail');
   }

@@ -24,7 +24,7 @@ const OS_MODULES = [
     icon:        '🧠',
     status:      'active',
     category:    'villamo',
-    action:      () => showAdminView('clients'),
+    action:      () => showAdminView('brain'),
     order:       2,
   },
   {
@@ -44,7 +44,7 @@ const OS_MODULES = [
     icon:        '✅',
     status:      'active',
     category:    'villamo',
-    action:      () => showAdminView('clients'),
+    action:      () => showAdminView('tasks'),
     order:       4,
   },
 
