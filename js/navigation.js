@@ -16,6 +16,9 @@ function showAdminView(view) {
     showView('view-admin-brain');
     if (typeof renderAdminBrainView === 'function') renderAdminBrainView();
     if (typeof setSidebarActive === 'function') setSidebarActive('brain');
+    // Reinit brain DOM on every visit
+    if (typeof renderBrainNav === 'function') renderBrainNav();
+    if (typeof renderBrainForm === 'function' && typeof currentBrainModulo !== 'undefined') renderBrainForm(currentBrainModulo);
   } else if (view === 'tasks') {
     showView('view-admin-tasks');
     if (typeof renderAdminTasksView === 'function') renderAdminTasksView();

@@ -742,19 +742,25 @@ async function sendBrainEmail() {
 }
 
 // ── Auto-guardar en localStorage por módulo y cliente ────────────────────────
+function getBrainClientId() {
+  return selectedClientId || currentUser?.id || null;
+}
+
 function brainSaveToLocal() {
-  if (!selectedClientId) return;
+  const cid = getBrainClientId();
+  if (!cid) return;
   const data = {};
   getAllFieldIds(currentBrainModulo).forEach(id => {
     const el = document.getElementById(id);
     if (el) data[id] = el.value;
   });
-  localStorage.setItem('brain_' + currentBrainModulo + '_' + selectedClientId, JSON.stringify(data));
+  localStorage.setItem('brain_' + currentBrainModulo + '_' + cid, JSON.stringify(data));
 }
 
 function brainLoadFromLocal() {
-  if (!selectedClientId) return;
-  const saved = localStorage.getItem('brain_' + currentBrainModulo + '_' + selectedClientId);
+  const cid = getBrainClientId();
+  if (!cid) return;
+  const saved = localStorage.getItem('brain_' + currentBrainModulo + '_' + cid);
   if (!saved) return;
   try {
     const data = JSON.parse(saved);

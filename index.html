@@ -184,8 +184,115 @@
     <!-- ADMIN: OS Dashboard -->
     <div id="view-admin-os" class="view"></div>
 
-    <!-- ADMIN: Brain Empresarial -->
-    <div id="view-admin-brain" class="view"></div>
+    <!-- ADMIN: Brain Empresarial (módulo independiente) -->
+    <div id="view-admin-brain" class="view">
+
+      <!-- Top injected by renderAdminBrainView() -->
+      <div id="brain-admin-top"></div>
+
+      <!-- Brain generator (always in DOM, shown/hidden via JS) -->
+      <div class="brain-wrap" id="brain-generator-wrap" style="display:none;">
+
+        <div class="brain-module-nav" id="brain-module-nav"></div>
+
+        <div class="brain-header" id="brain-header">
+          <div class="brain-header-left">
+            <div class="brain-eyebrow" id="brain-eyebrow">Brain Generator · Módulo 01 de 08</div>
+            <div class="brain-title" id="brain-mod-title">
+              Identidad Estratégica
+              <span class="brain-version-badge" id="brain-version-badge" style="display:none;">v1.0</span>
+            </div>
+            <div class="brain-sub" id="brain-mod-sub">Completá el formulario junto al cliente. La IA genera el Master completo.</div>
+          </div>
+          <div class="brain-header-stats">
+            <div class="brain-stat">
+              <div class="brain-stat-val" id="brain-filled-count">0</div>
+              <div class="brain-stat-lbl">respondidas</div>
+            </div>
+            <div class="brain-stat">
+              <div class="brain-stat-val" id="brain-total-count" style="color:var(--gray)">—</div>
+              <div class="brain-stat-lbl">total</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="brain-progress-wrap">
+          <div class="brain-progress-count" id="brain-progress-count">0 de — campos</div>
+          <div class="brain-progress-bar">
+            <div class="brain-progress-fill" id="brain-progress-fill" style="width:0%"></div>
+          </div>
+          <div class="brain-progress-pct" id="brain-progress-pct">0%</div>
+        </div>
+
+        <div id="brain-module-content"></div>
+
+        <div class="brain-actions">
+          <div class="brain-actions-title" id="brain-actions-title">Generar documento Master</div>
+          <div class="brain-actions-sub" id="brain-actions-sub">Con los campos completados la IA construye el documento completo. Luego descargás el PDF o el .md y lo enviás por correo al cliente.</div>
+          <div class="brain-actions-row">
+            <button class="btn-brain-generate" id="btn-brain-gen" onclick="generateBrainMaster()">
+              <svg viewBox="0 0 16 16" fill="none" style="width:15px;height:15px;"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5 6.5 5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+              <span id="btn-brain-gen-label">Generar Master con IA</span>
+            </button>
+            <button class="btn-brain-download" id="btn-dl-pdf" onclick="downloadBrainPDF()" disabled>
+              <svg viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Descargar PDF
+            </button>
+            <button class="btn-brain-download" id="btn-dl-md" onclick="downloadBrainMD()" disabled>
+              <svg viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Descargar .md
+            </button>
+            <button class="btn-brain-download" id="btn-send-email" onclick="openBrainEmailModal()" disabled>
+              <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7l6 4 6-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Enviar por correo
+            </button>
+          </div>
+          <div class="brain-generating" id="brain-generating">
+            <div class="spinner"></div>
+            <span id="brain-generating-text">La IA está construyendo el documento Master...</span>
+          </div>
+          <div class="brain-output-wrap" id="brain-output-wrap">
+            <div class="brain-output-header">
+              <div class="brain-output-title" id="brain-output-title">MASTER.MD — GENERADO</div>
+              <div class="brain-output-actions">
+                <button class="btn-ghost" onclick="copyBrainOutput()" style="font-size:11px;padding:5px 10px;">Copiar</button>
+              </div>
+            </div>
+            <div class="brain-output-content" id="brain-output-content"></div>
+          </div>
+        </div>
+
+      </div><!-- /#brain-generator-wrap -->
+
+      <!-- Email modal (brain-specific) -->
+      <div class="brain-email-modal" id="brain-email-modal">
+        <div class="brain-email-box">
+          <div class="brain-email-title">Enviar documento al cliente</div>
+          <div class="brain-email-sub">El PDF se adjuntará automáticamente. Podés personalizar el mensaje antes de enviar.</div>
+          <div class="field" style="margin-bottom:14px;">
+            <label style="font-size:12px;color:var(--gray);display:block;margin-bottom:6px;">Para (correo del cliente)</label>
+            <input type="email" id="brain-email-to" class="brain-input" placeholder="cliente@email.com" />
+          </div>
+          <div class="field" style="margin-bottom:14px;">
+            <label style="font-size:12px;color:var(--gray);display:block;margin-bottom:6px;">Asunto</label>
+            <input type="text" id="brain-email-subject" class="brain-input" value="Tu documento de Identidad Estratégica — Villamo Growth" />
+          </div>
+          <div class="field" style="margin-bottom:20px;">
+            <label style="font-size:12px;color:var(--gray);display:block;margin-bottom:6px;">Mensaje</label>
+            <textarea id="brain-email-body" class="brain-textarea" rows="4">Adjunto encontrás el documento de Identidad Estratégica construido durante nuestra sesión. Este es el primer módulo de tu Brain — el núcleo estratégico de tu marca.
+
+Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
+
+— Villamo Growth</textarea>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeBrainEmailModal()">Cancelar</button>
+            <button class="btn-primary" style="flex:2;margin-top:0;" onclick="sendBrainEmail()">Enviar con adjunto PDF</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /#view-admin-brain -->
 
     <!-- ADMIN: Tareas Global -->
     <div id="view-admin-tasks" class="view"></div>
@@ -292,7 +399,6 @@
           <button class="detail-tab" onclick="switchDetailTab('shopify',this)">🛒 Shopify</button>
           <button class="detail-tab" onclick="switchDetailTab('auditorias',this)">📋 Auditorías</button>
           <button class="detail-tab" onclick="switchDetailTab('tareas',this)">✅ Tareas</button>
-          <button class="detail-tab" onclick="switchDetailTab('brain',this);brainLoadFromLocal()">🧠 Brain</button>
           <button class="detail-tab" onclick="switchDetailTab('notas',this)">📝 Notas CRM</button>
           <button class="detail-tab" onclick="switchDetailTab('modulos',this)">🔧 Módulos</button>
         </div>
@@ -356,119 +462,6 @@
           </div>
           <div class="tasks-list" id="detail-tasks"><div class="empty-state">Sin tareas asignadas aún.</div></div>
         </div>
-
-        <!-- TAB: BRAIN GENERATOR -->
-<div id="tab-brain" class="detail-tab-content">
-  <div class="brain-wrap">
-
-    <!-- MODULE NAV -->
-    <div class="brain-module-nav" id="brain-module-nav"></div>
-
-    <!-- DYNAMIC HEADER -->
-    <div class="brain-header" id="brain-header">
-      <div class="brain-header-left">
-        <div class="brain-eyebrow" id="brain-eyebrow">Brain Generator · Módulo 01 de 08</div>
-        <div class="brain-title" id="brain-mod-title">
-          Identidad Estratégica
-          <span class="brain-version-badge" id="brain-version-badge" style="display:none;">v1.0</span>
-        </div>
-        <div class="brain-sub" id="brain-mod-sub">Completá el formulario junto al cliente. La IA genera el Master completo.</div>
-      </div>
-      <div class="brain-header-stats">
-        <div class="brain-stat">
-          <div class="brain-stat-val" id="brain-filled-count">0</div>
-          <div class="brain-stat-lbl">respondidas</div>
-        </div>
-        <div class="brain-stat">
-          <div class="brain-stat-val" id="brain-total-count" style="color:var(--gray)">—</div>
-          <div class="brain-stat-lbl">total</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PROGRESS -->
-    <div class="brain-progress-wrap">
-      <div class="brain-progress-count" id="brain-progress-count">0 de — campos</div>
-      <div class="brain-progress-bar">
-        <div class="brain-progress-fill" id="brain-progress-fill" style="width:0%"></div>
-      </div>
-      <div class="brain-progress-pct" id="brain-progress-pct">0%</div>
-    </div>
-
-    <!-- DYNAMIC FORM -->
-    <div id="brain-module-content"></div>
-
-    <!-- ACCIONES -->
-    <div class="brain-actions">
-      <div class="brain-actions-title" id="brain-actions-title">Generar documento Master</div>
-      <div class="brain-actions-sub" id="brain-actions-sub">Con los campos completados la IA construye el documento completo. Luego descargás el PDF o el .md y lo enviás por correo al cliente.</div>
-      <div class="brain-actions-row">
-        <button class="btn-brain-generate" id="btn-brain-gen" onclick="generateBrainMaster()">
-          <svg viewBox="0 0 16 16" fill="none" style="width:15px;height:15px;"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10l-3 1.5.5-3.5L3 5.5 6.5 5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-          <span id="btn-brain-gen-label">Generar Master con IA</span>
-        </button>
-        <button class="btn-brain-download" id="btn-dl-pdf" onclick="downloadBrainPDF()" disabled>
-          <svg viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Descargar PDF
-        </button>
-        <button class="btn-brain-download" id="btn-dl-md" onclick="downloadBrainMD()" disabled>
-          <svg viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Descargar .md
-        </button>
-        <button class="btn-brain-download" id="btn-send-email" onclick="openBrainEmailModal()" disabled>
-          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7l6 4 6-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          Enviar por correo
-        </button>
-      </div>
-
-      <!-- GENERANDO -->
-      <div class="brain-generating" id="brain-generating">
-        <div class="spinner"></div>
-        <span id="brain-generating-text">La IA está construyendo el documento Master...</span>
-      </div>
-
-      <!-- OUTPUT -->
-      <div class="brain-output-wrap" id="brain-output-wrap">
-        <div class="brain-output-header">
-          <div class="brain-output-title" id="brain-output-title">MASTER.MD — GENERADO</div>
-          <div class="brain-output-actions">
-            <button class="btn-ghost" onclick="copyBrainOutput()" style="font-size:11px;padding:5px 10px;">Copiar</button>
-          </div>
-        </div>
-        <div class="brain-output-content" id="brain-output-content"></div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- EMAIL MODAL BRAIN -->
-<div class="brain-email-modal" id="brain-email-modal">
-  <div class="brain-email-box">
-    <div class="brain-email-title">Enviar documento al cliente</div>
-    <div class="brain-email-sub">El PDF se adjuntará automáticamente. Podés personalizar el mensaje antes de enviar.</div>
-    <div class="field" style="margin-bottom:14px;">
-      <label style="font-size:12px;color:var(--gray);display:block;margin-bottom:6px;">Para (correo del cliente)</label>
-      <input type="email" id="brain-email-to" class="brain-input" placeholder="cliente@email.com" />
-    </div>
-    <div class="field" style="margin-bottom:14px;">
-      <label style="font-size:12px;color:var(--gray);display:block;margin-bottom:6px;">Asunto</label>
-      <input type="text" id="brain-email-subject" class="brain-input" value="Tu documento de Identidad Estratégica — Villamo Growth" />
-    </div>
-    <div class="field" style="margin-bottom:20px;">
-      <label style="font-size:12px;color:var(--gray);display:block;margin-bottom:6px;">Mensaje</label>
-      <textarea id="brain-email-body" class="brain-textarea" rows="4">Adjunto encontrás el documento de Identidad Estratégica construido durante nuestra sesión. Este es el primer módulo de tu Brain — el núcleo estratégico de tu marca.
-
-Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
-
-— Villamo Growth</textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeBrainEmailModal()">Cancelar</button>
-      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="sendBrainEmail()">Enviar con adjunto PDF</button>
-    </div>
-  </div>
-</div>
 
         <!-- TAB: NOTAS CRM -->
         <div id="tab-notas" class="detail-tab-content">
@@ -647,6 +640,17 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
     </div>
 
     <!-- CLIENT: MIS TAREAS -->
+    <!-- CLIENT: Brain Empresarial -->
+    <div id="view-client-brain" class="view">
+      <div class="brain-wrap brain-client-wrap">
+        <button class="back-btn" onclick="showView('view-client-sistema')" style="margin-bottom:20px;">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Volver al sistema
+        </button>
+        <div id="brain-client-header"></div>
+      </div>
+    </div>
+
     <div id="view-client-tasks" class="view">
       <div class="tasks-dash">
         <button class="back-btn" onclick="showView('view-client-sistema')">

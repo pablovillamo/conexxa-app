@@ -268,65 +268,114 @@ function showOSToast(msg, cls = '') {
 
 // ── Brain Admin View ─────────────────────────────────────
 
+const BRAIN_MASTERS = [
+  { slug:'identidad', icon:'🧬', name:'Identidad',   desc:'Misión, visión, valores y personalidad de marca.' },
+  { slug:'oferta',    icon:'🎯', name:'Oferta',       desc:'Propuesta de valor, precio y transformación.' },
+  { slug:'cliente',   icon:'👤', name:'Cliente Ideal',desc:'Perfil, dolores, deseos y objeciones.' },
+  { slug:'mercado',   icon:'🌍', name:'Mercado',      desc:'Competencia, tendencias y oportunidades.' },
+  { slug:'branding',  icon:'🎨', name:'Branding',     desc:'Identidad visual, paleta y tipografía.' },
+  { slug:'vision',    icon:'🔭', name:'Visión',       desc:'Objetivos a largo plazo y hoja de ruta.' },
+  { slug:'operacion', icon:'⚙️', name:'Operaciones',  desc:'Flujos, SOPs y estructura operativa.' },
+  { slug:'ia',        icon:'🤖', name:'IA Estratégica',desc:'Aplicación de IA al negocio y automatizaciones.' },
+];
+
 function renderAdminBrainView() {
-  const root = document.getElementById('view-admin-brain');
-  if (!root) return;
+  const topEl = document.getElementById('brain-admin-top');
+  const genWrap = document.getElementById('brain-generator-wrap');
+  if (!topEl) return;
 
-  if (selectedClientId) {
-    // Cliente seleccionado: ir a su brain directamente
-    showView('view-admin-detail');
-    if (typeof switchDetailTab === 'function') {
-      switchDetailTab('brain', null);
-      if (typeof brainLoadFromLocal === 'function') brainLoadFromLocal();
-    }
-    if (typeof setSidebarActive === 'function') setSidebarActive('brain');
-    return;
-  }
-
-  // Sin cliente seleccionado: mostrar selector
   const clients = typeof allClientsData !== 'undefined' ? allClientsData : [];
 
-  const clientListHTML = clients.length
-    ? clients.map(c => `
-        <button class="admin-brain-client-btn" onclick="selectClientForBrain('${c.id}')">
-          <span class="admin-brain-client-avatar">${(c.full_name || c.email || 'VG').substring(0,2).toUpperCase()}</span>
-          <div>
-            <div style="font-size:13px;font-weight:600;color:var(--white);">${c.full_name || c.email || '—'}</div>
-            <div style="font-size:11px;color:var(--gray);">${c.nicho || 'Sin nicho'}</div>
-          </div>
-          <span style="margin-left:auto;color:var(--green);font-size:14px;">→</span>
-        </button>
-      `).join('')
-    : `<div style="color:var(--gray);font-size:13px;padding:16px 0;">No hay clientes activos.</div>`;
+  // ── Build client selector dropdown ──────────────────────
+  const clientOptions = clients.map(c =>
+    `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${c.full_name || c.email || '—'}</option>`
+  ).join('');
 
-  root.innerHTML = `
-    <div class="cc-body">
-      <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:24px;">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Volver al OS
-      </button>
-      <div style="margin-bottom:8px;">
-        <p style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-family:'DM Mono',monospace;margin-bottom:8px;">Brain Empresarial</p>
-        <h1 style="font-size:26px;font-weight:700;color:var(--white);margin-bottom:6px;">Brain IA</h1>
-        <p style="font-size:13px;color:var(--gray);">Seleccioná un cliente para ver y generar sus documentos estratégicos.</p>
+  const selectedClient = clients.find(c => c.id === selectedClientId);
+  const clientName = selectedClient ? (selectedClient.full_name || selectedClient.email || '—') : null;
+
+  // ── 8 Master cards ───────────────────────────────────────
+  const masterCardsHTML = BRAIN_MASTERS.map(m => `
+    <div class="brain-master-card" onclick="openBrainMaster('${m.slug}')">
+      <div class="brain-master-icon">${m.icon}</div>
+      <div class="brain-master-name">${m.name}</div>
+      <div class="brain-master-desc">${m.desc}</div>
+      <div class="brain-master-arrow">→</div>
+    </div>
+  `).join('');
+
+  topEl.innerHTML = `
+    <div class="brain-admin-header">
+      <div class="brain-admin-header-left">
+        <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:16px;">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Volver al OS
+        </button>
+        <p class="brain-admin-eyebrow">Core OS · Brain Empresarial</p>
+        <h1 class="brain-admin-title">Brain Empresarial</h1>
+        <p class="brain-admin-sub">Crea, organiza y consulta los masters estratégicos de cada empresa.</p>
       </div>
-      <div style="margin-top:28px;display:flex;flex-direction:column;gap:8px;max-width:540px;">
-        ${clientListHTML}
+      <div class="brain-admin-client-select">
+        <label style="font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;font-family:'DM Mono',monospace;">Cliente activo</label>
+        ${clients.length
+          ? `<select id="brain-client-dropdown" class="brain-admin-select" onchange="switchBrainClient(this.value)">
+               <option value="">— Seleccionar cliente —</option>
+               ${clientOptions}
+             </select>`
+          : `<div style="font-size:12px;color:var(--gray);">No hay clientes disponibles</div>`}
       </div>
     </div>
+
+    ${selectedClientId
+      ? `<div class="brain-client-context">
+           <div class="brain-client-context-dot"></div>
+           <span>Editando Brain de <strong>${clientName}</strong></span>
+         </div>`
+      : `<div class="brain-no-client-banner">
+           <span>⚠ Seleccioná un cliente para crear o editar un Master</span>
+         </div>`}
+
+    <div class="brain-master-grid">${masterCardsHTML}</div>
   `;
+
+  // Show/hide generator based on client selection
+  if (genWrap) genWrap.style.display = selectedClientId ? 'block' : 'none';
+}
+
+function switchBrainClient(clientId) {
+  if (!clientId) {
+    selectedClientId = null;
+    renderAdminBrainView();
+    return;
+  }
+  selectedClientId = clientId;
+  renderAdminBrainView();
+  // Init brain for selected client
+  if (typeof switchBrainModule === 'function') switchBrainModule(currentBrainModulo || 'identidad');
+  if (typeof brainLoadFromLocal === 'function') brainLoadFromLocal();
+  // Prefill from profile
+  const client = (typeof allClientsData !== 'undefined' ? allClientsData : []).find(c => c.id === clientId);
+  if (client && typeof brainPrefillFromProfile === 'function') brainPrefillFromProfile(client);
+}
+
+function openBrainMaster(slug) {
+  if (!selectedClientId) {
+    showOSToast('Seleccioná un cliente antes de crear un Master', 'os-toast-soon');
+    // Scroll to client dropdown
+    const dd = document.getElementById('brain-client-dropdown');
+    if (dd) { dd.focus(); dd.classList.add('brain-admin-select-pulse'); setTimeout(() => dd.classList.remove('brain-admin-select-pulse'), 1200); }
+    return;
+  }
+  if (typeof switchBrainModule === 'function') switchBrainModule(slug);
+  const genWrap = document.getElementById('brain-generator-wrap');
+  if (genWrap) {
+    genWrap.style.display = 'block';
+    genWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function selectClientForBrain(clientId) {
-  if (typeof openClientDetail === 'function') {
-    openClientDetail(clientId).then(() => {
-      if (typeof switchDetailTab === 'function') {
-        switchDetailTab('brain', null);
-        if (typeof brainLoadFromLocal === 'function') brainLoadFromLocal();
-      }
-      if (typeof setSidebarActive === 'function') setSidebarActive('brain');
-    });
-  }
+  switchBrainClient(clientId);
 }
 
 // ── Tasks Admin View ──────────────────────────────────────
@@ -438,6 +487,39 @@ window.renderAdminBrainView  = renderAdminBrainView;
 window.renderAdminTasksView  = renderAdminTasksView;
 window.selectClientForBrain  = selectClientForBrain;
 window.adminCreateTask       = adminCreateTask;
+window.switchBrainClient     = switchBrainClient;
+window.openBrainMaster       = openBrainMaster;
+
+// ── Client Brain View ─────────────────────────────────────
+
+function renderClientBrainView() {
+  const headerEl = document.getElementById('brain-client-header');
+  if (!headerEl) return;
+
+  const masterCardsHTML = BRAIN_MASTERS.map(m => `
+    <div class="brain-master-card" onclick="openClientBrainMaster('${m.slug}')">
+      <div class="brain-master-icon">${m.icon}</div>
+      <div class="brain-master-name">${m.name}</div>
+      <div class="brain-master-desc">${m.desc}</div>
+      <div class="brain-master-arrow">→</div>
+    </div>
+  `).join('');
+
+  headerEl.innerHTML = `
+    <p style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-family:'DM Mono',monospace;margin-bottom:10px;">Brain Empresarial</p>
+    <h1 style="font-size:24px;font-weight:700;color:var(--white);margin-bottom:6px;">Tu Brain</h1>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:28px;">Construye los documentos maestros de tu marca con inteligencia artificial.</p>
+    <div class="brain-master-grid">${masterCardsHTML}</div>
+  `;
+}
+
+function openClientBrainMaster(slug) {
+  // For client role: selectedClientId = currentUser.id (set at login)
+  if (typeof switchBrainModule === 'function') switchBrainModule(slug);
+}
+
+window.renderClientBrainView  = renderClientBrainView;
+window.openClientBrainMaster  = openClientBrainMaster;
 
 window.renderAdminOS        = renderAdminOS;
 window.handleOSModuleClick  = handleOSModuleClick;
