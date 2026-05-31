@@ -58,7 +58,7 @@ async function loadUserProfile(user) {
     document.getElementById('admin-nav').style.display = 'flex';
     showScreen('app');
     await loadAdminClients();
-    showAdminView('clients');
+    showAdminView('os');
   } else {
     document.getElementById('admin-nav').style.display = 'none';
     showScreen('app');

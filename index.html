@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="/css/app.css">
 <link rel="stylesheet" href="/css/client.css">
 <link rel="stylesheet" href="/css/integrations.css">
+<link rel="stylesheet" href="/css/os.css">
 </head>
 <body>
 
@@ -98,7 +99,8 @@
       </div>
       <!-- Admin nav -->
       <div class="topbar-nav" id="admin-nav" style="display:none;">
-        <button class="nav-btn active" onclick="showAdminView('clients')">Clientes</button>
+        <button class="nav-btn" id="nav-btn-os" onclick="showAdminView('os')">OS</button>
+        <button class="nav-btn active" id="nav-btn-clients" onclick="showAdminView('clients')">Clientes</button>
       </div>
     </div>
     <div class="topbar-right">
@@ -137,6 +139,9 @@
 
   <!-- BODY -->
   <div class="app-body">
+
+    <!-- ADMIN: OS Dashboard -->
+    <div id="view-admin-os" class="view"></div>
 
     <!-- ADMIN: lista de clientes -->
     <div id="view-admin-clients" class="view">
@@ -919,6 +924,7 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 </div>
 
 <!-- ============================================================ JAVASCRIPT -->
+<script src="/js/modules-config.js"></script>
 <script src="/js/brain-data.js"></script>
 <script src="/js/brain-prompts.js"></script>
 <script src="/js/app.js"></script>
@@ -933,5 +939,6 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/dashboard.js"></script>
 <script src="/js/admin-clients.js"></script>
 <script src="/js/integrations.js"></script>
+<script src="/js/admin-os.js"></script>
 </body>
 </html>
