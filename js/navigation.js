@@ -5,14 +5,13 @@ function showAdminView(view) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
   if (view === 'os') {
-    const btn = document.getElementById('nav-btn-os');
-    if (btn) btn.classList.add('active');
     showView('view-admin-os');
     if (typeof renderAdminOS === 'function') renderAdminOS();
+    if (typeof setSidebarActive === 'function') setSidebarActive('os');
+    if (typeof syncSidebarUser === 'function') syncSidebarUser();
   } else if (view === 'clients') {
-    const btn = document.getElementById('nav-btn-clients');
-    if (btn) btn.classList.add('active');
     showView('view-admin-clients');
+    if (typeof setSidebarActive === 'function') setSidebarActive('clients');
   } else if (view === 'detail') {
     showView('view-admin-detail');
   }

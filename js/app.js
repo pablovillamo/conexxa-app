@@ -55,12 +55,17 @@ async function loadUserProfile(user) {
   }
 
   if (profile?.role === 'admin') {
-    document.getElementById('admin-nav').style.display = 'flex';
+    document.getElementById('admin-nav').style.display = 'none';
+    document.getElementById('os-sidebar').style.display = 'flex';
+    document.getElementById('screen-app').classList.add('admin-mode');
     showScreen('app');
     await loadAdminClients();
+    if (typeof renderSidebarNav === 'function') renderSidebarNav();
     showAdminView('os');
   } else {
     document.getElementById('admin-nav').style.display = 'none';
+    document.getElementById('os-sidebar').style.display = 'none';
+    document.getElementById('screen-app').classList.remove('admin-mode');
     showScreen('app');
     await loadClientView();
     loadDashboard();
