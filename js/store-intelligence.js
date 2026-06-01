@@ -106,23 +106,99 @@ function si_photos_setPrincipal(photoId, zoneId) {
 // Preparado para Supabase Storage: reemplazar por upload a bucket
 
 function si_resizeImage(file, maxWidth = 900, quality = 0.78) {
+  console.log('[SI Photo] PASO 1 — archivo recibido:', file.name, file.type, (file.size/1024).toFixed(1)+'KB');
+
   return new Promise((resolve, reject) => {
-    if (file.size > 8 * 1024 * 1024) { reject(new Error('La imagen no puede superar 8MB.')); return; }
+
+    // PASO 2 — Validación
+    if (!file.type.startsWith('image/')) {
+      const e = new Error('El archivo no es una imagen. Tipo detectado: ' + file.type);
+      console.error('[SI Photo] PASO 2 FAIL — tipo inválido:', e.message);
+      reject(e); return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      const e = new Error('La imagen no puede superar 8MB. Tamaño: ' + (file.size/1024/1024).toFixed(1)+'MB');
+      console.error('[SI Photo] PASO 2 FAIL — tamaño:', e.message);
+      reject(e); return;
+    }
+    console.log('[SI Photo] PASO 2 OK — validación pasada');
+
+    // PASO 3 — FileReader
+    console.log('[SI Photo] PASO 3 — iniciando FileReader...');
     const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onerror = reject;
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = e.target.result;
+
+    // FIX: onerror recibe ProgressEvent, no Error → convertir explícitamente
+    reader.onerror = () => {
+      const e = new Error('Error al leer el archivo (FileReader). Código: ' + (reader.error?.code ?? 'desconocido') + ' — ' + (reader.error?.message ?? ''));
+      console.error('[SI Photo] PASO 3 FAIL — FileReader.onerror:', e.message, reader.error);
+      reject(e);
     };
+
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result;
+      console.log('[SI Photo] PASO 3 OK — FileReader.onload. DataURL length:', dataUrl?.length ?? 'null');
+
+      if (!dataUrl) {
+        const e = new Error('FileReader no generó un resultado válido (dataUrl null).');
+        console.error('[SI Photo] PASO 3 FAIL —', e.message);
+        reject(e); return;
+      }
+
+      // PASO 4 — Cargar imagen
+      console.log('[SI Photo] PASO 4 — creando Image() y asignando src...');
+      const img = new Image();
+
+      // FIX: onerror recibe Event, no Error → convertir explícitamente
+      img.onerror = (imgEv) => {
+        const e = new Error('La imagen no se pudo cargar desde el archivo (img.onerror). Puede ser formato no soportado o archivo corrupto.');
+        console.error('[SI Photo] PASO 4 FAIL — img.onerror:', e.message, imgEv);
+        reject(e);
+      };
+
+      img.onload = () => {
+        console.log('[SI Photo] PASO 4 OK — img.onload. Dimensiones originales:', img.width, 'x', img.height);
+
+        // FIX: wrap completo en try/catch para atrapar errores de Canvas
+        // (los throws dentro de callbacks async NO son capturados por el Promise constructor)
+        try {
+          // PASO 5 — Resize Canvas
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+          console.log('[SI Photo] PASO 5 — redimensionando a:', w, 'x', h);
+
+          const canvas = document.createElement('canvas');
+          canvas.width  = w;
+          canvas.height = h;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            throw new Error('canvas.getContext("2d") devolvió null. El navegador puede no soportar Canvas en este contexto.');
+          }
+
+          ctx.drawImage(img, 0, 0, w, h);
+          console.log('[SI Photo] PASO 5 OK — drawImage completado');
+
+          // PASO 6 — Conversión base64
+          console.log('[SI Photo] PASO 6 — convirtiendo a base64 JPEG (quality=' + quality + ')...');
+          const base64 = canvas.toDataURL('image/jpeg', quality);
+
+          if (!base64 || base64 === 'data:,') {
+            throw new Error('canvas.toDataURL devolvió un resultado vacío o inválido.');
+          }
+
+          console.log('[SI Photo] PASO 6 OK — base64 generado. Tamaño final:', (base64.length/1024).toFixed(1)+'KB');
+          resolve(base64);
+
+        } catch (canvasErr) {
+          console.error('[SI Photo] PASO 5-6 FAIL — error en Canvas:', canvasErr.message);
+          console.error('[SI Photo] Stack:', canvasErr.stack);
+          reject(canvasErr);
+        }
+      };
+
+      img.src = dataUrl;
+    };
+
     reader.readAsDataURL(file);
   });
 }
@@ -822,19 +898,36 @@ function si_openUploadArea(zoneId) {
 
 async function si_handleFileSelect(event, zoneId) {
   const file = event.target.files[0];
-  if (!file) return;
+  console.log('[SI Photo] handleFileSelect — zoneId:', zoneId, '| file:', file?.name ?? 'null');
+
+  if (!file) { console.warn('[SI Photo] No hay archivo seleccionado.'); return; }
+
   const preview  = document.getElementById(`si-upload-preview-${zoneId}`);
-  const img      = document.getElementById(`si-upload-img-${zoneId}`);
+  const imgEl    = document.getElementById(`si-upload-img-${zoneId}`);
   const dropZone = document.querySelector(`#si-upload-box-${zoneId} .si-upload-drop-zone`);
+
+  console.log('[SI Photo] DOM refs — preview:', !!preview, '| imgEl:', !!imgEl, '| dropZone:', !!dropZone);
+
   try {
     const base64 = await si_resizeImage(file);
+
+    // PASO 7 — Guardado en estado
+    console.log('[SI Photo] PASO 7 — guardando estado pending...');
     _siPendingPhotoBase64 = base64;
     _siPendingZoneId      = zoneId;
-    if (img)      img.src = base64;
-    if (preview)  preview.style.display = 'block';
-    if (dropZone) dropZone.style.display = 'none';
+
+    if (imgEl)    { imgEl.src = base64; }
+    if (preview)  { preview.style.display = 'block'; }
+    if (dropZone) { dropZone.style.display = 'none'; }
+
+    console.log('[SI Photo] PASO 8 — UI actualizada, listo para guardar.');
+
   } catch (err) {
-    alert(err.message || 'Error procesando la imagen.');
+    console.error('[SI Photo] ERROR COMPLETO:', err);
+    console.error('[SI Photo] err.message:', err?.message);
+    console.error('[SI Photo] err.stack:', err?.stack);
+    console.error('[SI Photo] typeof err:', typeof err, '| constructor:', err?.constructor?.name);
+    alert('Error procesando imagen:\n' + (err?.message || JSON.stringify(err)));
   }
 }
 
