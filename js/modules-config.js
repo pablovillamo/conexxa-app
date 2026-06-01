@@ -271,7 +271,7 @@ const BUSINESS_TYPES = {
   consulting:     { label:'Consultoría',     color:'#F59E0B', bg:'rgba(245,158,11,.1)', icon:'💼' },
   personal_brand: { label:'Marca Personal',  color:'#EC4899', bg:'rgba(236,72,153,.1)', icon:'⭐' },
   franchise:      { label:'Franquicia',      color:'#8B5CF6', bg:'rgba(139,92,246,.1)', icon:'🔗' },
-  hybrid:         { label:'Híbrido',         color:'#F97316', bg:'rgba(249,115,22,.1)', icon:'🔀' },
+  hybrid:         { label:'Ecommerce & Retail', color:'#F97316', bg:'rgba(249,115,22,.1)', icon:'🔀' },
 };
 
 const INTEGRATIONS_BY_TYPE = {
