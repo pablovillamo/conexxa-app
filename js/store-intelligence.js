@@ -22,11 +22,17 @@ let si_clientId = null;
 let si_storeId  = null;
 
 // ── Estado croquis interactivo — FASE 1.4 ─────────────────
-// FASE 1.5 (futura): flechas de flujo, heatmaps, congestión, IA sobre plano
 
 let si_layoutEditMode = false;
-let _siLayoutDraft    = {};  // { zoneId: { x, y, w, h } } — borrador durante edición
-let _siDragState      = null; // estado activo de drag o resize
+let _siLayoutDraft    = {};
+let _siDragState      = null;
+
+// ── Estado flujo de clientes — FASE 1.5 ───────────────────
+// FASE 1.6 (futura): heatmaps reales, tráfico medido, IA recorrido óptimo, comparativo entre sucursales
+
+let si_flowEditMode       = false;
+let _siFlowDraft          = null;  // { points: [] } — borrador durante edición
+let _siSelectedFlowPoint  = null;  // id del punto seleccionado en edit mode
 
 // ── Listeners globales de drag (registrados una vez) ──────
 
@@ -71,6 +77,17 @@ const SI_ZONE_TYPES = {
   caja:          { label:'Caja',              color:'#14B8A6', bg:'rgba(20,184,166,.12)',  icon:'💰' },
   bodega:        { label:'Bodega',            color:'#6B7280', bg:'rgba(107,114,128,.12)', icon:'📦' },
   personalizada: { label:'Zona Personalizada',color:'#F97316', bg:'rgba(249,115,22,.12)',  icon:'✏️' },
+};
+
+// ── Tipos de puntos de flujo ──────────────────────────────
+
+const SI_FLOW_TYPES = {
+  entrada:    { label:'Entrada',         color:'#22C55E', icon:'🚪' },
+  congestion: { label:'Congestión',      color:'#EF4444', icon:'🚨' },
+  decision:   { label:'Decisión',        color:'#F59E0B', icon:'⚡' },
+  conversion: { label:'Conversión',      color:'#8B5CF6', icon:'💰' },
+  ignorada:   { label:'Zona ignorada',   color:'#6B7280', icon:'❌' },
+  salida:     { label:'Salida',          color:'#06B6D4', icon:'👋' },
 };
 
 // ── Storage — Stores (sucursales) ─────────────────────────
@@ -494,6 +511,26 @@ function si_renderStoreContent() {
         <div class="si-kpi-label">Última foto</div>
       </div>
     </div>
+
+    <!-- Flow KPIs (visible solo si hay puntos) -->
+    ${(() => {
+      const flow = si_getStoreFlow();
+      const pts  = flow.points || [];
+      if (!pts.length) return '';
+      const cong  = pts.filter(p => p.type === 'congestion').length;
+      const conv  = pts.filter(p => p.type === 'conversion').length;
+      const ign   = pts.filter(p => p.type === 'ignorada').length;
+      return `
+        <div class="si-flow-kpis">
+          <span class="si-flow-kpi-label">🚶 Flujo de clientes</span>
+          <div class="si-flow-kpi-items">
+            <div class="si-flow-kpi-item"><span class="si-fk-val">${pts.length}</span><span class="si-fk-lbl">Puntos</span></div>
+            <div class="si-flow-kpi-item" style="color:#EF4444"><span class="si-fk-val">${cong}</span><span class="si-fk-lbl">Congestión</span></div>
+            <div class="si-flow-kpi-item" style="color:#8B5CF6"><span class="si-fk-val">${conv}</span><span class="si-fk-lbl">Conversión</span></div>
+            <div class="si-flow-kpi-item" style="color:#6B7280"><span class="si-fk-val">${ign}</span><span class="si-fk-lbl">Ignoradas</span></div>
+          </div>
+        </div>`;
+    })()}
 
     <!-- Croquis interactivo — FASE 1.4 -->
     <div class="si-section" id="si-croquis-section">
@@ -1283,31 +1320,53 @@ function si_getZoneLayout(zone) {
 function si_renderInteractiveCroquis(zones) {
   const activeZones = zones.filter(z => z.status === 'Activa');
 
-  const toolbar = si_layoutEditMode ? `
-    <div class="si-fp-toolbar">
-      <div class="si-fp-info">
-        <span class="si-fp-mode-badge edit">✏️ Modo edición</span>
-        <span class="si-fp-tip">Arrastrá para mover · Esquina inferior derecha para redimensionar</span>
-      </div>
-      <div class="si-fp-btns">
-        <button class="si-fp-btn" onclick="si_autoArrangeZones()">⊞ Auto ordenar</button>
-        <button class="si-fp-btn" onclick="si_resetLayout()">↺ Resetear</button>
-        <button class="si-fp-btn" onclick="si_cancelLayout()">✕ Cancelar</button>
-        <button class="si-fp-btn si-fp-btn-save" onclick="si_saveLayout()">💾 Guardar croquis</button>
-      </div>
-    </div>
-  ` : `
-    <div class="si-section-header" style="margin-bottom:14px;">
-      <div>
-        <div class="si-section-title">🗺️ Croquis de Sucursal</div>
-        <div class="si-section-sub">Vista visual interactiva de zonas. Clic para ver detalle.</div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="si-fp-btn" onclick="si_centerView()" title="Centrar vista">⊙ Centrar</button>
-        <button class="si-fp-btn si-fp-btn-edit" onclick="si_toggleLayoutEditMode()">✏️ Editar croquis</button>
-      </div>
-    </div>
-  `;
+  let toolbar;
+  if (si_layoutEditMode) {
+    toolbar = `
+      <div class="si-fp-toolbar">
+        <div class="si-fp-info">
+          <span class="si-fp-mode-badge edit">✏️ Editando zonas</span>
+          <span class="si-fp-tip">Arrastrá para mover · Esquina inferior derecha para redimensionar</span>
+        </div>
+        <div class="si-fp-btns">
+          <button class="si-fp-btn" onclick="si_autoArrangeZones()">⊞ Auto ordenar</button>
+          <button class="si-fp-btn" onclick="si_resetLayout()">↺ Resetear</button>
+          <button class="si-fp-btn" onclick="si_cancelLayout()">✕ Cancelar</button>
+          <button class="si-fp-btn si-fp-btn-save" onclick="si_saveLayout()">💾 Guardar croquis</button>
+        </div>
+      </div>`;
+  } else if (si_flowEditMode) {
+    toolbar = `
+      <div class="si-fp-toolbar si-flow-toolbar">
+        <div class="si-fp-info">
+          <span class="si-fp-mode-badge flow">🚶 Editando flujo</span>
+          <span class="si-fp-tip">Clic en el plano para agregar puntos de recorrido</span>
+        </div>
+        <div class="si-fp-btns">
+          <button class="si-fp-btn" onclick="si_clearCustomerFlow()">🗑 Limpiar flujo</button>
+          <button class="si-fp-btn" onclick="si_cancelCustomerFlow()">✕ Cancelar</button>
+          <button class="si-fp-btn si-fp-btn-save" onclick="si_saveCustomerFlow()">💾 Guardar flujo</button>
+        </div>
+      </div>`;
+  } else {
+    const flow = si_getStoreFlow();
+    const flowPtCount = flow.points?.length || 0;
+    toolbar = `
+      <div class="si-section-header" style="margin-bottom:14px;">
+        <div>
+          <div class="si-section-title">🗺️ Croquis de Sucursal</div>
+          <div class="si-section-sub">Vista visual interactiva de zonas y recorrido del cliente.</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="si-fp-btn" onclick="si_centerView()">⊙ Centrar</button>
+          <button class="si-fp-btn si-fp-btn-flow${flowPtCount > 0 ? ' has-flow' : ''}"
+            onclick="si_toggleFlowEditMode()">
+            🚶 ${flowPtCount > 0 ? `Flujo (${flowPtCount} pts)` : 'Editar flujo'}
+          </button>
+          <button class="si-fp-btn si-fp-btn-edit" onclick="si_toggleLayoutEditMode()">✏️ Editar croquis</button>
+        </div>
+      </div>`;
+  }
 
   if (activeZones.length === 0) {
     return toolbar + `<div class="si-croquis-empty">Sin zonas activas para mostrar en el croquis.</div>`;
@@ -1376,13 +1435,35 @@ function si_renderInteractiveCroquis(zones) {
       }).join('')}
     </div>`;
 
+  const flowLegend = (() => {
+    const flow = si_flowEditMode ? _siFlowDraft : si_getStoreFlow();
+    if (!flow?.points?.length) return '';
+    const presentTypes = [...new Set(flow.points.map(p => p.type || 'entrada'))];
+    return `
+      <div class="si-flow-legend">
+        <span class="si-fl-label">Flujo:</span>
+        ${presentTypes.map(t => {
+          const ft = SI_FLOW_TYPES[t] || SI_FLOW_TYPES.entrada;
+          return `<span class="si-fl-item" style="color:${ft.color};">${ft.icon} ${ft.label}</span>`;
+        }).join('')}
+      </div>`;
+  })();
+
   return toolbar + `
-    <div class="si-floor-plan" id="si-floor-plan-${si_storeId}">
-      <div class="si-floor-plan-inner" id="si-floor-plan-inner-${si_storeId}">
+    <div class="si-floor-plan${si_flowEditMode ? ' si-flow-edit-active' : ''}" id="si-floor-plan-${si_storeId}">
+      <div class="si-floor-plan-inner" id="si-floor-plan-inner-${si_storeId}"
+        ${si_flowEditMode ? `onclick="si_addFlowPointFromClick(event)"` : ''}>
         ${blocksHTML}
+        <div id="si-flow-svg-wrap-${si_storeId}" class="si-flow-svg-wrap">
+          ${si_renderCustomerFlowLayer()}
+        </div>
       </div>
     </div>
     ${legendHTML}
+    ${flowLegend}
+    <div id="si-flow-edit-panel-${si_storeId}" class="si-flow-edit-panel">
+      ${si_flowEditMode ? si_renderFlowEditPanel() : ''}
+    </div>
   `;
 }
 
@@ -1522,7 +1603,7 @@ function si_onDragMove(clientX, clientY) {
 }
 
 function si_onZoneClick(e, zoneId) {
-  if (si_layoutEditMode) return; // no abrir detalle en modo edición
+  if (si_layoutEditMode || si_flowEditMode) return;
   openZoneDetail(zoneId);
 }
 
@@ -1534,6 +1615,254 @@ window.si_renderComparativo        = si_renderComparativo;
 window.si_compFilterChange         = si_compFilterChange;
 window.si_selectCompPhoto          = si_selectCompPhoto;
 window.si_runComparativo           = si_runComparativo;
+// ── Flujo de clientes — FASE 1.5 ─────────────────────────
+//
+// FASE 1.6 (preparado en comentarios):
+// - Heatmaps reales por zona (tráfico medido)
+// - IA sugerir recorrido óptimo
+// - Comparación de flujo entre sucursales
+// - Animación del recorrido
+
+// ── Storage helpers ───────────────────────────────────────
+
+function si_getStoreFlow() {
+  const store = si_stores_getAll().find(s => s.id === si_storeId);
+  return store?.customerFlow || { points: [] };
+}
+
+// ── Render SVG layer ──────────────────────────────────────
+
+function si_renderCustomerFlowLayer() {
+  const flow   = si_flowEditMode ? (_siFlowDraft || { points: [] }) : si_getStoreFlow();
+  const points = (flow.points || []).slice().sort((a, b) => a.order - b.order);
+
+  if (!points.length) {
+    if (si_flowEditMode) {
+      return `<svg class="si-flow-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="50" y="50" text-anchor="middle" dominant-baseline="middle" font-size="3"
+          fill="rgba(136,135,128,0.5)" font-family="Inter,sans-serif">Clic en el plano para agregar punto</text>
+      </svg>`;
+    }
+    return '';
+  }
+
+  // Arrow marker
+  const markerId = `si-arrow-${si_storeId || 'x'}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+  // Lines between consecutive points
+  const lines = points.slice(1).map((p, i) => {
+    const prev  = points[i];
+    const color = SI_FLOW_TYPES[p.type || 'entrada']?.color || '#22C55E';
+    return `<line x1="${prev.x}" y1="${prev.y}" x2="${p.x}" y2="${p.y}"
+      stroke="${color}" stroke-width="0.8" stroke-opacity="0.75"
+      marker-end="url(#${markerId})" />`;
+  }).join('');
+
+  // Point circles with order number
+  const circles = points.map(p => {
+    const ft    = SI_FLOW_TYPES[p.type || 'entrada'] || SI_FLOW_TYPES.entrada;
+    const isSelected = si_flowEditMode && _siSelectedFlowPoint === p.id;
+    const r     = isSelected ? 3.8 : 3;
+    const onClickAttr = si_flowEditMode
+      ? `onclick="event.stopPropagation();si_selectFlowPoint('${p.id}')"`
+      : `onclick="event.stopPropagation();si_showFlowTooltip(event,'${p.id}')"`;
+    return `
+      <g class="si-fp-point" data-flow-id="${p.id}" style="cursor:pointer;" ${onClickAttr}>
+        <circle cx="${p.x}" cy="${p.y}" r="${r}"
+          fill="${ft.color}" stroke="${isSelected ? '#fff' : 'rgba(0,0,0,.4)'}"
+          stroke-width="${isSelected ? '0.8' : '0.4'}" />
+        <text x="${p.x}" y="${p.y + 0.9}" text-anchor="middle"
+          font-size="2.4" font-weight="700" fill="white"
+          font-family="Inter, sans-serif" pointer-events="none">${p.order}</text>
+        ${p.label ? `<text x="${p.x}" y="${p.y - 4.5}" text-anchor="middle"
+          font-size="2" fill="${ft.color}" font-family="Inter,sans-serif"
+          pointer-events="none">${p.label}</text>` : ''}
+      </g>`;
+  }).join('');
+
+  return `
+    <svg class="si-flow-svg" viewBox="0 0 100 100" preserveAspectRatio="none"
+      xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="${markerId}" markerWidth="5" markerHeight="5" refX="4.5" refY="2.5" orient="auto">
+          <path d="M0,0 L0,5 L5,2.5 z" fill="#22C55E" fill-opacity="0.8" />
+        </marker>
+      </defs>
+      ${lines}
+      ${circles}
+    </svg>`;
+}
+
+// ── Flow edit panel ───────────────────────────────────────
+
+function si_renderFlowEditPanel() {
+  const pts = _siFlowDraft?.points || [];
+  if (!pts.length) return `<div class="si-fep-empty">Sin puntos todavía. Hacé clic en el plano para agregar.</div>`;
+
+  const sorted = [...pts].sort((a, b) => a.order - b.order);
+
+  return `
+    <div class="si-fep-list">
+      ${sorted.map(p => {
+        const ft = SI_FLOW_TYPES[p.type || 'entrada'] || SI_FLOW_TYPES.entrada;
+        const isSel = _siSelectedFlowPoint === p.id;
+        return `
+          <div class="si-fep-row${isSel ? ' selected' : ''}" onclick="si_selectFlowPoint('${p.id}')">
+            <div class="si-fep-row-left">
+              <span class="si-fep-num" style="background:${ft.color}20;color:${ft.color};">${p.order}</span>
+              <span class="si-fep-icon">${ft.icon}</span>
+              <div>
+                <div class="si-fep-type" style="color:${ft.color};">${ft.label}</div>
+                ${p.label ? `<div class="si-fep-lbl">${p.label}</div>` : ''}
+              </div>
+            </div>
+            <button class="si-fep-del" onclick="event.stopPropagation();si_deleteFlowPoint('${p.id}')" title="Eliminar">✕</button>
+          </div>
+          ${isSel ? `
+            <div class="si-fep-editor">
+              <div class="si-fep-editor-row">
+                <label class="si-form-label">Tipo</label>
+                <select class="si-input si-fep-select" onchange="si_updateFlowPointType('${p.id}',this.value)">
+                  ${Object.entries(SI_FLOW_TYPES).map(([k,v]) =>
+                    `<option value="${k}" ${k === (p.type||'entrada') ? 'selected' : ''}>${v.icon} ${v.label}</option>`
+                  ).join('')}
+                </select>
+              </div>
+              <div class="si-fep-editor-row">
+                <label class="si-form-label">Etiqueta</label>
+                <input class="si-input si-fep-input" type="text" value="${p.label || ''}"
+                  placeholder="Ej: Vitrina principal"
+                  oninput="si_updateFlowPointLabel('${p.id}',this.value)" />
+              </div>
+            </div>` : ''}
+        `;
+      }).join('')}
+    </div>`;
+}
+
+// ── Edit mode controls ────────────────────────────────────
+
+function si_toggleFlowEditMode() {
+  si_flowEditMode      = true;
+  _siFlowDraft         = JSON.parse(JSON.stringify(si_getStoreFlow()));
+  _siSelectedFlowPoint = null;
+  si_refreshCroquisSection();
+}
+
+function si_saveCustomerFlow() {
+  const store = si_stores_getAll().find(s => s.id === si_storeId);
+  if (!store) return;
+  si_stores_save({ ...store, customerFlow: _siFlowDraft });
+  si_flowEditMode      = false;
+  _siFlowDraft         = null;
+  _siSelectedFlowPoint = null;
+  si_refreshCroquisSection();
+  si_renderStoreContent(); // refresh flow KPIs
+  if (typeof showOSToast === 'function') showOSToast('Flujo de clientes guardado');
+}
+
+function si_cancelCustomerFlow() {
+  si_flowEditMode      = false;
+  _siFlowDraft         = null;
+  _siSelectedFlowPoint = null;
+  si_refreshCroquisSection();
+}
+
+function si_clearCustomerFlow() {
+  if (!confirm('¿Eliminar todos los puntos del flujo?')) return;
+  _siFlowDraft         = { points: [] };
+  _siSelectedFlowPoint = null;
+  si_refreshSVGAndPanel();
+}
+
+// ── Point management ──────────────────────────────────────
+
+function si_addFlowPointFromClick(e) {
+  if (!si_flowEditMode) return;
+  if (e.target.closest('.si-fp-point') || e.target.closest('.si-resize-handle')) return;
+
+  const container = document.getElementById(`si-floor-plan-inner-${si_storeId}`);
+  if (!container) return;
+  const rect = container.getBoundingClientRect();
+  const x = Math.round(((e.clientX - rect.left) / rect.width)  * 100 * 10) / 10;
+  const y = Math.round(((e.clientY - rect.top)  / rect.height) * 100 * 10) / 10;
+
+  if (!_siFlowDraft) _siFlowDraft = { points: [] };
+
+  const order       = (_siFlowDraft.points.length) + 1;
+  const defaultType = order === 1 ? 'entrada'
+    : order === (_siFlowDraft.points.length + 1) ? 'salida'
+    : 'decision';
+
+  const newPoint = { id: crypto.randomUUID(), x, y, order, label: '', type: defaultType };
+  _siFlowDraft.points.push(newPoint);
+  _siSelectedFlowPoint = newPoint.id;
+  si_refreshSVGAndPanel();
+}
+
+function si_selectFlowPoint(pointId) {
+  _siSelectedFlowPoint = (_siSelectedFlowPoint === pointId) ? null : pointId;
+  si_refreshSVGAndPanel();
+}
+
+function si_updateFlowPointType(pointId, type) {
+  const p = _siFlowDraft?.points?.find(pt => pt.id === pointId);
+  if (p) p.type = type;
+  si_refreshSVGAndPanel();
+}
+
+function si_updateFlowPointLabel(pointId, label) {
+  const p = _siFlowDraft?.points?.find(pt => pt.id === pointId);
+  if (p) p.label = label;
+  // Debounced SVG refresh only
+  const wrap = document.getElementById(`si-flow-svg-wrap-${si_storeId}`);
+  if (wrap) wrap.innerHTML = si_renderCustomerFlowLayer();
+}
+
+function si_deleteFlowPoint(pointId) {
+  if (!_siFlowDraft) return;
+  _siFlowDraft.points = _siFlowDraft.points.filter(p => p.id !== pointId);
+  // Re-number
+  _siFlowDraft.points.forEach((p, i) => { p.order = i + 1; });
+  if (_siSelectedFlowPoint === pointId) _siSelectedFlowPoint = null;
+  si_refreshSVGAndPanel();
+}
+
+// ── Tooltip (vista operativa) ─────────────────────────────
+
+function si_showFlowTooltip(e, pointId) {
+  const flow  = si_getStoreFlow();
+  const point = flow.points?.find(p => p.id === pointId);
+  if (!point) return;
+  const ft = SI_FLOW_TYPES[point.type || 'entrada'] || SI_FLOW_TYPES.entrada;
+
+  let tip = document.getElementById('si-flow-tooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'si-flow-tooltip';
+    tip.className = 'si-flow-tooltip';
+    document.body.appendChild(tip);
+    document.addEventListener('click', () => { if (tip) tip.style.display = 'none'; }, { once: true });
+  }
+  tip.innerHTML = `
+    <div class="si-ft-type" style="color:${ft.color};">${ft.icon} ${ft.label}</div>
+    <div class="si-ft-order">Punto #${point.order}</div>
+    ${point.label ? `<div class="si-ft-label">${point.label}</div>` : ''}
+  `;
+  tip.style.cssText = `display:block;left:${e.clientX + 12}px;top:${e.clientY - 10}px;`;
+  clearTimeout(tip._t);
+  tip._t = setTimeout(() => { tip.style.display = 'none'; }, 3500);
+}
+
+// ── Partial re-render helpers ─────────────────────────────
+
+function si_refreshSVGAndPanel() {
+  const wrap  = document.getElementById(`si-flow-svg-wrap-${si_storeId}`);
+  const panel = document.getElementById(`si-flow-edit-panel-${si_storeId}`);
+  if (wrap)  wrap.innerHTML  = si_renderCustomerFlowLayer();
+  if (panel) panel.innerHTML = si_flowEditMode ? si_renderFlowEditPanel() : '';
+}
+
 window.si_renderInteractiveCroquis = si_renderInteractiveCroquis;
 window.si_toggleLayoutEditMode     = si_toggleLayoutEditMode;
 window.si_saveLayout               = si_saveLayout;
@@ -1546,3 +1875,16 @@ window.si_onZoneTouchstart         = si_onZoneTouchstart;
 window.si_onResizeMousedown        = si_onResizeMousedown;
 window.si_onResizeTouchstart       = si_onResizeTouchstart;
 window.si_onZoneClick              = si_onZoneClick;
+window.si_toggleFlowEditMode       = si_toggleFlowEditMode;
+window.si_saveCustomerFlow         = si_saveCustomerFlow;
+window.si_cancelCustomerFlow       = si_cancelCustomerFlow;
+window.si_clearCustomerFlow        = si_clearCustomerFlow;
+window.si_addFlowPointFromClick    = si_addFlowPointFromClick;
+window.si_renderCustomerFlowLayer  = si_renderCustomerFlowLayer;
+window.si_renderFlowEditPanel      = si_renderFlowEditPanel;
+window.si_selectFlowPoint          = si_selectFlowPoint;
+window.si_updateFlowPointType      = si_updateFlowPointType;
+window.si_updateFlowPointLabel     = si_updateFlowPointLabel;
+window.si_deleteFlowPoint          = si_deleteFlowPoint;
+window.si_showFlowTooltip          = si_showFlowTooltip;
+window.SI_FLOW_TYPES               = SI_FLOW_TYPES;

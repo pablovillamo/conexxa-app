@@ -1025,9 +1025,266 @@ select.si-upload-field { cursor: pointer; }
 @media (max-width: 640px) {
   .si-fp-toolbar    { flex-direction: column; align-items: flex-start; }
   .si-fp-tip        { display: none; }
-  .si-floor-plan    { padding-bottom: 75%; } /* taller on mobile */
+  .si-floor-plan    { padding-bottom: 75%; }
   .si-fp-zone-name  { font-size: 8px; }
   .si-fp-zone-icon  { font-size: 11px; }
+}
+
+/* ============================================================
+   FASE 1.5 — FLUJO DE CLIENTES
+   ============================================================ */
+
+/* ── Flow SVG overlay ────────────────────────────────────── */
+
+.si-flow-svg-wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* pass through to zones — points have pointer-events:all */
+  z-index: 5;
+}
+
+.si-flow-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.si-fp-point { pointer-events: all; }
+
+/* ── Flow edit active state ──────────────────────────────── */
+
+.si-flow-edit-active { cursor: crosshair !important; }
+.si-flow-edit-active .si-fp-zone { cursor: default !important; }
+.si-flow-edit-active .si-fp-point { cursor: pointer !important; }
+
+/* ── Flow toolbar ────────────────────────────────────────── */
+
+.si-flow-toolbar .si-fp-mode-badge.flow {
+  background: rgba(34,197,94,.1);
+  color: var(--green);
+  border: 1px solid rgba(34,197,94,.25);
+}
+
+.si-fp-btn-flow {
+  border-color: rgba(34,197,94,.25);
+  color: var(--green);
+}
+
+.si-fp-btn-flow:hover,
+.si-fp-btn-flow.has-flow {
+  background: rgba(34,197,94,.08);
+  border-color: rgba(34,197,94,.4);
+  color: var(--green);
+}
+
+/* ── Flow KPIs strip ─────────────────────────────────────── */
+
+.si-flow-kpis {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: rgba(34,197,94,.05);
+  border: 1px solid rgba(34,197,94,.15);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.si-flow-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+  font-family: 'DM Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  flex-shrink: 0;
+}
+
+.si-flow-kpi-items { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.si-flow-kpi-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  color: var(--white);
+}
+
+.si-fk-val {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.si-fk-lbl {
+  font-size: 10px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+/* ── Flow legend ─────────────────────────────────────────── */
+
+.si-flow-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 2px;
+  border-top: 1px solid rgba(255,255,255,.04);
+  margin-top: 4px;
+}
+
+.si-fl-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-family: 'DM Mono', monospace;
+}
+
+.si-fl-item {
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* ── Flow edit panel ─────────────────────────────────────── */
+
+.si-flow-edit-panel {
+  margin-top: 12px;
+}
+
+.si-fep-empty {
+  font-size: 12px;
+  color: var(--gray);
+  padding: 12px;
+  text-align: center;
+  background: rgba(255,255,255,.02);
+  border-radius: 8px;
+  border: 1px dashed rgba(255,255,255,.08);
+}
+
+.si-fep-list { display: flex; flex-direction: column; gap: 0; }
+
+.si-fep-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--black-card);
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: border-color 120ms;
+}
+
+.si-fep-row:hover    { border-color: rgba(255,255,255,.15); }
+.si-fep-row.selected { border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.04); }
+
+.si-fep-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.si-fep-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.si-fep-icon { font-size: 14px; }
+
+.si-fep-type {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.si-fep-lbl { font-size: 11px; color: var(--gray); }
+
+.si-fep-del {
+  background: transparent;
+  border: none;
+  color: rgba(136,135,128,.5);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: color 120ms;
+  flex-shrink: 0;
+}
+
+.si-fep-del:hover { color: var(--red); }
+
+/* Editor expandido del punto seleccionado */
+.si-fep-editor {
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(34,197,94,.2);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: -4px;
+}
+
+.si-fep-editor-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.si-fep-editor-row .si-form-label {
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.si-fep-select, .si-fep-input {
+  flex: 1;
+  font-size: 12px !important;
+  padding: 7px 10px !important;
+}
+
+/* ── Flow tooltip ────────────────────────────────────────── */
+
+.si-flow-tooltip {
+  position: fixed;
+  z-index: 9999;
+  display: none;
+  background: #1A1A1A;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  pointer-events: none;
+  min-width: 140px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+}
+
+.si-ft-type  { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.si-ft-order { font-size: 11px; color: var(--gray); }
+.si-ft-label { font-size: 12px; color: rgba(255,255,255,.7); margin-top: 4px; }
+
+@media (max-width: 640px) {
+  .si-flow-kpis { gap: 10px; }
+  .si-fep-editor-row { flex-direction: column; align-items: flex-start; }
+  .si-fep-editor-row .si-form-label { width: auto; }
 }
 
 /* ============================================================
