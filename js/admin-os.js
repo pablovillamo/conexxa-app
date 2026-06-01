@@ -22,6 +22,7 @@ const SIDEBAR_CORE = [
 
 const SIDEBAR_MODULES = [
   { id:'ecom',        icon:'🛒', label:'Ecommerce OS',      status:'active',  action:() => showAdminView('ecommerce')     },
+  { id:'costos',      icon:'₡',  label:'Costos OS',         status:'active',  action:() => showAdminView('costos')        },
   { id:'integrations',icon:'🔌', label:'Integraciones',     status:'active',  action:() => showAdminView('integrations')  },
   { id:'metodologia', icon:'🗓️', label:'Metodología 90D',  status:'active',  action:() => showAdminView('metodologia')   },
   { id:'ceo',         icon:'🎯', label:'CEO OS',            status:'coming'  },

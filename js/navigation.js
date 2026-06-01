@@ -23,6 +23,10 @@ function showAdminView(view) {
     showView('view-admin-tasks');
     if (typeof renderAdminTasksView === 'function') renderAdminTasksView();
     if (typeof setSidebarActive === 'function') setSidebarActive('tasks');
+  } else if (view === 'costos') {
+    showView('view-admin-costos');
+    if (typeof renderCostosView === 'function') renderCostosView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('costos');
   } else if (view === 'ecommerce') {
     showView('view-admin-ecommerce');
     if (typeof renderAdminEcommerceOS === 'function') renderAdminEcommerceOS();

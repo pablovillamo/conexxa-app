@@ -1,0 +1,264 @@
+/* ============================================================
+   COSTOS OS — Estilos
+   ============================================================ */
+
+.costos-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 36px 80px;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+.costos-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.costos-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--green);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 8px;
+}
+
+.costos-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+
+.costos-sub {
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.costos-add-btn {
+  background: var(--green);
+  color: #071107;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 120ms;
+}
+
+.costos-add-btn:hover { background: var(--green-dark); }
+
+/* ── Filtros ─────────────────────────────────────────────── */
+
+.costos-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.costos-select {
+  background: var(--black-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 9px;
+  color: var(--white);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  padding: 9px 14px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23888780' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 11px;
+  padding-right: 30px;
+  min-width: 180px;
+}
+
+.costos-select:focus { outline: none; border-color: var(--green); }
+
+/* ── KPIs ────────────────────────────────────────────────── */
+
+.costos-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.costos-kpi {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.costos-kpi-main {
+  grid-column: span 2;
+  border-color: rgba(34,197,94,.2);
+  background: rgba(34,197,94,.04);
+}
+
+.costos-kpi-icon { font-size: 18px; margin-bottom: 4px; }
+
+.costos-kpi-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.costos-kpi-main .costos-kpi-val {
+  font-size: 26px;
+  color: var(--green);
+}
+
+.costos-kpi-label {
+  font-size: 11px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.costos-kpi-sub {
+  font-size: 11px;
+  color: rgba(136,135,128,.7);
+}
+
+/* Colored left border for category KPIs */
+.costos-kpi[style*="--ck-color"] {
+  border-left: 3px solid var(--ck-color);
+}
+
+/* ── Table sections ──────────────────────────────────────── */
+
+.costos-table-section {
+  margin-bottom: 28px;
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.costos-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.costos-table-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.costos-table-icon {
+  font-size: 16px;
+}
+
+.costos-table-total {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  font-variant-numeric: tabular-nums;
+}
+
+.costos-table-total span {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--gray);
+  margin-left: 4px;
+}
+
+.costos-th {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 10px;
+  color: var(--gray);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+
+/* ── Form modal ──────────────────────────────────────────── */
+
+.costo-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.costo-form-field { display: flex; flex-direction: column; gap: 5px; }
+.costo-form-field.full { grid-column: span 2; }
+
+.costo-form-label {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.costo-form-label .req { color: var(--red); margin-left: 2px; }
+
+.costo-input {
+  background: var(--black-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 9px;
+  color: var(--white);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  padding: 10px 12px;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.costo-input:focus {
+  outline: none;
+  border-color: var(--green);
+  background: rgba(34,197,94,.03);
+}
+
+.costo-input::placeholder { color: var(--gray-mid); }
+
+select.costo-input {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23888780' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 11px;
+  padding-right: 30px;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .costos-body { padding: 20px 16px 60px; }
+  .costos-title { font-size: 22px; }
+  .costos-kpi-main { grid-column: span 1; }
+  .costos-kpis { grid-template-columns: repeat(2, 1fr); }
+  .costo-form-grid { grid-template-columns: 1fr; }
+  .costo-form-field.full { grid-column: span 1; }
+}

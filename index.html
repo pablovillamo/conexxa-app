@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="/css/client.css">
 <link rel="stylesheet" href="/css/integrations.css">
 <link rel="stylesheet" href="/css/os.css">
+<link rel="stylesheet" href="/css/costos.css">
 </head>
 <body>
 
@@ -192,6 +193,9 @@
 
     <!-- ADMIN: Metodología 90 Días -->
     <div id="view-admin-metodologia" class="view"></div>
+
+    <!-- ADMIN: Costos OS -->
+    <div id="view-admin-costos" class="view"></div>
 
     <!-- ADMIN: Brain Empresarial (módulo independiente) -->
     <div id="view-admin-brain" class="view">
@@ -993,6 +997,19 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
   </div>
 </div>
 
+<!-- MODAL: Agregar Gasto -->
+<div class="modal-overlay" id="modal-new-costo">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title">Agregar gasto</div>
+    <div class="modal-sub">El gasto se asocia al cliente y categoría seleccionados.</div>
+    <div id="modal-new-costo-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-new-costo')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="saveCosto()">Guardar gasto</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============================================================ JAVASCRIPT -->
 <script src="/js/modules-config.js"></script>
 <script src="/js/brain-data.js"></script>
@@ -1009,6 +1026,7 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/dashboard.js"></script>
 <script src="/js/admin-clients.js"></script>
 <script src="/js/integrations.js"></script>
+<script src="/js/costos.js"></script>
 <script src="/js/admin-os.js"></script>
 </body>
 </html>
