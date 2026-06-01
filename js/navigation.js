@@ -39,6 +39,10 @@ function showAdminView(view) {
     showView('view-admin-costos');
     if (typeof renderCostosView === 'function') renderCostosView();
     if (typeof setSidebarActive === 'function') setSidebarActive('costos');
+  } else if (view === 'operaciones') {
+    showView('view-admin-operaciones');
+    if (typeof renderAdminOperacionesOS === 'function') renderAdminOperacionesOS();
+    if (typeof setSidebarActive === 'function') setSidebarActive('ops');
   } else if (view === 'ecommerce') {
     showView('view-admin-ecommerce');
     if (typeof renderAdminEcommerceOS === 'function') renderAdminEcommerceOS();

@@ -22,16 +22,14 @@ const SIDEBAR_CORE = [
 ];
 
 const SIDEBAR_MODULES = [
-  { id:'ecom',        icon:'🛒', label:'Ecommerce OS',      status:'active',  action:() => showAdminView('ecommerce')    },
-  { id:'finanzas',    icon:'💰', label:'Finanzas OS',       status:'active',  action:() => showAdminView('finanzas')     },
-  { id:'costos',      icon:'₡',  label:'↳ Costos',          status:'active',  action:() => showAdminView('costos')       },
-  { id:'analytics',   icon:'📊', label:'Analytics OS',      status:'coming'  },
-  { id:'content',     icon:'✍️', label:'Content OS',        status:'coming'  },
-  { id:'app-os',      icon:'📱', label:'App OS',            status:'coming'  },
-  { id:'integrations',icon:'🔌', label:'Integraciones',     status:'active',  action:() => showAdminView('integrations') },
-  { id:'metodologia', icon:'🗓️', label:'Metodología 90D',  status:'active',  action:() => showAdminView('metodologia')  },
-  { id:'ceo',         icon:'🎯', label:'CEO OS',            status:'coming'  },
-  { id:'ops',         icon:'⚙️', label:'Operaciones OS',   status:'coming'  },
+  { id:'ecom',        icon:'🛒', label:'Ecommerce OS',     status:'active',  action:() => showAdminView('ecommerce')    },
+  { id:'finanzas',    icon:'💰', label:'Finanzas OS',      status:'active',  action:() => showAdminView('finanzas')     },
+  { id:'ops',         icon:'⚙️', label:'Operaciones OS',  status:'active',  action:() => showAdminView('operaciones')  },
+  { id:'analytics',   icon:'📊', label:'Analytics OS',    status:'coming'  },
+  { id:'content',     icon:'✍️', label:'Content OS',      status:'coming'  },
+  { id:'app-os',      icon:'📱', label:'App OS',          status:'coming'  },
+  { id:'integrations',icon:'🔌', label:'Integraciones',   status:'active',  action:() => showAdminView('integrations') },
+  { id:'ceo',         icon:'🎯', label:'CEO OS',          status:'coming'  },
   { id:'inv',         icon:'📦', label:'Inventario OS',     status:'coming'  },
   { id:'purch',       icon:'🛍️', label:'Compras OS',       status:'coming'  },
   { id:'rrhh',        icon:'🤝', label:'RRHH OS',           status:'coming'  },
@@ -133,7 +131,7 @@ function renderAdminOS() {
   const catGroups = [
     { label: 'Villamo Growth',    ids: ['vg-program','vg-brain','vg-ecommerce','vg-tasks'] },
     { label: 'Core OS',           ids: ['core-crm','core-docs','core-meetings','core-kpis','core-resources'] },
-    { label: 'Business OS',       ids: ['os-ceo','os-operations','os-inventory','os-cx','os-brand'] },
+    { label: 'Business OS',       ids: ['finanzas','os-operations','os-ceo','os-inventory','os-cx','os-brand'] },
     { label: 'Integraciones',     ids: ['int-shopify','int-meta','int-klaviyo','int-manychat'] },
   ];
 
@@ -946,6 +944,56 @@ function renderAdminFinanzasOS() {
 }
 
 window.renderAdminFinanzasOS = renderAdminFinanzasOS;
+
+// ── Operaciones OS ────────────────────────────────────────
+
+function renderAdminOperacionesOS() {
+  const root = document.getElementById('view-admin-operaciones');
+  if (!root) return;
+
+  const subModules = [
+    { icon:'📊', name:'Dashboard Operativo', desc:'Visión general de operaciones: KPIs, alertas, cuellos de botella y estado del equipo.' },
+    { icon:'📋', name:'SOPs',                desc:'Procedimientos estándar. Documentación de procesos replicables y auditables.' },
+    { icon:'✅', name:'Checklists',           desc:'Listas de verificación para onboarding, apertura, cierre y procesos recurrentes.' },
+    { icon:'🔍', name:'Auditorías',           desc:'Registro de auditorías internas y externas. Evidencias, hallazgos y planes de acción.' },
+    { icon:'🚨', name:'Incidencias',          desc:'Gestión de incidentes operativos: registro, prioridad, resolución y seguimiento.' },
+    { icon:'⭐', name:'Calidad',              desc:'Control de calidad: estándares, métricas, rechazos y mejora continua.' },
+    { icon:'🏪', name:'Sucursales',           desc:'Administración de ubicaciones múltiples, KPIs por sucursal y auditorías regionales.' },
+    { icon:'🗂️', name:'Proyectos',           desc:'Gestión de proyectos operativos: hitos, responsables, tiempos y entregables.' },
+    { icon:'🔧', name:'Mantenimiento',        desc:'Mantenimiento preventivo y correctivo de equipos, locales y activos.' },
+    { icon:'🔄', name:'Mejora Continua',      desc:'Iniciativas Kaizen, ciclos PDCA, métricas de mejora y cultura operativa.' },
+  ];
+
+  const cardsHTML = subModules.map(m => `
+    <div class="cc-mod-card is-soon">
+      <div class="cc-mod-card-top">
+        <span class="cc-mod-icon">${m.icon}</span>
+        <span class="cc-mod-badge soon">Próximamente</span>
+      </div>
+      <div class="cc-mod-name">${m.name}</div>
+      <div class="cc-mod-desc">${m.desc}</div>
+      <button class="cc-mod-btn disabled-btn" style="margin-top:8px;">⏳ En construcción</button>
+    </div>
+  `).join('');
+
+  root.innerHTML = `
+    <div class="cc-body">
+      <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:24px;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al OS
+      </button>
+      <p class="os-eyebrow" style="margin-bottom:8px;">Módulos Empresariales</p>
+      <h1 style="font-size:28px;font-weight:700;color:var(--white);margin-bottom:6px;">⚙️ Operaciones OS</h1>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:10px;">Sistema operativo para gestionar procesos, equipos, calidad y mejora continua.</p>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:6px 12px;margin-bottom:28px;">
+        <span style="font-size:11px;color:var(--amber);font-family:'DM Mono',monospace;font-weight:600;">MÓDULO EN CONSTRUCCIÓN</span>
+      </div>
+      <div class="cc-modules-grid">${cardsHTML}</div>
+    </div>
+  `;
+}
+
+window.renderAdminOperacionesOS = renderAdminOperacionesOS;
 
 window.renderAdminOS        = renderAdminOS;
 window.osModuleSoon         = osModuleSoon;
