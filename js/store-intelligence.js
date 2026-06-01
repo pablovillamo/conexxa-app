@@ -27,6 +27,14 @@ let si_layoutEditMode = false;
 let _siLayoutDraft    = {};
 let _siDragState      = null;
 
+// ── Estado editor de plano — FASE 1.7 (croquis físico) ────
+// FASE 1.8 (futura): imagen de plano real como fondo, calibrar medidas reales, gemelo digital 3D, heatmaps, IA
+
+let si_floorPlanMode  = false;
+let _siFloorPlanDraft = null;  // { elements: [], walls: [], labels: [], version: 1 }
+let _siActiveTool     = 'select';
+let _siWallStart      = null;  // { x, y } — punto de inicio de pared en dibujo
+
 // ── Estado campañas visuales — FASE 1.6 ───────────────────
 // FASE 1.7 (futura): checklist de ejecución, evidencia fotográfica obligatoria, auditoría de cumplimiento, IA
 
@@ -39,23 +47,24 @@ let si_flowEditMode       = false;
 let _siFlowDraft          = null;  // { points: [] } — borrador durante edición
 let _siSelectedFlowPoint  = null;  // id del punto seleccionado en edit mode
 
-// ── Listeners globales de drag (registrados una vez) ──────
+// ── Listeners globales de drag y dibujo (registrados una vez) ──
 
 (function si_initDragListeners() {
   document.addEventListener('mousemove', function(e) {
-    if (!_siDragState || !si_layoutEditMode) return;
-    si_onDragMove(e.clientX, e.clientY);
+    if (_siDragState && si_layoutEditMode) si_onDragMove(e.clientX, e.clientY);
+    if (si_floorPlanMode && _siWallStart && _siActiveTool === 'wall') si_updateWallPreview(e.clientX, e.clientY);
   });
-  document.addEventListener('mouseup', function() {
-    _siDragState = null;
+  document.addEventListener('mouseup', function(e) {
+    if (_siDragState) _siDragState = null;
+    if (si_floorPlanMode && _siWallStart && _siActiveTool === 'wall') si_finishDrawingWall(e.clientX, e.clientY);
   });
   document.addEventListener('touchmove', function(e) {
-    if (!_siDragState || !si_layoutEditMode) return;
-    e.preventDefault();
-    si_onDragMove(e.touches[0].clientX, e.touches[0].clientY);
+    if (_siDragState && si_layoutEditMode) { e.preventDefault(); si_onDragMove(e.touches[0].clientX, e.touches[0].clientY); }
+    if (si_floorPlanMode && _siWallStart && _siActiveTool === 'wall') { e.preventDefault(); si_updateWallPreview(e.touches[0].clientX, e.touches[0].clientY); }
   }, { passive: false });
-  document.addEventListener('touchend', function() {
-    _siDragState = null;
+  document.addEventListener('touchend', function(e) {
+    if (_siDragState) _siDragState = null;
+    if (si_floorPlanMode && _siWallStart && _siActiveTool === 'wall' && e.changedTouches[0]) si_finishDrawingWall(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
   });
 })();
 
@@ -85,6 +94,18 @@ const SI_ZONE_TYPES = {
 };
 
 // ── Tipos de puntos de flujo ──────────────────────────────
+
+// ── Elementos físicos del plano ───────────────────────────
+
+const SI_FLOOR_ELEMENTS = {
+  wall:     { label:'Pared',       icon:'▬',  color:'#9CA3AF', dw:20, dh:1.5, isWall: true },
+  entrada:  { label:'Entrada',     icon:'🚪', color:'#22C55E', dw:8,  dh:3   },
+  ventana:  { label:'Escaparate',  icon:'🪟', color:'#3B82F6', dw:12, dh:2   },
+  caja:     { label:'Caja',        icon:'💰', color:'#14B8A6', dw:8,  dh:6   },
+  bodega:   { label:'Bodega',      icon:'📦', color:'#6B7280', dw:18, dh:14  },
+  tarima:   { label:'Tarima',      icon:'🏷️', color:'#EC4899', dw:14, dh:10  },
+  urna:     { label:'Urna',        icon:'💎', color:'#6366F1', dw:6,  dh:6   },
+};
 
 // ── Tipos y estados de campañas ───────────────────────────
 
@@ -1366,7 +1387,20 @@ function si_renderInteractiveCroquis(zones) {
   const activeZones = zones.filter(z => z.status === 'Activa');
 
   let toolbar;
-  if (si_layoutEditMode) {
+  if (si_floorPlanMode) {
+    toolbar = `
+      <div class="si-fp-toolbar si-fpmode-toolbar">
+        <div class="si-fp-info">
+          <span class="si-fp-mode-badge fpmode">🏗️ Diseñando plano</span>
+          <span class="si-fp-tip">Seleccioná herramienta · dibujá paredes · colocá elementos físicos · arrastrá zonas</span>
+        </div>
+        <div class="si-fp-btns">
+          <button class="si-fp-btn" onclick="si_clearFloorPlan()">🗑 Limpiar</button>
+          <button class="si-fp-btn" onclick="si_cancelFloorPlan()">✕ Cancelar</button>
+          <button class="si-fp-btn si-fp-btn-save" onclick="si_saveFloorPlan()">💾 Guardar plano</button>
+        </div>
+      </div>`;
+  } else if (si_layoutEditMode) {
     toolbar = `
       <div class="si-fp-toolbar">
         <div class="si-fp-info">
@@ -1406,9 +1440,10 @@ function si_renderInteractiveCroquis(zones) {
           <button class="si-fp-btn" onclick="si_centerView()">⊙ Centrar</button>
           <button class="si-fp-btn si-fp-btn-flow${flowPtCount > 0 ? ' has-flow' : ''}"
             onclick="si_toggleFlowEditMode()">
-            🚶 ${flowPtCount > 0 ? `Flujo (${flowPtCount} pts)` : 'Editar flujo'}
+            🚶 ${flowPtCount > 0 ? `Flujo (${flowPtCount})` : 'Flujo'}
           </button>
-          <button class="si-fp-btn si-fp-btn-edit" onclick="si_toggleLayoutEditMode()">✏️ Editar croquis</button>
+          <button class="si-fp-btn si-fp-btn-edit" onclick="si_toggleLayoutEditMode()">↔ Zonas</button>
+          <button class="si-fp-btn si-fp-btn-blueprint" onclick="si_toggleFloorPlanMode()">🏗️ Diseñar plano</button>
         </div>
       </div>`;
   }
@@ -1497,19 +1532,42 @@ function si_renderInteractiveCroquis(zones) {
   })();
 
   return toolbar + `
-    <div class="si-floor-plan${si_flowEditMode ? ' si-flow-edit-active' : ''}" id="si-floor-plan-${si_storeId}">
-      <div class="si-floor-plan-inner" id="si-floor-plan-inner-${si_storeId}"
-        ${si_flowEditMode ? `onclick="si_addFlowPointFromClick(event)"` : ''}>
-        ${blocksHTML}
-        <div id="si-flow-svg-wrap-${si_storeId}" class="si-flow-svg-wrap">
-          ${si_renderCustomerFlowLayer()}
+    <div class="si-fp-layout${si_floorPlanMode ? ' si-fp-with-panel' : ''}">
+      <div class="si-fp-main">
+        ${si_floorPlanMode ? si_renderFloorPlanToolbar() : ''}
+        <div class="si-floor-plan${si_flowEditMode ? ' si-flow-edit-active' : ''}${si_floorPlanMode ? ' si-floor-plan-blueprint' : ''}"
+          id="si-floor-plan-${si_storeId}">
+
+          <!-- Structural layer: walls + physical elements -->
+          <div class="si-fp-struct-wrap" id="si-fp-struct-wrap-${si_storeId}">
+            ${si_renderFloorPlanSVG()}
+            <div class="si-fp-tool-overlay" id="si-fp-overlay-${si_storeId}"
+              style="pointer-events:${si_floorPlanMode && _siActiveTool !== 'select' && _siActiveTool !== 'borrar' ? 'all' : 'none'}"
+              onmousedown="si_onToolMousedown(event)"
+              onmousemove="si_onToolMousemove(event)"
+              ontouchstart="si_onToolTouchstart(event)">
+            </div>
+          </div>
+
+          <!-- Zone blocks + flow SVG (existing) -->
+          <div class="si-floor-plan-inner" id="si-floor-plan-inner-${si_storeId}"
+            ${si_flowEditMode ? `onclick="si_addFlowPointFromClick(event)"` : ''}>
+            ${blocksHTML}
+            <div id="si-flow-svg-wrap-${si_storeId}" class="si-flow-svg-wrap">
+              ${si_renderCustomerFlowLayer()}
+            </div>
+          </div>
+        </div>
+        ${legendHTML}
+        ${flowLegend}
+        <div id="si-flow-edit-panel-${si_storeId}" class="si-flow-edit-panel">
+          ${si_flowEditMode ? si_renderFlowEditPanel() : ''}
         </div>
       </div>
-    </div>
-    ${legendHTML}
-    ${flowLegend}
-    <div id="si-flow-edit-panel-${si_storeId}" class="si-flow-edit-panel">
-      ${si_flowEditMode ? si_renderFlowEditPanel() : ''}
+      ${si_floorPlanMode ? `
+        <div class="si-fp-side-panel" id="si-fp-side-panel-${si_storeId}">
+          ${si_renderZonePanel()}
+        </div>` : ''}
     </div>
   `;
 }
@@ -2178,6 +2236,367 @@ function si_refreshCampaignsSection() {
   if (s) s.innerHTML = si_renderCampaignsSection();
 }
 
+// ── Editor de plano — FASE 1.7 ───────────────────────────
+//
+// FASE 1.8 (preparado):
+// - Imagen de plano real como fondo (store.floorPlan.bgImage)
+// - Calibrar medidas reales (escala metros/pixel)
+// - Gemelo digital 3D
+// - Heatmaps superpuestos
+// - IA análisis espacial
+
+// ── Storage ───────────────────────────────────────────────
+
+function si_getFloorPlan() {
+  const store = si_stores_getAll().find(s => s.id === si_storeId);
+  return store?.floorPlan || { elements: [], walls: [], labels: [], version: 1 };
+}
+
+function si_saveStoreFloorPlan(fp) {
+  const store = si_stores_getAll().find(s => s.id === si_storeId);
+  if (!store) return;
+  si_stores_save({ ...store, floorPlan: fp });
+}
+
+// ── SVG estructural ───────────────────────────────────────
+
+function si_renderFloorPlanSVG() {
+  const fp      = si_floorPlanMode ? (_siFloorPlanDraft || { elements:[], walls:[], labels:[] }) : si_getFloorPlan();
+  const walls   = fp.walls    || [];
+  const elements= fp.elements || [];
+  const isBorrar = si_floorPlanMode && _siActiveTool === 'borrar';
+  const storeIdSafe = (si_storeId||'x').replace(/[^a-zA-Z0-9_-]/g,'_');
+
+  const wallLines = walls.map(w => {
+    const delAttr = isBorrar ? `onclick="event.stopPropagation();si_deleteFloorElement('${w.id}','wall')" class="si-fp-wall si-fp-deletable"` : `class="si-fp-wall"`;
+    return `<line ${delAttr} data-id="${w.id}" x1="${w.x1}" y1="${w.y1}" x2="${w.x2}" y2="${w.y2}" />`;
+  }).join('');
+
+  const elemShapes = elements.map(e => {
+    const ft = SI_FLOOR_ELEMENTS[e.type] || {};
+    const cx = e.x + e.w/2, cy = e.y + e.h/2;
+    const delAttr = isBorrar ? `onclick="event.stopPropagation();si_deleteFloorElement('${e.id}','element')" style="cursor:pointer;"` : '';
+    return `
+      <g class="si-fp-el${isBorrar ? ' si-fp-deletable' : ''}" data-id="${e.id}" ${delAttr}>
+        <rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}"
+          fill="${ft.color}1A" stroke="${ft.color}" stroke-width="0.6" rx="0.6" />
+        <text x="${cx}" y="${cy + 1.2}" text-anchor="middle" dominant-baseline="middle"
+          font-size="3" font-family="Inter,sans-serif" fill="${ft.color}" pointer-events="none">${ft.icon||''}</text>
+        ${e.label ? `<text x="${cx}" y="${e.y + e.h + 3.5}" text-anchor="middle"
+          font-size="2" fill="${ft.color}BB" font-family="Inter,sans-serif" pointer-events="none">${e.label}</text>` : ''}
+      </g>`;
+  }).join('');
+
+  return `
+    <svg class="si-fp-struct-svg" id="si-fp-struct-svg-${storeIdSafe}"
+      viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Store boundary — FASE 1.8: bg image here -->
+      <rect class="si-fp-boundary" x="0.3" y="0.3" width="99.4" height="99.4" />
+      <!-- Walls -->
+      ${wallLines}
+      <!-- Physical elements -->
+      ${elemShapes}
+      <!-- Wall draw preview -->
+      <line id="si-fp-preview-${storeIdSafe}" x1="0" y1="0" x2="0" y2="0"
+        stroke="#22C55E" stroke-width="0.8" stroke-dasharray="2,1" display="none"
+        pointer-events="none" />
+    </svg>`;
+}
+
+// ── Tool toolbar ──────────────────────────────────────────
+
+function si_renderFloorPlanToolbar() {
+  const tools = [
+    { id:'select',  label:'Seleccionar', icon:'↖' },
+    { id:'wall',    label:'Pared',       icon:'▬', color:'#9CA3AF' },
+    { id:'entrada', label:'Entrada',     icon:'🚪', color:'#22C55E' },
+    { id:'ventana', label:'Escaparate',  icon:'🪟', color:'#3B82F6' },
+    { id:'caja',    label:'Caja',        icon:'💰', color:'#14B8A6' },
+    { id:'bodega',  label:'Bodega',      icon:'📦', color:'#6B7280' },
+    { id:'tarima',  label:'Tarima',      icon:'🏷️', color:'#EC4899' },
+    { id:'urna',    label:'Urna',        icon:'💎', color:'#6366F1' },
+    { id:'borrar',  label:'Borrar',      icon:'✕',  danger: true    },
+  ];
+  const hint = {
+    select:  'Arrastrá zonas para reposicionarlas en el plano.',
+    wall:    'Clic y arrastrá para dibujar una pared.',
+    borrar:  'Clic en cualquier pared o elemento para eliminarlo.',
+    default: 'Clic en el plano para colocar el elemento.',
+  };
+  const activeHint = hint[_siActiveTool] || hint.default;
+  return `
+    <div class="si-fp-tools">
+      ${tools.map(t => `
+        <button class="si-tool-btn${_siActiveTool === t.id ? ' active' : ''}${t.danger ? ' danger' : ''}"
+          onclick="si_setFloorPlanTool('${t.id}')" title="${t.label}"
+          style="${t.color && _siActiveTool === t.id ? `--tc:${t.color}` : ''}">
+          <span class="si-tool-icon">${t.icon}</span>
+          <span class="si-tool-label">${t.label}</span>
+        </button>`).join('')}
+    </div>
+    <div class="si-fp-tool-hint">${activeHint}</div>`;
+}
+
+// ── Zone side panel ───────────────────────────────────────
+
+function si_renderZonePanel() {
+  const zones    = si_storeId ? si_zones_forStore(si_storeId).filter(z => z.status === 'Activa') : [];
+  const located  = zones.filter(z => z.layout || _siLayoutDraft[z.id]);
+  const unlocated= zones.filter(z => !z.layout && !_siLayoutDraft[z.id]);
+
+  const buildItem = (z, located) => {
+    const tipo = SI_ZONE_TYPES[z.type] || SI_ZONE_TYPES.personalizada;
+    return `
+      <div class="si-zp-item">
+        <span class="si-zp-icon" style="color:${tipo.color};">${tipo.icon}</span>
+        <div class="si-zp-info">
+          <div class="si-zp-name">${z.name}</div>
+          <div class="si-zp-tipo" style="color:${tipo.color};">${tipo.label}</div>
+        </div>
+        <button class="si-zp-btn" onclick="si_centerZoneOnPlan('${z.id}')" title="${located ? 'Centrar' : 'Ubicar'}">${located ? '⊙' : '📌'}</button>
+      </div>`;
+  };
+
+  return `
+    <div class="si-zone-panel">
+      <div class="si-zp-header">Zonas del plano</div>
+      ${located.length ? `
+        <div class="si-zp-group">
+          <div class="si-zp-group-label">✅ Ubicadas (${located.length})</div>
+          ${located.map(z => buildItem(z, true)).join('')}
+        </div>` : ''}
+      ${unlocated.length ? `
+        <div class="si-zp-group">
+          <div class="si-zp-group-label">📍 Sin ubicar (${unlocated.length})</div>
+          ${unlocated.map(z => buildItem(z, false)).join('')}
+          <button class="si-fp-btn" style="width:100%;margin-top:8px;font-size:11px;"
+            onclick="si_autoPlaceUnlocatedZones()">⊞ Ubicar automáticamente</button>
+        </div>` : ''}
+      ${zones.length === 0 ? `<div class="si-zp-empty">Sin zonas activas.</div>` : ''}
+      <div class="si-zp-legend">
+        <div class="si-zp-legend-title">Leyenda</div>
+        ${Object.entries(SI_FLOOR_ELEMENTS).filter(([k]) => k !== 'wall').map(([k,v]) =>
+          `<div class="si-zp-legend-item"><span style="color:${v.color};">${v.icon}</span><span>${v.label}</span></div>`
+        ).join('')}
+        ${Object.entries(SI_ZONE_TYPES).slice(0,5).map(([k,v]) =>
+          `<div class="si-zp-legend-item"><span style="color:${v.color};">${v.icon}</span><span>${v.label}</span></div>`
+        ).join('')}
+      </div>
+    </div>`;
+}
+
+// ── Mode controls ─────────────────────────────────────────
+
+function si_toggleFloorPlanMode() {
+  si_floorPlanMode  = true;
+  si_layoutEditMode = true;
+  _siActiveTool     = 'select';
+  _siWallStart      = null;
+  const store = si_stores_getAll().find(s => s.id === si_storeId);
+  _siFloorPlanDraft = JSON.parse(JSON.stringify(store?.floorPlan || { elements:[], walls:[], labels:[], version:1 }));
+  const zones = si_zones_forStore(si_storeId).filter(z => z.status === 'Activa');
+  si_initLayoutDraft(zones);
+  si_refreshCroquisSection();
+}
+
+function si_saveFloorPlan() {
+  si_saveStoreFloorPlan(_siFloorPlanDraft);
+  // Save zone layouts too
+  const zones = si_zones_forStore(si_storeId);
+  zones.forEach(z => { if (_siLayoutDraft[z.id]) si_zones_save({ ...z, layout: _siLayoutDraft[z.id] }); });
+  si_floorPlanMode  = false;
+  si_layoutEditMode = false;
+  _siFloorPlanDraft = null;
+  _siActiveTool     = 'select';
+  si_refreshCroquisSection();
+  if (typeof showOSToast === 'function') showOSToast('Plano guardado correctamente');
+}
+
+function si_cancelFloorPlan() {
+  si_floorPlanMode  = false;
+  si_layoutEditMode = false;
+  _siFloorPlanDraft = null;
+  _siLayoutDraft    = {};
+  _siActiveTool     = 'select';
+  _siWallStart      = null;
+  si_refreshCroquisSection();
+}
+
+function si_clearFloorPlan() {
+  if (!confirm('¿Eliminar todas las paredes y elementos del plano?')) return;
+  _siFloorPlanDraft = { elements:[], walls:[], labels:[], version:1 };
+  si_refreshFloorPlanSVG();
+}
+
+function si_setFloorPlanTool(tool) {
+  _siActiveTool = tool;
+  _siWallStart  = null;
+  // Update overlay pointer-events
+  const overlay = document.getElementById(`si-fp-overlay-${si_storeId}`);
+  if (overlay) overlay.style.pointerEvents = (tool !== 'select' && tool !== 'borrar') ? 'all' : 'none';
+  // Update tool buttons
+  document.querySelectorAll('.si-tool-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.si-tool-btn[onclick*="'${tool}'"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+  // Update hint
+  const hints = {
+    select: 'Arrastrá zonas para reposicionarlas.',
+    wall:   'Clic y arrastrá para dibujar una pared.',
+    borrar: 'Clic en cualquier pared o elemento para eliminarlo.',
+  };
+  const hintEl = document.querySelector('.si-fp-tool-hint');
+  if (hintEl) hintEl.textContent = hints[tool] || 'Clic en el plano para colocar el elemento.';
+  // Cancel preview if switching away from wall
+  if (tool !== 'wall') si_clearWallPreview();
+}
+
+// ── Tool actions ──────────────────────────────────────────
+
+function si_getFloorPlanPos(e) {
+  const container = document.getElementById(`si-floor-plan-inner-${si_storeId}`);
+  if (!container) return { x: 50, y: 50 };
+  const rect = container.getBoundingClientRect();
+  return {
+    x: Math.round(Math.max(1, Math.min(99, ((e.clientX - rect.left)  / rect.width)  * 100)) * 10) / 10,
+    y: Math.round(Math.max(1, Math.min(99, ((e.clientY - rect.top)   / rect.height) * 100)) * 10) / 10,
+  };
+}
+
+function si_onToolMousedown(e) {
+  if (!si_floorPlanMode) return;
+  e.preventDefault(); e.stopPropagation();
+  const pos = si_getFloorPlanPos(e);
+
+  if (_siActiveTool === 'wall') {
+    _siWallStart = pos;
+    si_updateWallPreview(e.clientX, e.clientY);
+  } else if (_siActiveTool !== 'select' && _siActiveTool !== 'borrar') {
+    si_addFloorElement(_siActiveTool, pos.x, pos.y);
+  }
+}
+
+function si_onToolMousemove(e) {
+  if (!si_floorPlanMode || _siActiveTool !== 'wall' || !_siWallStart) return;
+  si_updateWallPreview(e.clientX, e.clientY);
+}
+
+function si_onToolTouchstart(e) {
+  if (!si_floorPlanMode) return;
+  e.preventDefault();
+  si_onToolMousedown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY, preventDefault:()=>{}, stopPropagation:()=>{} });
+}
+
+function si_updateWallPreview(clientX, clientY) {
+  if (!_siWallStart) return;
+  const pos  = si_getFloorPlanPos({ clientX, clientY });
+  const stId = (si_storeId||'x').replace(/[^a-zA-Z0-9_-]/g,'_');
+  const line = document.getElementById(`si-fp-preview-${stId}`);
+  if (!line) return;
+  line.setAttribute('x1', _siWallStart.x);
+  line.setAttribute('y1', _siWallStart.y);
+  line.setAttribute('x2', pos.x);
+  line.setAttribute('y2', pos.y);
+  line.setAttribute('display', 'block');
+}
+
+function si_finishDrawingWall(clientX, clientY) {
+  if (!_siWallStart) return;
+  const pos = si_getFloorPlanPos({ clientX, clientY });
+  const dx  = Math.abs(pos.x - _siWallStart.x);
+  const dy  = Math.abs(pos.y - _siWallStart.y);
+  if (dx < 1 && dy < 1) { _siWallStart = null; si_clearWallPreview(); return; } // too short
+
+  if (!_siFloorPlanDraft) _siFloorPlanDraft = { elements:[], walls:[], labels:[] };
+  _siFloorPlanDraft.walls = _siFloorPlanDraft.walls || [];
+  _siFloorPlanDraft.walls.push({
+    id: crypto.randomUUID(),
+    type: 'wall',
+    x1: _siWallStart.x, y1: _siWallStart.y,
+    x2: pos.x,          y2: pos.y,
+  });
+  _siWallStart = null;
+  si_clearWallPreview();
+  si_refreshFloorPlanSVG();
+}
+
+function si_clearWallPreview() {
+  const stId = (si_storeId||'x').replace(/[^a-zA-Z0-9_-]/g,'_');
+  const line = document.getElementById(`si-fp-preview-${stId}`);
+  if (line) line.setAttribute('display', 'none');
+}
+
+function si_addFloorElement(type, cx, cy) {
+  const ft = SI_FLOOR_ELEMENTS[type];
+  if (!ft || ft.isWall) return;
+  if (!_siFloorPlanDraft) _siFloorPlanDraft = { elements:[], walls:[], labels:[] };
+  _siFloorPlanDraft.elements = _siFloorPlanDraft.elements || [];
+  const w = ft.dw, h = ft.dh;
+  _siFloorPlanDraft.elements.push({
+    id:    crypto.randomUUID(),
+    type,
+    x:     Math.max(0, Math.min(100-w, cx - w/2)),
+    y:     Math.max(0, Math.min(100-h, cy - h/2)),
+    w, h,
+    label: ft.label,
+  });
+  si_refreshFloorPlanSVG();
+}
+
+function si_deleteFloorElement(id, kind) {
+  if (!_siFloorPlanDraft) return;
+  if (kind === 'wall')    _siFloorPlanDraft.walls    = (_siFloorPlanDraft.walls    ||[]).filter(e => e.id !== id);
+  if (kind === 'element') _siFloorPlanDraft.elements = (_siFloorPlanDraft.elements ||[]).filter(e => e.id !== id);
+  si_refreshFloorPlanSVG();
+}
+
+function si_refreshFloorPlanSVG() {
+  const wrap = document.getElementById(`si-fp-struct-wrap-${si_storeId}`);
+  if (!wrap) return;
+  wrap.innerHTML = si_renderFloorPlanSVG() + `
+    <div class="si-fp-tool-overlay" id="si-fp-overlay-${si_storeId}"
+      style="pointer-events:${si_floorPlanMode && _siActiveTool !== 'select' && _siActiveTool !== 'borrar' ? 'all' : 'none'}"
+      onmousedown="si_onToolMousedown(event)"
+      onmousemove="si_onToolMousemove(event)"
+      ontouchstart="si_onToolTouchstart(event)">
+    </div>`;
+}
+
+// ── Zone panel helpers ────────────────────────────────────
+
+function si_centerZoneOnPlan(zoneId) {
+  const el = document.querySelector(`[data-zone-id="${zoneId}"]`);
+  if (!el) {
+    // Zone not located — auto place it
+    const zones   = si_zones_forStore(si_storeId);
+    const zone    = zones.find(z => z.id === zoneId);
+    const idx     = zones.filter(z => !z.layout && !_siLayoutDraft[z.id]).indexOf(zone);
+    if (zone) _siLayoutDraft[zoneId] = { x: 5 + (idx % 3) * 30, y: 5 + Math.floor(idx/3) * 25, w: 22, h: 18 };
+    si_refreshCroquisSection();
+  } else {
+    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    el.classList.add('si-zone-highlight');
+    setTimeout(() => el.classList.remove('si-zone-highlight'), 1200);
+  }
+  // Refresh side panel
+  const panel = document.getElementById(`si-fp-side-panel-${si_storeId}`);
+  if (panel) panel.innerHTML = si_renderZonePanel();
+}
+
+function si_autoPlaceUnlocatedZones() {
+  const zones    = si_zones_forStore(si_storeId).filter(z => z.status === 'Activa');
+  const unlocated= zones.filter(z => !z.layout && !_siLayoutDraft[z.id]);
+  const cols     = Math.max(2, Math.ceil(Math.sqrt(unlocated.length)));
+  const cellW    = Math.max(12, Math.floor(90 / cols));
+  const startX   = 5;
+  const startY   = 60;
+  unlocated.forEach((z, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    _siLayoutDraft[z.id] = { x: startX + col*cellW, y: startY + row*18, w: cellW - 2, h: 14 };
+  });
+  si_refreshCroquisSection();
+}
+
 window.si_renderInteractiveCroquis = si_renderInteractiveCroquis;
 window.si_toggleLayoutEditMode     = si_toggleLayoutEditMode;
 window.si_saveLayout               = si_saveLayout;
@@ -2190,6 +2609,19 @@ window.si_onZoneTouchstart         = si_onZoneTouchstart;
 window.si_onResizeMousedown        = si_onResizeMousedown;
 window.si_onResizeTouchstart       = si_onResizeTouchstart;
 window.si_onZoneClick              = si_onZoneClick;
+window.si_toggleFloorPlanMode      = si_toggleFloorPlanMode;
+window.si_saveFloorPlan            = si_saveFloorPlan;
+window.si_cancelFloorPlan          = si_cancelFloorPlan;
+window.si_clearFloorPlan           = si_clearFloorPlan;
+window.si_setFloorPlanTool         = si_setFloorPlanTool;
+window.si_onToolMousedown          = si_onToolMousedown;
+window.si_onToolMousemove          = si_onToolMousemove;
+window.si_onToolTouchstart         = si_onToolTouchstart;
+window.si_addFloorElement          = si_addFloorElement;
+window.si_deleteFloorElement       = si_deleteFloorElement;
+window.si_centerZoneOnPlan         = si_centerZoneOnPlan;
+window.si_autoPlaceUnlocatedZones  = si_autoPlaceUnlocatedZones;
+window.SI_FLOOR_ELEMENTS           = SI_FLOOR_ELEMENTS;
 window.si_toggleFlowEditMode       = si_toggleFlowEditMode;
 window.si_saveCustomerFlow         = si_saveCustomerFlow;
 window.si_cancelCustomerFlow       = si_cancelCustomerFlow;
