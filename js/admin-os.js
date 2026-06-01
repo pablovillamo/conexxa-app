@@ -21,10 +21,14 @@ const SIDEBAR_CORE = [
 ];
 
 const SIDEBAR_MODULES = [
-  { id:'ecom',        icon:'🛒', label:'Ecommerce OS',      status:'active',  action:() => showAdminView('ecommerce')     },
-  { id:'costos',      icon:'₡',  label:'Costos OS',         status:'active',  action:() => showAdminView('costos')        },
-  { id:'integrations',icon:'🔌', label:'Integraciones',     status:'active',  action:() => showAdminView('integrations')  },
-  { id:'metodologia', icon:'🗓️', label:'Metodología 90D',  status:'active',  action:() => showAdminView('metodologia')   },
+  { id:'ecom',        icon:'🛒', label:'Ecommerce OS',      status:'active',  action:() => showAdminView('ecommerce')    },
+  { id:'finanzas',    icon:'💰', label:'Finanzas OS',       status:'active',  action:() => showAdminView('finanzas')     },
+  { id:'costos',      icon:'₡',  label:'↳ Costos',          status:'active',  action:() => showAdminView('costos')       },
+  { id:'analytics',   icon:'📊', label:'Analytics OS',      status:'coming'  },
+  { id:'content',     icon:'✍️', label:'Content OS',        status:'coming'  },
+  { id:'app-os',      icon:'📱', label:'App OS',            status:'coming'  },
+  { id:'integrations',icon:'🔌', label:'Integraciones',     status:'active',  action:() => showAdminView('integrations') },
+  { id:'metodologia', icon:'🗓️', label:'Metodología 90D',  status:'active',  action:() => showAdminView('metodologia')  },
   { id:'ceo',         icon:'🎯', label:'CEO OS',            status:'coming'  },
   { id:'ops',         icon:'⚙️', label:'Operaciones OS',   status:'coming'  },
   { id:'inv',         icon:'📦', label:'Inventario OS',     status:'coming'  },
@@ -34,7 +38,7 @@ const SIDEBAR_MODULES = [
   { id:'franchise',   icon:'🏪', label:'Franquicias OS',    status:'locked'  },
   { id:'brand',       icon:'🎨', label:'Marca y Producto',  status:'coming'  },
   { id:'ia-os',       icon:'🤖', label:'IA OS',             status:'coming'  },
-  { id:'vg',          icon:'🚀', label:'Villamo Growth',    status:'active',  action:() => showAdminView('clients')        },
+  { id:'vg',          icon:'🚀', label:'Villamo Growth',    status:'active',  action:() => showAdminView('clients')       },
 ];
 
 // ── Sync sidebar avatar + name ────────────────────────────
@@ -885,6 +889,62 @@ function renderAdminMetodologia() {
 }
 
 window.renderAdminMetodologia = renderAdminMetodologia;
+
+// ── Finanzas OS ───────────────────────────────────────────
+
+function renderAdminFinanzasOS() {
+  const root = document.getElementById('view-admin-finanzas');
+  if (!root) return;
+
+  const subModules = [
+    {
+      id:     'costos',
+      icon:   '₡',
+      name:   'Gastos / Costos',
+      desc:   'Control de gastos por categoría: ecommerce, comercial, administrativo y operativo.',
+      status: 'active',
+      action: `showAdminView('costos')`,
+    },
+    { id:'ingresos',  icon:'📈', name:'Ingresos',           desc:'Registro y análisis de todas las fuentes de ingreso.',        status:'soon' },
+    { id:'flujo',     icon:'🔄', name:'Flujo de Caja',      desc:'Proyección y control de flujo mensual y anual.',             status:'soon' },
+    { id:'por-pagar', icon:'📤', name:'Cuentas por Pagar',  desc:'Seguimiento de deudas, proveedores y vencimientos.',         status:'soon' },
+    { id:'por-cobrar',icon:'📥', name:'Cuentas por Cobrar', desc:'Facturas pendientes, clientes y proyección de cobros.',      status:'soon' },
+    { id:'presupuesto',icon:'📋',name:'Presupuestos',       desc:'Planeación financiera anual y presupuesto por área.',        status:'soon' },
+    { id:'rentabilidad',icon:'💹',name:'Rentabilidad',      desc:'Márgenes, ROI, punto de equilibrio y análisis de utilidad.', status:'soon' },
+  ];
+
+  const cardsHTML = subModules.map(m => {
+    const isActive = m.status === 'active';
+    return `
+      <div class="cc-mod-card ${isActive ? 'is-active' : 'is-soon'}" ${isActive ? `onclick="${m.action}"` : ''}>
+        <div class="cc-mod-card-top">
+          <span class="cc-mod-icon">${m.icon}</span>
+          <span class="cc-mod-badge ${isActive ? 'active' : 'soon'}">${isActive ? 'Activo' : 'Próximamente'}</span>
+        </div>
+        <div class="cc-mod-name">${m.name}</div>
+        <div class="cc-mod-desc">${m.desc}</div>
+        ${isActive
+          ? `<button class="cc-mod-btn open" onclick="${m.action}" style="margin-top:8px;">Abrir →</button>`
+          : `<button class="cc-mod-btn disabled-btn" style="margin-top:8px;">⏳ Próximamente</button>`}
+      </div>
+    `;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="cc-body">
+      <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:24px;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al OS
+      </button>
+      <p class="os-eyebrow" style="margin-bottom:8px;">Módulos Empresariales</p>
+      <h1 style="font-size:28px;font-weight:700;color:var(--white);margin-bottom:6px;">💰 Finanzas OS</h1>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:32px;">Control financiero completo. Gastos activos — resto próximamente.</p>
+      <div class="cc-modules-grid">${cardsHTML}</div>
+    </div>
+  `;
+}
+
+window.renderAdminFinanzasOS = renderAdminFinanzasOS;
 
 window.renderAdminOS        = renderAdminOS;
 window.osModuleSoon         = osModuleSoon;

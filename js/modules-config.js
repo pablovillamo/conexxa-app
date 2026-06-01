@@ -182,6 +182,54 @@ const OS_MODULES = [
     order:       27,
   },
 
+  // ── FINANZAS ──────────────────────────────────────────────
+  {
+    id:          'finanzas',
+    name:        'Finanzas OS',
+    description: 'Control financiero completo: costos, ingresos, flujo de caja, presupuestos y rentabilidad.',
+    icon:        '💰',
+    status:      'coming_soon',
+    category:    'business',
+    action:      () => showAdminView('finanzas'),
+    order:       28,
+  },
+
+  // ── ANALYTICS ─────────────────────────────────────────────
+  {
+    id:          'analytics-os',
+    name:        'Analytics OS',
+    description: 'Business Intelligence, KPIs, ventas, ROAS, conversión, tendencias y forecast.',
+    icon:        '📊',
+    status:      'coming_soon',
+    category:    'business',
+    action:      null,
+    order:       29,
+  },
+
+  // ── CONTENT ───────────────────────────────────────────────
+  {
+    id:          'content-os',
+    name:        'Content OS',
+    description: 'Calendario editorial, contenido, SEO, redes sociales, ideas, aprobación y publicaciones.',
+    icon:        '✍️',
+    status:      'coming_soon',
+    category:    'business',
+    action:      null,
+    order:       30,
+  },
+
+  // ── APP OS ─────────────────────────────────────────────────
+  {
+    id:          'app-os',
+    name:        'App OS',
+    description: 'Usuarios, suscripciones, retención, churn, métricas de producto y crecimiento para aplicaciones.',
+    icon:        '📱',
+    status:      'coming_soon',
+    category:    'business',
+    action:      null,
+    order:       31,
+  },
+
   // ── INTEGRACIONES ─────────────────────────────────────────
   {
     id:          'int-shopify',
