@@ -21,6 +21,33 @@ const SI_PHOTOS_KEY = 'si_photos_v1';
 let si_clientId = null;
 let si_storeId  = null;
 
+// ── Estado croquis interactivo — FASE 1.4 ─────────────────
+// FASE 1.5 (futura): flechas de flujo, heatmaps, congestión, IA sobre plano
+
+let si_layoutEditMode = false;
+let _siLayoutDraft    = {};  // { zoneId: { x, y, w, h } } — borrador durante edición
+let _siDragState      = null; // estado activo de drag o resize
+
+// ── Listeners globales de drag (registrados una vez) ──────
+
+(function si_initDragListeners() {
+  document.addEventListener('mousemove', function(e) {
+    if (!_siDragState || !si_layoutEditMode) return;
+    si_onDragMove(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseup', function() {
+    _siDragState = null;
+  });
+  document.addEventListener('touchmove', function(e) {
+    if (!_siDragState || !si_layoutEditMode) return;
+    e.preventDefault();
+    si_onDragMove(e.touches[0].clientX, e.touches[0].clientY);
+  }, { passive: false });
+  document.addEventListener('touchend', function() {
+    _siDragState = null;
+  });
+})();
+
 // ── Estado comparativo — FASE 1.3 ─────────────────────────
 // FASE 1.4 (futura): comparar orden visual, saturación, cambios de campaña con IA
 
@@ -468,17 +495,9 @@ function si_renderStoreContent() {
       </div>
     </div>
 
-    <!-- Croquis de sucursal -->
-    <div class="si-section">
-      <div class="si-section-header">
-        <div>
-          <div class="si-section-title">🗺️ Croquis de Sucursal</div>
-          <div class="si-section-sub">Vista visual de zonas configuradas. Próximamente: editor de plano interactivo.</div>
-        </div>
-      </div>
-      <div id="si-croquis">
-        ${si_renderCroquis(zones)}
-      </div>
+    <!-- Croquis interactivo — FASE 1.4 -->
+    <div class="si-section" id="si-croquis-section">
+      ${si_renderInteractiveCroquis(zones)}
     </div>
 
     <!-- Zona list -->
@@ -1222,7 +1241,308 @@ window.si_savePhoto                = si_savePhoto;
 window.si_cancelUpload             = si_cancelUpload;
 window.si_deletePhoto              = si_deletePhoto;
 window.si_setMainPhoto             = si_setMainPhoto;
+// ── Croquis Interactivo — FASE 1.4 ────────────────────────
+//
+// FASE 1.5 (preparado en comentarios):
+// - Flechas de flujo de clientes entre zonas
+// - Heatmaps de tráfico sobre el plano
+// - Zonas de congestión resaltadas
+// - IA análisis espacial del plano
+// - Métricas por zona superpuestas (ventas, tráfico)
+
+// ── Layout initialization ─────────────────────────────────
+
+function si_initLayoutDraft(zones) {
+  const cols  = Math.max(2, Math.ceil(Math.sqrt(zones.length)));
+  const rows  = Math.ceil(zones.length / cols);
+  const cellW = Math.max(10, Math.floor(94 / cols));
+  const cellH = Math.max(14, Math.floor(94 / rows));
+
+  zones.forEach((z, idx) => {
+    if (z.layout) {
+      _siLayoutDraft[z.id] = { ...z.layout };
+    } else {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      _siLayoutDraft[z.id] = {
+        x: 2 + col * cellW,
+        y: 2 + row * cellH,
+        w: Math.max(8,  cellW - 2),
+        h: Math.max(12, cellH - 2),
+      };
+    }
+  });
+}
+
+function si_getZoneLayout(zone) {
+  return _siLayoutDraft[zone.id] || zone.layout || null;
+}
+
+// ── Render croquis interactivo ────────────────────────────
+
+function si_renderInteractiveCroquis(zones) {
+  const activeZones = zones.filter(z => z.status === 'Activa');
+
+  const toolbar = si_layoutEditMode ? `
+    <div class="si-fp-toolbar">
+      <div class="si-fp-info">
+        <span class="si-fp-mode-badge edit">✏️ Modo edición</span>
+        <span class="si-fp-tip">Arrastrá para mover · Esquina inferior derecha para redimensionar</span>
+      </div>
+      <div class="si-fp-btns">
+        <button class="si-fp-btn" onclick="si_autoArrangeZones()">⊞ Auto ordenar</button>
+        <button class="si-fp-btn" onclick="si_resetLayout()">↺ Resetear</button>
+        <button class="si-fp-btn" onclick="si_cancelLayout()">✕ Cancelar</button>
+        <button class="si-fp-btn si-fp-btn-save" onclick="si_saveLayout()">💾 Guardar croquis</button>
+      </div>
+    </div>
+  ` : `
+    <div class="si-section-header" style="margin-bottom:14px;">
+      <div>
+        <div class="si-section-title">🗺️ Croquis de Sucursal</div>
+        <div class="si-section-sub">Vista visual interactiva de zonas. Clic para ver detalle.</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="si-fp-btn" onclick="si_centerView()" title="Centrar vista">⊙ Centrar</button>
+        <button class="si-fp-btn si-fp-btn-edit" onclick="si_toggleLayoutEditMode()">✏️ Editar croquis</button>
+      </div>
+    </div>
+  `;
+
+  if (activeZones.length === 0) {
+    return toolbar + `<div class="si-croquis-empty">Sin zonas activas para mostrar en el croquis.</div>`;
+  }
+
+  // Ensure layouts exist in draft
+  activeZones.forEach((z, idx) => {
+    if (!_siLayoutDraft[z.id]) {
+      const cols  = Math.max(2, Math.ceil(Math.sqrt(activeZones.length)));
+      const cellW = Math.max(10, Math.floor(94 / cols));
+      const cellH = Math.max(14, Math.floor(94 / Math.ceil(activeZones.length / cols)));
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      _siLayoutDraft[z.id] = z.layout || {
+        x: 2 + col * cellW, y: 2 + row * cellH,
+        w: Math.max(8, cellW - 2), h: Math.max(12, cellH - 2),
+      };
+    }
+  });
+
+  const blocksHTML = activeZones.map(z => {
+    const tipo       = SI_ZONE_TYPES[z.type] || SI_ZONE_TYPES.personalizada;
+    const layout     = _siLayoutDraft[z.id];
+    const mainPhoto  = si_photos_getMain(z.id);
+    const photoCount = si_photos_forZone(z.id).length;
+    const prioColor  = z.commercialPriority === 'Alta' ? '#EF4444' : z.commercialPriority === 'Media' ? '#F59E0B' : 'transparent';
+
+    return `
+      <div class="si-fp-zone${si_layoutEditMode ? ' si-fp-zone-edit' : ''}"
+        data-zone-id="${z.id}"
+        style="left:${layout.x}%;top:${layout.y}%;width:${layout.w}%;height:${layout.h}%;--zc:${tipo.color};--zcbg:${tipo.bg};"
+        onmousedown="si_onZoneMousedown(event,'${z.id}')"
+        ontouchstart="si_onZoneTouchstart(event,'${z.id}')"
+        onclick="si_onZoneClick(event,'${z.id}')"
+        title="${z.name}">
+
+        ${mainPhoto ? `<img class="si-fp-zone-bg-img" src="${mainPhoto.url}" alt="" />` : ''}
+
+        <div class="si-fp-zone-content">
+          <div class="si-fp-zone-icon">${tipo.icon}</div>
+          <div class="si-fp-zone-name">${z.name}</div>
+          ${!si_layoutEditMode ? `
+            <div class="si-fp-zone-badges">
+              ${photoCount > 0 ? `<span class="si-fp-photo-dot">📸${photoCount}</span>` : ''}
+              <span class="si-fp-type-dot" style="background:${tipo.color}20;color:${tipo.color};">${tipo.label}</span>
+            </div>` : ''}
+        </div>
+
+        <div class="si-fp-prio-bar" style="background:${prioColor};"></div>
+
+        ${si_layoutEditMode ? `
+          <div class="si-resize-handle"
+            onmousedown="si_onResizeMousedown(event,'${z.id}')"
+            ontouchstart="si_onResizeTouchstart(event,'${z.id}')">
+          </div>` : ''}
+      </div>`;
+  }).join('');
+
+  // Legend
+  const presentTypes = [...new Set(activeZones.map(z => z.type))];
+  const legendHTML = `
+    <div class="si-fp-legend">
+      ${presentTypes.map(t => {
+        const v = SI_ZONE_TYPES[t] || SI_ZONE_TYPES.personalizada;
+        return `<span class="si-fp-legend-item" style="color:${v.color};">${v.icon} ${v.label}</span>`;
+      }).join('')}
+    </div>`;
+
+  return toolbar + `
+    <div class="si-floor-plan" id="si-floor-plan-${si_storeId}">
+      <div class="si-floor-plan-inner" id="si-floor-plan-inner-${si_storeId}">
+        ${blocksHTML}
+      </div>
+    </div>
+    ${legendHTML}
+  `;
+}
+
+// ── Edit mode controls ────────────────────────────────────
+
+function si_toggleLayoutEditMode() {
+  si_layoutEditMode = true;
+  // Init draft from current zone layouts
+  const zones = si_storeId ? si_zones_forStore(si_storeId).filter(z => z.status === 'Activa') : [];
+  si_initLayoutDraft(zones);
+  si_refreshCroquisSection();
+}
+
+function si_saveLayout() {
+  const zones = si_storeId ? si_zones_forStore(si_storeId) : [];
+  zones.forEach(z => {
+    if (_siLayoutDraft[z.id]) {
+      si_zones_save({ ...z, layout: { ..._siLayoutDraft[z.id] } });
+    }
+  });
+  si_layoutEditMode = false;
+  si_refreshCroquisSection();
+  if (typeof showOSToast === 'function') showOSToast('Croquis guardado correctamente');
+}
+
+function si_cancelLayout() {
+  si_layoutEditMode = false;
+  _siLayoutDraft    = {};
+  si_refreshCroquisSection();
+}
+
+function si_autoArrangeZones() {
+  const zones = si_storeId ? si_zones_forStore(si_storeId).filter(z => z.status === 'Activa') : [];
+  const cols  = Math.max(2, Math.ceil(Math.sqrt(zones.length)));
+  const cellW = Math.max(10, Math.floor(94 / cols));
+  const cellH = Math.max(14, Math.floor(94 / Math.ceil(zones.length / cols)));
+  zones.forEach((z, idx) => {
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    _siLayoutDraft[z.id] = {
+      x: 2 + col * cellW, y: 2 + row * cellH,
+      w: Math.max(8, cellW - 2), h: Math.max(12, cellH - 2),
+    };
+  });
+  si_refreshCroquisSection();
+}
+
+function si_resetLayout() {
+  if (!confirm('¿Resetear posiciones de todas las zonas?')) return;
+  const zones = si_storeId ? si_zones_forStore(si_storeId) : [];
+  zones.forEach(z => { si_zones_save({ ...z, layout: null }); });
+  _siLayoutDraft = {};
+  si_autoArrangeZones();
+}
+
+function si_centerView() {
+  const plan = document.getElementById(`si-floor-plan-${si_storeId}`);
+  if (plan) plan.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function si_refreshCroquisSection() {
+  const section = document.getElementById('si-croquis-section');
+  if (!section) return;
+  const zones = si_storeId ? si_zones_forStore(si_storeId) : [];
+  section.innerHTML = si_renderInteractiveCroquis(zones);
+}
+
+// ── Drag & resize handlers ────────────────────────────────
+
+function si_onZoneMousedown(e, zoneId) {
+  if (!si_layoutEditMode) return;
+  if (e.target.closest('.si-resize-handle')) return;
+  e.preventDefault();
+  e.stopPropagation();
+  _siDragState = si_buildDragState('drag', zoneId, e.clientX, e.clientY);
+}
+
+function si_onZoneTouchstart(e, zoneId) {
+  if (!si_layoutEditMode) return;
+  e.preventDefault();
+  _siDragState = si_buildDragState('drag', zoneId, e.touches[0].clientX, e.touches[0].clientY);
+}
+
+function si_onResizeMousedown(e, zoneId) {
+  if (!si_layoutEditMode) return;
+  e.preventDefault();
+  e.stopPropagation();
+  _siDragState = si_buildDragState('resize', zoneId, e.clientX, e.clientY);
+}
+
+function si_onResizeTouchstart(e, zoneId) {
+  if (!si_layoutEditMode) return;
+  e.preventDefault();
+  _siDragState = si_buildDragState('resize', zoneId, e.touches[0].clientX, e.touches[0].clientY);
+}
+
+function si_buildDragState(type, zoneId, clientX, clientY) {
+  const container = document.getElementById(`si-floor-plan-inner-${si_storeId}`);
+  if (!container) return null;
+  const rect   = container.getBoundingClientRect();
+  const layout = _siLayoutDraft[zoneId] || { x: 0, y: 0, w: 20, h: 20 };
+  return {
+    type,
+    zoneId,
+    startX:  clientX,
+    startY:  clientY,
+    startLX: layout.x,
+    startLY: layout.y,
+    startLW: layout.w,
+    startLH: layout.h,
+    layout:  { ...layout },
+    rect,
+  };
+}
+
+function si_onDragMove(clientX, clientY) {
+  if (!_siDragState) return;
+  const s      = _siDragState;
+  const dx     = ((clientX - s.startX) / s.rect.width)  * 100;
+  const dy     = ((clientY - s.startY) / s.rect.height) * 100;
+  const el     = document.querySelector(`[data-zone-id="${s.zoneId}"]`);
+  if (!el) return;
+
+  if (s.type === 'drag') {
+    const nx = Math.round(Math.max(0, Math.min(100 - s.layout.w, s.startLX + dx)) * 10) / 10;
+    const ny = Math.round(Math.max(0, Math.min(100 - s.layout.h, s.startLY + dy)) * 10) / 10;
+    el.style.left = nx + '%';
+    el.style.top  = ny + '%';
+    _siLayoutDraft[s.zoneId] = { ...s.layout, x: nx, y: ny };
+  } else {
+    const nw = Math.round(Math.max(6,  Math.min(100 - s.startLX, s.startLW + dx)) * 10) / 10;
+    const nh = Math.round(Math.max(10, Math.min(100 - s.startLY, s.startLH + dy)) * 10) / 10;
+    el.style.width  = nw + '%';
+    el.style.height = nh + '%';
+    _siLayoutDraft[s.zoneId] = { ...s.layout, w: nw, h: nh };
+  }
+}
+
+function si_onZoneClick(e, zoneId) {
+  if (si_layoutEditMode) return; // no abrir detalle en modo edición
+  openZoneDetail(zoneId);
+}
+
+// ── Exports ───────────────────────────────────────────────
+
+window.renderStoreIntelligenceView = renderStoreIntelligenceView;
+
 window.si_renderComparativo        = si_renderComparativo;
 window.si_compFilterChange         = si_compFilterChange;
 window.si_selectCompPhoto          = si_selectCompPhoto;
 window.si_runComparativo           = si_runComparativo;
+window.si_renderInteractiveCroquis = si_renderInteractiveCroquis;
+window.si_toggleLayoutEditMode     = si_toggleLayoutEditMode;
+window.si_saveLayout               = si_saveLayout;
+window.si_cancelLayout             = si_cancelLayout;
+window.si_autoArrangeZones         = si_autoArrangeZones;
+window.si_resetLayout              = si_resetLayout;
+window.si_centerView               = si_centerView;
+window.si_onZoneMousedown          = si_onZoneMousedown;
+window.si_onZoneTouchstart         = si_onZoneTouchstart;
+window.si_onResizeMousedown        = si_onResizeMousedown;
+window.si_onResizeTouchstart       = si_onResizeTouchstart;
+window.si_onZoneClick              = si_onZoneClick;
