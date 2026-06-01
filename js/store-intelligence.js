@@ -1,18 +1,20 @@
 // ============================================================
 // STORE INTELLIGENCE & VISUAL MERCHANDISING
 // Universal para clientes retail con tiendas físicas
-// Storage: localStorage → preparado para Supabase
+// Storage: localStorage → preparado para Supabase Storage
 //
-// FASE 1: Croquis de sucursal + gestión de zonas
-// FASE 2 (futura): Subida de fotos + historial visual
-// FASE 3 (futura): IA visual + heatmaps
-// FASE 4 (futura): Integración con inventario y ventas
+// FASE 1:   Croquis de sucursal + gestión de zonas ✅
+// FASE 1.2: Historial fotográfico por zona ✅
+// FASE 2:   Auditorías visuales + comparativo sucursales
+// FASE 3:   IA visual + heatmaps + score automático
+// FASE 4:   Integración con inventario y ventas
 // ============================================================
 
 console.log('[StoreIntelligence] loaded');
 
 const SI_STORES_KEY = 'si_stores_v1';
 const SI_ZONES_KEY  = 'si_zones_v1';
+const SI_PHOTOS_KEY = 'si_photos_v1';
 
 // ── Estado activo ─────────────────────────────────────────
 
@@ -69,6 +71,62 @@ function si_zones_forStore(storeId) {
   return si_zones_getAll().filter(z => z.store_id === storeId);
 }
 
+// ── Storage — Photos ──────────────────────────────────────
+// Schema preparado para Supabase Storage:
+// url → storage.from('store-photos').getPublicUrl(path)
+// thumbnail → versión resize (misma URL en Supabase con transform)
+
+function si_photos_getAll() { try { return JSON.parse(localStorage.getItem(SI_PHOTOS_KEY)||'[]'); } catch { return []; } }
+function si_photos_delete(id) { localStorage.setItem(SI_PHOTOS_KEY, JSON.stringify(si_photos_getAll().filter(p=>p.id!==id))); }
+
+function si_photos_save(photo) {
+  const all = si_photos_getAll();
+  const idx = all.findIndex(p => p.id === photo.id);
+  const now = new Date().toISOString();
+  if (idx !== -1) { all[idx] = { ...all[idx], ...photo, updated_at: now }; }
+  else { all.unshift({ ...photo, id: crypto.randomUUID(), created_at: now, updated_at: now }); }
+  localStorage.setItem(SI_PHOTOS_KEY, JSON.stringify(all));
+}
+
+function si_photos_forZone(zoneId) {
+  return si_photos_getAll().filter(p => p.zone_id === zoneId);
+}
+
+function si_photos_getMain(zoneId) {
+  return si_photos_forZone(zoneId).find(p => p.es_principal) || null;
+}
+
+function si_photos_setPrincipal(photoId, zoneId) {
+  const all = si_photos_getAll();
+  all.forEach(p => { if (p.zone_id === zoneId) p.es_principal = (p.id === photoId); });
+  localStorage.setItem(SI_PHOTOS_KEY, JSON.stringify(all));
+}
+
+// ── Image resize (Canvas) ─────────────────────────────────
+// Preparado para Supabase Storage: reemplazar por upload a bucket
+
+function si_resizeImage(file, maxWidth = 900, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    if (file.size > 8 * 1024 * 1024) { reject(new Error('La imagen no puede superar 8MB.')); return; }
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 // ── Mock data seed — solo si no hay datos ─────────────────
 
 function si_seedMockData() {
@@ -104,13 +162,15 @@ function si_seedMockData() {
 
 function si_calculateScore(zones) {
   if (!zones.length) return 0;
-  const activas     = zones.filter(z => z.status === 'Activa').length;
-  const calientes   = zones.filter(z => z.type === 'zona_caliente').length;
-  const entradas    = zones.filter(z => z.type === 'entrada').length;
-  const escaparates = zones.filter(z => z.type === 'escaparate').length;
-  const actPct      = (activas / zones.length) * 60;
-  const bonus       = Math.min(40, (calientes * 8) + (entradas * 10) + (escaparates * 8));
-  return Math.min(100, Math.round(actPct + bonus));
+  const activas      = zones.filter(z => z.status === 'Activa').length;
+  const calientes    = zones.filter(z => z.type === 'zona_caliente').length;
+  const entradas     = zones.filter(z => z.type === 'entrada').length;
+  const escaparates  = zones.filter(z => z.type === 'escaparate').length;
+  const conFoto      = zones.filter(z => si_photos_getMain(z.id)).length;
+  const actPct       = (activas / zones.length) * 50;
+  const fotoPct      = zones.length > 0 ? (conFoto / zones.length) * 20 : 0;
+  const bonus        = Math.min(30, (calientes * 6) + (entradas * 8) + (escaparates * 6));
+  return Math.min(100, Math.round(actPct + fotoPct + bonus));
 }
 
 // ── Render principal ──────────────────────────────────────
@@ -246,13 +306,20 @@ function si_renderStoreContent() {
   const score  = si_calculateScore(zones);
   const scoreColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
 
+  const allPhotos   = si_photos_getAll().filter(p => zones.some(z => z.id === p.zone_id));
+  const conFoto     = zones.filter(z => si_photos_getMain(z.id));
+  const sinFoto     = zones.filter(z => !si_photos_getMain(z.id));
+  const ultimaFoto  = allPhotos.length > 0
+    ? new Date(allPhotos[0].created_at).toLocaleDateString('es-CR',{day:'numeric',month:'short'})
+    : '—';
+
   const kpis = {
-    total:     zones.length,
-    calientes: zones.filter(z => z.type === 'zona_caliente').length,
-    frias:     zones.filter(z => z.type === 'zona_fria').length,
-    impulso:   zones.filter(z => z.type === 'impulso').length,
-    fotos:     zones.reduce((s, z) => s + (z.photos||[]).length, 0),
-    updated:   zones.length > 0 ? new Date(zones[0].updated_at).toLocaleDateString('es-CR',{day:'numeric',month:'short'}) : '—',
+    total:      zones.length,
+    calientes:  zones.filter(z => z.type === 'zona_caliente').length,
+    frias:      zones.filter(z => z.type === 'zona_fria').length,
+    conFoto:    conFoto.length,
+    sinFoto:    sinFoto.length,
+    ultimaFoto,
   };
 
   content.innerHTML = `
@@ -289,20 +356,20 @@ function si_renderStoreContent() {
         <div class="si-kpi-val" style="color:#06B6D4">${kpis.frias}</div>
         <div class="si-kpi-label">Zonas frías</div>
       </div>
-      <div class="si-kpi" style="--sk:#F59E0B">
-        <div class="si-kpi-icon">⚡</div>
-        <div class="si-kpi-val" style="color:#F59E0B">${kpis.impulso}</div>
-        <div class="si-kpi-label">Puntos de impulso</div>
-      </div>
-      <div class="si-kpi">
+      <div class="si-kpi" style="--sk:#22C55E">
         <div class="si-kpi-icon">📸</div>
-        <div class="si-kpi-val">${kpis.fotos}</div>
-        <div class="si-kpi-label">Fotos cargadas</div>
+        <div class="si-kpi-val" style="color:var(--green)">${kpis.conFoto}</div>
+        <div class="si-kpi-label">Con foto actual</div>
+      </div>
+      <div class="si-kpi" style="--sk:${kpis.sinFoto > 0 ? 'var(--amber)' : 'var(--gray)'}">
+        <div class="si-kpi-icon">📷</div>
+        <div class="si-kpi-val" style="color:${kpis.sinFoto > 0 ? 'var(--amber)' : 'var(--gray)'}">${kpis.sinFoto}</div>
+        <div class="si-kpi-label">Sin foto</div>
       </div>
       <div class="si-kpi">
         <div class="si-kpi-icon">🕐</div>
-        <div class="si-kpi-val" style="font-size:14px;">${kpis.updated}</div>
-        <div class="si-kpi-label">Última actualización</div>
+        <div class="si-kpi-val" style="font-size:14px;">${kpis.ultimaFoto}</div>
+        <div class="si-kpi-label">Última foto</div>
       </div>
     </div>
 
@@ -337,7 +404,7 @@ function si_renderStoreContent() {
     <div class="si-future-section">
       <div class="si-future-title">🚀 Próximas funciones</div>
       <div class="si-future-grid">
-        <div class="si-future-card">📸 Historial fotográfico por zona</div>
+        <div class="si-future-card" style="color:var(--green);border-color:rgba(34,197,94,.2);">✅ Historial fotográfico activo</div>
         <div class="si-future-card">🤖 Análisis IA visual</div>
         <div class="si-future-card">🌡️ Heatmaps de tráfico</div>
         <div class="si-future-card">📊 Comparativo de sucursales</div>
@@ -359,14 +426,22 @@ function si_renderCroquis(zones) {
   return `
     <div class="si-croquis-grid">
       ${zones.filter(z => z.status === 'Activa').map(z => {
-        const tipo = SI_ZONE_TYPES[z.type] || SI_ZONE_TYPES.personalizada;
-        const area = (z.width && z.length) ? `${z.width}×${z.length}m` : '';
+        const tipo      = SI_ZONE_TYPES[z.type] || SI_ZONE_TYPES.personalizada;
+        const area      = (z.width && z.length) ? `${z.width}×${z.length}m` : '';
+        const mainPhoto = si_photos_getMain(z.id);
+        const photoCount = si_photos_forZone(z.id).length;
         return `
-          <div class="si-croquis-block" style="--zc:${tipo.color};--zcbg:${tipo.bg};"
+          <div class="si-croquis-block${mainPhoto ? ' si-croquis-has-photo' : ''}"
+            style="--zc:${tipo.color};--zcbg:${tipo.bg};"
             onclick="openZoneDetail('${z.id}')" title="${z.name}">
-            <div class="si-croquis-icon">${tipo.icon}</div>
+            ${mainPhoto
+              ? `<div class="si-croquis-photo-thumb"><img src="${mainPhoto.url}" alt="" /></div>`
+              : `<div class="si-croquis-icon">${tipo.icon}</div>`}
             <div class="si-croquis-name">${z.name}</div>
             ${area ? `<div class="si-croquis-area">${area}</div>` : ''}
+            <div class="si-croquis-photo-badge">
+              ${mainPhoto ? `<span class="si-photo-dot si-photo-dot-ok">📸 ${photoCount}</span>` : `<span class="si-photo-dot si-photo-dot-empty">sin foto</span>`}
+            </div>
           </div>`;
       }).join('')}
     </div>
@@ -392,7 +467,7 @@ function renderStoreZones(zones) {
             <th>Zona</th>
             <th>Tipo</th>
             <th>Medidas</th>
-            <th>Responsable</th>
+            <th>Foto</th>
             <th>Prioridad</th>
             <th>Estado</th>
             <th></th>
@@ -412,7 +487,13 @@ function renderStoreZones(zones) {
                   </span>
                 </td>
                 <td style="font-size:12px;color:var(--gray);">${medidas}</td>
-                <td style="font-size:12px;color:var(--gray);">${z.responsible || '—'}</td>
+                <td>${(() => {
+                  const mp = si_photos_getMain(z.id);
+                  const cnt = si_photos_forZone(z.id).length;
+                  return mp
+                    ? `<div class="si-table-thumb" onclick="openZoneDetail('${z.id}')"><img src="${mp.url}" alt="" /><span>📸 ${cnt}</span></div>`
+                    : `<span style="font-size:11px;color:var(--gray);">sin foto</span>`;
+                })()}</td>
                 <td><span style="font-size:12px;color:${prioColor};">● ${z.commercialPriority || '—'}</span></td>
                 <td><span class="si-status-badge si-status-${z.status==='Activa'?'activa':'inactiva'}">${z.status}</span></td>
                 <td>
@@ -579,13 +660,16 @@ function openZoneDetail(zoneId) {
           <div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.7;">${zone.description}</div>
         </div>` : ''}
 
-      <!-- Historial fotográfico — FASE 2 -->
+      <!-- Historial fotográfico — FASE 1.2 activa -->
       <div class="si-detail-section">
-        <div class="si-detail-section-label">📸 Historial fotográfico</div>
-        <div class="si-photo-placeholder">
-          <div style="font-size:28px;margin-bottom:8px;">📷</div>
-          <div style="font-size:13px;color:var(--gray);">Subida de fotos disponible en Fase 2</div>
-          <div style="font-size:11px;color:rgba(136,135,128,.5);margin-top:4px;">Se podrá registrar el historial visual y comparar en el tiempo</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="si-detail-section-label" style="margin-bottom:0;">📸 Historial fotográfico</div>
+          <button class="si-add-btn" style="font-size:11px;padding:6px 12px;"
+            onclick="si_openUploadArea('${zone.id}')">+ Subir foto</button>
+        </div>
+        <div id="si-photo-upload-area-${zone.id}"></div>
+        <div id="si-photo-gallery-${zone.id}">
+          ${si_renderPhotoGallery(zone.id)}
         </div>
       </div>
 
@@ -656,6 +740,162 @@ function saveNewStore() {
   renderStoreIntelligenceView();
 }
 
+// ── Photo gallery render ──────────────────────────────────
+
+const SI_FOTO_TIPOS = ['General','Entrada','Escaparate','Tarima','Urna','Caja','Bodega','Exhibición','Detalle de producto'];
+
+function si_renderPhotoGallery(zoneId) {
+  const photos = si_photos_forZone(zoneId);
+  if (!photos.length) {
+    return `<div class="si-photo-empty">Sin fotos todavía. Subí la primera foto de esta zona.</div>`;
+  }
+  return `
+    <div class="si-photo-grid">
+      ${photos.map(p => `
+        <div class="si-photo-card${p.es_principal ? ' si-photo-principal' : ''}">
+          <div class="si-photo-img-wrap">
+            <img src="${p.url}" alt="${p.tipo_evidencia || ''}" loading="lazy" />
+            ${p.es_principal ? `<span class="si-photo-star-badge">★ Principal</span>` : ''}
+          </div>
+          <div class="si-photo-info">
+            <div class="si-photo-tipo">${p.tipo_evidencia || 'General'}</div>
+            <div class="si-photo-meta">
+              <span>${new Date(p.created_at).toLocaleDateString('es-CR',{day:'numeric',month:'short',year:'numeric'})}</span>
+              ${p.responsable ? `<span>· ${p.responsable}</span>` : ''}
+            </div>
+            ${p.comentario ? `<div class="si-photo-comment">${p.comentario}</div>` : ''}
+          </div>
+          <div class="si-photo-actions">
+            ${!p.es_principal
+              ? `<button class="si-photo-btn si-photo-btn-star" onclick="si_setMainPhoto('${p.id}','${zoneId}')" title="Marcar como foto principal">☆ Principal</button>`
+              : `<span class="si-photo-btn-current">★ Foto actual</span>`}
+            <button class="si-photo-btn si-photo-btn-del" onclick="si_deletePhoto('${p.id}','${zoneId}')" title="Eliminar">✕</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+// ── Upload area ───────────────────────────────────────────
+
+let _siPendingPhotoBase64 = null;
+let _siPendingZoneId      = null;
+
+function si_openUploadArea(zoneId) {
+  _siPendingZoneId = zoneId;
+  _siPendingPhotoBase64 = null;
+  const area = document.getElementById(`si-photo-upload-area-${zoneId}`);
+  if (!area) return;
+
+  area.innerHTML = `
+    <div class="si-upload-box" id="si-upload-box-${zoneId}">
+      <div class="si-upload-drop-zone" onclick="document.getElementById('si-file-input-${zoneId}').click()">
+        <div class="si-upload-drop-icon">📁</div>
+        <div class="si-upload-drop-text">Clic para seleccionar imagen</div>
+        <div class="si-upload-drop-sub">JPG, PNG, WEBP · Máx 8MB · Se comprime automáticamente</div>
+        <input type="file" id="si-file-input-${zoneId}" accept="image/*"
+          style="display:none;" onchange="si_handleFileSelect(event,'${zoneId}')" />
+      </div>
+      <div id="si-upload-preview-${zoneId}" style="display:none;">
+        <img id="si-upload-img-${zoneId}" src="" alt="preview" class="si-upload-preview-img" />
+        <div class="si-upload-form">
+          <select class="si-input si-upload-field" id="si-tipo-${zoneId}">
+            ${SI_FOTO_TIPOS.map(t=>`<option value="${t}">${t}</option>`).join('')}
+          </select>
+          <input class="si-input si-upload-field" type="text" id="si-responsable-${zoneId}" placeholder="Responsable (opcional)" />
+          <textarea class="si-input si-upload-field si-upload-textarea" id="si-comment-${zoneId}"
+            rows="2" placeholder="Comentario u observación..."></textarea>
+          <label class="si-upload-check-row">
+            <input type="checkbox" id="si-principal-${zoneId}" checked />
+            <span>Marcar como foto principal actual</span>
+          </label>
+        </div>
+        <div class="si-upload-btns">
+          <button class="si-upload-cancel" onclick="si_cancelUpload('${zoneId}')">Cancelar</button>
+          <button class="si-add-btn" style="font-size:12px;padding:8px 18px;" onclick="si_savePhoto('${zoneId}')">Guardar foto</button>
+        </div>
+        <div class="modal-msg" id="si-upload-msg-${zoneId}"></div>
+      </div>
+    </div>
+  `;
+}
+
+async function si_handleFileSelect(event, zoneId) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const preview  = document.getElementById(`si-upload-preview-${zoneId}`);
+  const img      = document.getElementById(`si-upload-img-${zoneId}`);
+  const dropZone = document.querySelector(`#si-upload-box-${zoneId} .si-upload-drop-zone`);
+  try {
+    const base64 = await si_resizeImage(file);
+    _siPendingPhotoBase64 = base64;
+    _siPendingZoneId      = zoneId;
+    if (img)      img.src = base64;
+    if (preview)  preview.style.display = 'block';
+    if (dropZone) dropZone.style.display = 'none';
+  } catch (err) {
+    alert(err.message || 'Error procesando la imagen.');
+  }
+}
+
+function si_savePhoto(zoneId) {
+  if (!_siPendingPhotoBase64 || _siPendingZoneId !== zoneId) {
+    alert('Seleccioná una imagen primero.');
+    return;
+  }
+  const esPrincipal = document.getElementById(`si-principal-${zoneId}`)?.checked ?? true;
+
+  // Si se marca como principal, quitar el flag de las demás
+  if (esPrincipal) {
+    const all = si_photos_getAll();
+    all.forEach(p => { if (p.zone_id === zoneId) p.es_principal = false; });
+    localStorage.setItem(SI_PHOTOS_KEY, JSON.stringify(all));
+  }
+
+  si_photos_save({
+    zone_id:        zoneId,
+    store_id:       si_storeId,
+    url:            _siPendingPhotoBase64,
+    tipo_evidencia: document.getElementById(`si-tipo-${zoneId}`)?.value || 'General',
+    responsable:    document.getElementById(`si-responsable-${zoneId}`)?.value.trim() || '',
+    comentario:     document.getElementById(`si-comment-${zoneId}`)?.value.trim() || '',
+    es_principal:   esPrincipal,
+  });
+
+  _siPendingPhotoBase64 = null;
+  _siPendingZoneId      = null;
+
+  // Refresh gallery + upload area
+  const uploadArea = document.getElementById(`si-photo-upload-area-${zoneId}`);
+  if (uploadArea) uploadArea.innerHTML = '';
+  const gallery = document.getElementById(`si-photo-gallery-${zoneId}`);
+  if (gallery) gallery.innerHTML = si_renderPhotoGallery(zoneId);
+
+  // Refresh zone table/croquis in background
+  si_renderStoreContent();
+}
+
+function si_cancelUpload(zoneId) {
+  _siPendingPhotoBase64 = null;
+  const area = document.getElementById(`si-photo-upload-area-${zoneId}`);
+  if (area) area.innerHTML = '';
+}
+
+function si_deletePhoto(photoId, zoneId) {
+  if (!confirm('¿Eliminar esta foto?')) return;
+  si_photos_delete(photoId);
+  const gallery = document.getElementById(`si-photo-gallery-${zoneId}`);
+  if (gallery) gallery.innerHTML = si_renderPhotoGallery(zoneId);
+  si_renderStoreContent();
+}
+
+function si_setMainPhoto(photoId, zoneId) {
+  si_photos_setPrincipal(photoId, zoneId);
+  const gallery = document.getElementById(`si-photo-gallery-${zoneId}`);
+  if (gallery) gallery.innerHTML = si_renderPhotoGallery(zoneId);
+  si_renderStoreContent();
+}
+
 // ── Exports ───────────────────────────────────────────────
 
 window.renderStoreIntelligenceView = renderStoreIntelligenceView;
@@ -671,3 +911,9 @@ window.openNewStoreModal           = openNewStoreModal;
 window.saveNewStore                = saveNewStore;
 window.si_calculateScore           = si_calculateScore;
 window.SI_ZONE_TYPES               = SI_ZONE_TYPES;
+window.si_openUploadArea           = si_openUploadArea;
+window.si_handleFileSelect         = si_handleFileSelect;
+window.si_savePhoto                = si_savePhoto;
+window.si_cancelUpload             = si_cancelUpload;
+window.si_deletePhoto              = si_deletePhoto;
+window.si_setMainPhoto             = si_setMainPhoto;
