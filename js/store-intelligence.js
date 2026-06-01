@@ -27,6 +27,11 @@ let si_layoutEditMode = false;
 let _siLayoutDraft    = {};
 let _siDragState      = null;
 
+// ── Estado campañas visuales — FASE 1.6 ───────────────────
+// FASE 1.7 (futura): checklist de ejecución, evidencia fotográfica obligatoria, auditoría de cumplimiento, IA
+
+let _siCampaignFilter = { estado: 'all', tipo: 'all' };
+
 // ── Estado flujo de clientes — FASE 1.5 ───────────────────
 // FASE 1.6 (futura): heatmaps reales, tráfico medido, IA recorrido óptimo, comparativo entre sucursales
 
@@ -80,6 +85,19 @@ const SI_ZONE_TYPES = {
 };
 
 // ── Tipos de puntos de flujo ──────────────────────────────
+
+// ── Tipos y estados de campañas ───────────────────────────
+
+const SI_CAMPAIGN_TIPOS = [
+  'Temporada','Promoción','Lanzamiento','Colección','Evento','Liquidación','Branding','Personalizada',
+];
+
+const SI_CAMPAIGN_ESTADOS = {
+  Planificada: { color:'#F59E0B', bg:'rgba(245,158,11,.1)' },
+  Activa:      { color:'#22C55E', bg:'rgba(34,197,94,.1)'  },
+  Finalizada:  { color:'#6B7280', bg:'rgba(107,114,128,.1)'},
+  Vencida:     { color:'#EF4444', bg:'rgba(239,68,68,.1)'  },
+};
 
 const SI_FLOW_TYPES = {
   entrada:    { label:'Entrada',         color:'#22C55E', icon:'🚪' },
@@ -551,18 +569,23 @@ function si_renderStoreContent() {
       </div>
     </div>
 
+    <!-- Campañas visuales — FASE 1.6 -->
+    <div class="si-section" id="si-campaigns-section">
+      ${si_renderCampaignsSection()}
+    </div>
+
     <!-- Future phases placeholder -->
     <div class="si-future-section">
       <div class="si-future-title">🚀 Próximas funciones</div>
       <div class="si-future-grid">
         <div class="si-future-card" style="color:var(--green);border-color:rgba(34,197,94,.2);">✅ Historial fotográfico activo</div>
+        <div class="si-future-card" style="color:var(--green);border-color:rgba(34,197,94,.2);">✅ Campañas visuales activas</div>
         <div class="si-future-card">🤖 Análisis IA visual</div>
         <div class="si-future-card">🌡️ Heatmaps de tráfico</div>
         <div class="si-future-card">📊 Comparativo de sucursales</div>
+        <div class="si-future-card">📋 Checklist de ejecución de campaña</div>
         <div class="si-future-card">📦 Integración con inventario</div>
         <div class="si-future-card">💰 Integración con ventas</div>
-        <div class="si-future-card">🔍 Auditorías visuales</div>
-        <div class="si-future-card">📐 Score automático IA</div>
       </div>
     </div>
   `;
@@ -831,6 +854,28 @@ function openZoneDetail(zoneId) {
           ? `<div style="font-size:12px;color:var(--gray);">Sin observaciones registradas.</div>`
           : zone.notes.map(n => `<div style="font-size:13px;color:var(--gray);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);">${n}</div>`).join('')}
       </div>
+
+      <!-- Campañas asociadas -->
+      ${(() => {
+        const camps = si_getStoreCampaigns().filter(c => (c.zonas||[]).includes(zone.id));
+        if (!camps.length) return '';
+        return `
+          <div class="si-detail-section">
+            <div class="si-detail-section-label">📣 Campañas asociadas</div>
+            <div class="si-zone-campaigns">
+              ${camps.map(c => {
+                const st = si_getCampaignStatus(c);
+                const sc = SI_CAMPAIGN_ESTADOS[st] || SI_CAMPAIGN_ESTADOS.Planificada;
+                return `
+                  <div class="si-zone-campaign-row">
+                    <span class="si-camp-estado-badge" style="background:${sc.bg};color:${sc.color};">● ${st}</span>
+                    <span class="si-zone-campaign-name">${c.nombre}</span>
+                    <span class="si-zone-campaign-dates">${c.fechaInicio}${c.fechaFin ? ' → ' + c.fechaFin : ''}</span>
+                  </div>`;
+              }).join('')}
+            </div>
+          </div>`;
+      })()}
 
       <!-- Comparativo visual — FASE 1.3 -->
       <div class="si-detail-section">
@@ -1388,11 +1433,12 @@ function si_renderInteractiveCroquis(zones) {
   });
 
   const blocksHTML = activeZones.map(z => {
-    const tipo       = SI_ZONE_TYPES[z.type] || SI_ZONE_TYPES.personalizada;
-    const layout     = _siLayoutDraft[z.id];
-    const mainPhoto  = si_photos_getMain(z.id);
-    const photoCount = si_photos_forZone(z.id).length;
-    const prioColor  = z.commercialPriority === 'Alta' ? '#EF4444' : z.commercialPriority === 'Media' ? '#F59E0B' : 'transparent';
+    const tipo           = SI_ZONE_TYPES[z.type] || SI_ZONE_TYPES.personalizada;
+    const layout         = _siLayoutDraft[z.id];
+    const mainPhoto      = si_photos_getMain(z.id);
+    const photoCount     = si_photos_forZone(z.id).length;
+    const prioColor      = z.commercialPriority === 'Alta' ? '#EF4444' : z.commercialPriority === 'Media' ? '#F59E0B' : 'transparent';
+    const activeCampaigns = si_getActiveCampaignsForZone(z.id);
 
     return `
       <div class="si-fp-zone${si_layoutEditMode ? ' si-fp-zone-edit' : ''}"
@@ -1411,6 +1457,7 @@ function si_renderInteractiveCroquis(zones) {
           ${!si_layoutEditMode ? `
             <div class="si-fp-zone-badges">
               ${photoCount > 0 ? `<span class="si-fp-photo-dot">📸${photoCount}</span>` : ''}
+              ${activeCampaigns.length > 0 ? `<span class="si-fp-campaign-dot">📣</span>` : ''}
               <span class="si-fp-type-dot" style="background:${tipo.color}20;color:${tipo.color};">${tipo.label}</span>
             </div>` : ''}
         </div>
@@ -1863,6 +1910,274 @@ function si_refreshSVGAndPanel() {
   if (panel) panel.innerHTML = si_flowEditMode ? si_renderFlowEditPanel() : '';
 }
 
+// ── Campañas Visuales — FASE 1.6 ─────────────────────────
+//
+// FASE 1.7 (preparado):
+// - Checklist de ejecución de campaña por zona
+// - Evidencia fotográfica obligatoria por campaña
+// - Auditoría de cumplimiento visual
+// - IA: análisis de efectividad de campaña
+// Para Supabase: visualCampaigns → tabla `si_campaigns` con store_id
+
+// ── Storage helpers ───────────────────────────────────────
+
+function si_getStoreCampaigns() {
+  const store = si_stores_getAll().find(s => s.id === si_storeId);
+  return store?.visualCampaigns || [];
+}
+
+function si_saveStoreCampaigns(campaigns) {
+  const store = si_stores_getAll().find(s => s.id === si_storeId);
+  if (!store) return;
+  si_stores_save({ ...store, visualCampaigns: campaigns });
+}
+
+function si_getCampaignStatus(campaign) {
+  if (!campaign.fechaInicio) return campaign.estado || 'Planificada';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = new Date(campaign.fechaInicio + 'T00:00:00');
+  const end   = campaign.fechaFin ? new Date(campaign.fechaFin + 'T00:00:00') : null;
+  if (today < start)             return 'Planificada';
+  if (end && today > end)        return 'Finalizada';
+  return 'Activa';
+}
+
+function si_getActiveCampaignsForZone(zoneId) {
+  return si_getStoreCampaigns().filter(c =>
+    (c.zonas || []).includes(zoneId) && si_getCampaignStatus(c) === 'Activa'
+  );
+}
+
+function si_calculateCampaignKPIs() {
+  const camps = si_getStoreCampaigns();
+  const zones = si_storeId ? si_zones_forStore(si_storeId) : [];
+  const now   = new Date(); now.setHours(0,0,0,0);
+  return {
+    activas:      camps.filter(c => si_getCampaignStatus(c) === 'Activa').length,
+    planificadas: camps.filter(c => si_getCampaignStatus(c) === 'Planificada').length,
+    finalizadas:  camps.filter(c => si_getCampaignStatus(c) === 'Finalizada').length,
+    vencidas:     camps.filter(c => c.fechaFin && new Date(c.fechaFin + 'T00:00:00') < now && si_getCampaignStatus(c) !== 'Activa').length,
+    zonasConCamp: zones.filter(z => si_getActiveCampaignsForZone(z.id).length > 0).length,
+  };
+}
+
+// ── Render campaigns section ──────────────────────────────
+
+function si_renderCampaignsSection() {
+  const all   = si_getStoreCampaigns();
+  const kpis  = si_calculateCampaignKPIs();
+
+  const kpiBar = all.length ? `
+    <div class="si-camp-kpi-bar">
+      <span class="si-camp-kpi-label">📣 Campañas</span>
+      <div class="si-camp-kpi-items">
+        <div class="si-camp-kpi" style="color:#22C55E">${kpis.activas} <span>Activas</span></div>
+        <div class="si-camp-kpi" style="color:#F59E0B">${kpis.planificadas} <span>Planificadas</span></div>
+        <div class="si-camp-kpi">${kpis.finalizadas} <span>Finalizadas</span></div>
+        <div class="si-camp-kpi" style="color:#22C55E">${kpis.zonasConCamp} <span>Zonas con campaña</span></div>
+      </div>
+    </div>` : '';
+
+  // Filtros
+  const tipoOpts  = ['all', ...SI_CAMPAIGN_TIPOS].map(t =>
+    `<option value="${t}" ${_siCampaignFilter.tipo === t ? 'selected' : ''}>${t === 'all' ? 'Todos los tipos' : t}</option>`
+  ).join('');
+  const estadoOpts = ['all', ...Object.keys(SI_CAMPAIGN_ESTADOS)].map(e =>
+    `<option value="${e}" ${_siCampaignFilter.estado === e ? 'selected' : ''}>${e === 'all' ? 'Todos los estados' : e}</option>`
+  ).join('');
+
+  // Filter campaigns
+  let filtered = all;
+  if (_siCampaignFilter.estado !== 'all') filtered = filtered.filter(c => si_getCampaignStatus(c) === _siCampaignFilter.estado);
+  if (_siCampaignFilter.tipo   !== 'all') filtered = filtered.filter(c => c.tipo === _siCampaignFilter.tipo);
+  filtered = filtered.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  const zones = si_storeId ? si_zones_forStore(si_storeId) : [];
+
+  const cards = filtered.length === 0
+    ? `<div class="si-camp-empty">Sin campañas${all.length > 0 ? ' para este filtro' : ' todavía'}. Creá la primera campaña visual.</div>`
+    : `<div class="si-camp-grid">${filtered.map(c => {
+        const st      = si_getCampaignStatus(c);
+        const sc      = SI_CAMPAIGN_ESTADOS[st] || SI_CAMPAIGN_ESTADOS.Planificada;
+        const campZones = (c.zonas || []).map(id => zones.find(z => z.id === id)?.name).filter(Boolean);
+        const isIncomplete = (c.zonas || []).length === 0;
+        return `
+          <div class="si-camp-card">
+            <div class="si-camp-card-top">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <span class="si-camp-tipo-badge">${c.tipo || 'Personalizada'}</span>
+                <span class="si-camp-estado-badge" style="background:${sc.bg};color:${sc.color};">● ${st}</span>
+                ${isIncomplete ? `<span class="si-camp-incomplete-badge">⚠ Sin zonas</span>` : ''}
+              </div>
+              <div style="display:flex;gap:4px;">
+                <button class="si-camp-action-btn" onclick="si_openCampaignModal('${c.id}')" title="Editar">✏️</button>
+                <button class="si-camp-action-btn si-camp-del-btn" onclick="si_deleteCampaign('${c.id}')" title="Eliminar">✕</button>
+              </div>
+            </div>
+            <div class="si-camp-nombre">${c.nombre}</div>
+            ${c.objetivo ? `<div class="si-camp-objetivo">${c.objetivo.substring(0,80)}${c.objetivo.length>80?'…':''}</div>` : ''}
+            <div class="si-camp-meta">
+              <span>📅 ${c.fechaInicio}${c.fechaFin ? ' → ' + c.fechaFin : ''}</span>
+              ${c.responsable ? `<span>👤 ${c.responsable}</span>` : ''}
+            </div>
+            ${campZones.length ? `
+              <div class="si-camp-zones">
+                ${campZones.slice(0,3).map(n => `<span class="si-camp-zone-tag">${n}</span>`).join('')}
+                ${campZones.length > 3 ? `<span class="si-camp-zone-tag">+${campZones.length-3}</span>` : ''}
+              </div>` : ''}
+          </div>`;
+      }).join('')}</div>`;
+
+  return `
+    ${kpiBar}
+    <div class="si-section-header" style="margin-bottom:14px;">
+      <div>
+        <div class="si-section-title">📣 Campañas visuales</div>
+        <div class="si-section-sub">${all.length} campaña${all.length!==1?'s':''} · gestión por zonas de la sucursal</div>
+      </div>
+      <button class="si-add-btn" onclick="si_openCampaignModal()">+ Nueva campaña</button>
+    </div>
+    <div class="si-camp-filters">
+      <select class="si-input si-camp-filter-sel" onchange="si_campFilterChange('tipo',this.value)">${tipoOpts}</select>
+      <select class="si-input si-camp-filter-sel" onchange="si_campFilterChange('estado',this.value)">${estadoOpts}</select>
+    </div>
+    ${cards}
+  `;
+}
+
+function si_campFilterChange(key, val) {
+  _siCampaignFilter[key] = val;
+  const section = document.getElementById('si-campaigns-section');
+  if (section) section.innerHTML = si_renderCampaignsSection();
+}
+
+// ── CRUD ──────────────────────────────────────────────────
+
+function si_openCampaignModal(campaignId = null) {
+  const zones    = si_storeId ? si_zones_forStore(si_storeId) : [];
+  const existing = campaignId ? si_getStoreCampaigns().find(c => c.id === campaignId) : null;
+  const d        = existing || {};
+
+  document.getElementById('modal-si-campaign-body').innerHTML = `
+    <div class="si-form-grid">
+      <div class="si-form-field full">
+        <label class="si-form-label">Nombre de la campaña <span class="req">*</span></label>
+        <input class="si-input" type="text" id="sc-nombre" value="${d.nombre||''}" placeholder="Ej: Campaña de verano 2026" />
+      </div>
+      <div class="si-form-field">
+        <label class="si-form-label">Tipo</label>
+        <select class="si-input" id="sc-tipo">
+          ${SI_CAMPAIGN_TIPOS.map(t => `<option value="${t}" ${t===(d.tipo||'Temporada')?'selected':''}>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div class="si-form-field">
+        <label class="si-form-label">Estado</label>
+        <select class="si-input" id="sc-estado">
+          ${Object.keys(SI_CAMPAIGN_ESTADOS).map(e => `<option value="${e}" ${e===(d.estado||'Planificada')?'selected':''}>${e}</option>`).join('')}
+        </select>
+      </div>
+      <div class="si-form-field">
+        <label class="si-form-label">Fecha inicio <span class="req">*</span></label>
+        <input class="si-input" type="date" id="sc-inicio" value="${d.fechaInicio||''}" />
+      </div>
+      <div class="si-form-field">
+        <label class="si-form-label">Fecha fin</label>
+        <input class="si-input" type="date" id="sc-fin" value="${d.fechaFin||''}" />
+      </div>
+      <div class="si-form-field">
+        <label class="si-form-label">Responsable</label>
+        <input class="si-input" type="text" id="sc-responsable" value="${d.responsable||''}" placeholder="Ej: Encargado visual" />
+      </div>
+      <div class="si-form-field full">
+        <label class="si-form-label">Objetivo comercial</label>
+        <input class="si-input" type="text" id="sc-objetivo" value="${d.objetivo||''}" placeholder="Ej: Incrementar ventas de temporada 30%" />
+      </div>
+      <div class="si-form-field full">
+        <label class="si-form-label">Zonas asociadas
+          <span style="font-size:10px;color:var(--gray);font-weight:400;">(opcional — campaña sin zonas queda marcada como incompleta)</span>
+        </label>
+        <div class="si-camp-zones-select" id="sc-zonas-list">
+          ${zones.length === 0
+            ? `<div style="font-size:12px;color:var(--gray);">Sin zonas configuradas en esta sucursal.</div>`
+            : zones.map(z => {
+                const tipo     = SI_ZONE_TYPES[z.type] || SI_ZONE_TYPES.personalizada;
+                const hasPhoto = !!si_photos_getMain(z.id);
+                const checked  = (d.zonas||[]).includes(z.id);
+                return `
+                  <label class="si-camp-zone-check">
+                    <input type="checkbox" value="${z.id}" ${checked?'checked':''} />
+                    <span class="si-czc-icon">${tipo.icon}</span>
+                    <span class="si-czc-name">${z.name}</span>
+                    ${hasPhoto ? `<span class="si-czc-photo">📸</span>` : ''}
+                    <span class="si-czc-tipo" style="color:${tipo.color};">${tipo.label}</span>
+                  </label>`;
+              }).join('')}
+        </div>
+      </div>
+      <div class="si-form-field full">
+        <label class="si-form-label">Notas</label>
+        <textarea class="si-input si-textarea" id="sc-notas" rows="2" placeholder="Observaciones, instrucciones...">${d.notas||''}</textarea>
+      </div>
+    </div>
+    <input type="hidden" id="sc-edit-id" value="${d.id||''}" />
+    <div class="modal-msg" id="sc-form-msg"></div>
+  `;
+
+  const modal = document.getElementById('modal-si-campaign');
+  modal.querySelector('.modal-title').textContent = existing ? 'Editar campaña' : 'Nueva campaña';
+  openModal('modal-si-campaign');
+}
+
+function si_saveCampaign() {
+  const nombre = document.getElementById('sc-nombre')?.value.trim();
+  const msg    = document.getElementById('sc-form-msg');
+  if (!nombre) { showMsg(msg,'error','El nombre de la campaña es requerido.'); return; }
+
+  const fechaInicio = document.getElementById('sc-inicio')?.value;
+  if (!fechaInicio) { showMsg(msg,'error','La fecha de inicio es requerida.'); return; }
+
+  const fechaFin = document.getElementById('sc-fin')?.value || null;
+  if (fechaFin && fechaFin < fechaInicio) { showMsg(msg,'error','La fecha fin no puede ser menor que la fecha inicio.'); return; }
+
+  const zonas  = [...document.querySelectorAll('#sc-zonas-list input:checked')].map(el => el.value);
+  const editId = document.getElementById('sc-edit-id')?.value;
+  const now    = new Date().toISOString();
+  const data   = {
+    nombre, fechaInicio, fechaFin, zonas,
+    tipo:        document.getElementById('sc-tipo')?.value       || 'Temporada',
+    estado:      document.getElementById('sc-estado')?.value     || 'Planificada',
+    objetivo:    document.getElementById('sc-objetivo')?.value.trim()    || '',
+    responsable: document.getElementById('sc-responsable')?.value.trim() || '',
+    notas:       document.getElementById('sc-notas')?.value.trim()       || '',
+    store_id:    si_storeId,
+  };
+
+  const campaigns = si_getStoreCampaigns();
+  if (editId) {
+    const idx = campaigns.findIndex(c => c.id === editId);
+    if (idx !== -1) campaigns[idx] = { ...campaigns[idx], ...data, updated_at: now };
+  } else {
+    campaigns.unshift({ ...data, id: crypto.randomUUID(), created_at: now, updated_at: now });
+  }
+
+  si_saveStoreCampaigns(campaigns);
+  closeModal('modal-si-campaign');
+  si_refreshCampaignsSection();
+  si_refreshCroquisSection(); // update campaign badges on zone blocks
+}
+
+function si_deleteCampaign(id) {
+  if (!confirm('¿Eliminar esta campaña?')) return;
+  si_saveStoreCampaigns(si_getStoreCampaigns().filter(c => c.id !== id));
+  si_refreshCampaignsSection();
+  si_refreshCroquisSection();
+}
+
+function si_refreshCampaignsSection() {
+  const s = document.getElementById('si-campaigns-section');
+  if (s) s.innerHTML = si_renderCampaignsSection();
+}
+
 window.si_renderInteractiveCroquis = si_renderInteractiveCroquis;
 window.si_toggleLayoutEditMode     = si_toggleLayoutEditMode;
 window.si_saveLayout               = si_saveLayout;
@@ -1888,3 +2203,14 @@ window.si_updateFlowPointLabel     = si_updateFlowPointLabel;
 window.si_deleteFlowPoint          = si_deleteFlowPoint;
 window.si_showFlowTooltip          = si_showFlowTooltip;
 window.SI_FLOW_TYPES               = SI_FLOW_TYPES;
+window.si_getStoreCampaigns        = si_getStoreCampaigns;
+window.si_getCampaignStatus        = si_getCampaignStatus;
+window.si_getActiveCampaignsForZone= si_getActiveCampaignsForZone;
+window.si_calculateCampaignKPIs    = si_calculateCampaignKPIs;
+window.si_renderCampaignsSection   = si_renderCampaignsSection;
+window.si_openCampaignModal        = si_openCampaignModal;
+window.si_saveCampaign             = si_saveCampaign;
+window.si_deleteCampaign           = si_deleteCampaign;
+window.si_campFilterChange         = si_campFilterChange;
+window.SI_CAMPAIGN_TIPOS           = SI_CAMPAIGN_TIPOS;
+window.SI_CAMPAIGN_ESTADOS         = SI_CAMPAIGN_ESTADOS;

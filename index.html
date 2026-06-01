@@ -1028,6 +1028,19 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
   </div>
 </div>
 
+<!-- MODAL: Store Intelligence — Campaña visual -->
+<div class="modal-overlay" id="modal-si-campaign">
+  <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-title">Nueva campaña</div>
+    <div class="modal-sub">Asociá la campaña a zonas específicas de la sucursal.</div>
+    <div id="modal-si-campaign-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-si-campaign')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="si_saveCampaign()">Guardar campaña</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Store Intelligence — Zona -->
 <div class="modal-overlay" id="modal-si-zone">
   <div class="modal" style="max-width:580px;">
