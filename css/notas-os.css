@@ -446,3 +446,248 @@ select.nota-input {
   .nota-form-grid { grid-template-columns: 1fr; }
   .nota-form-field.full { grid-column: span 1; }
 }
+
+/* ── Favorito button ─────────────────────────────────────── */
+
+.nota-fav-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: rgba(136,135,128,.5);
+  line-height: 1;
+  padding: 2px 4px;
+  transition: color 120ms, transform 120ms;
+}
+
+.nota-fav-btn:hover  { color: #EAB308; transform: scale(1.15); }
+.nota-fav-btn.active { color: #EAB308; }
+
+.nota-fav-lg { font-size: 22px; }
+
+.nota-card-fav { border-color: rgba(234,179,8,.3) !important; }
+
+/* ── Favorite filter toggle ──────────────────────────────── */
+
+.notas-fav-toggle {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--gray);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 120ms;
+  white-space: nowrap;
+}
+
+.notas-fav-toggle:hover { border-color: rgba(234,179,8,.4); color: #EAB308; }
+.notas-fav-toggle.active { background: rgba(234,179,8,.1); border-color: rgba(234,179,8,.35); color: #EAB308; }
+
+/* ── Card body clickable ─────────────────────────────────── */
+
+.nota-card-body { cursor: pointer; }
+.nota-card-body:hover .nota-titulo { color: rgba(255,255,255,.85); }
+
+/* ── Comment count badge ─────────────────────────────────── */
+
+.nota-comment-count {
+  font-size: 11px;
+  color: var(--gray);
+}
+
+/* ── Detalle de nota ─────────────────────────────────────── */
+
+.nota-detalle { display: flex; flex-direction: column; gap: 20px; }
+
+.nota-detalle-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nota-detalle-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.3;
+}
+
+.nota-detalle-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--gray);
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.nota-detalle-content {
+  font-size: 14px;
+  color: rgba(255,255,255,.85);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Section inside detalle ──────────────────────────────── */
+
+.nota-detalle-section {
+  border-top: 1px solid rgba(255,255,255,.06);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nota-detalle-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--gray);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Acciones ────────────────────────────────────────────── */
+
+.nota-acciones-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.nota-accion-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--gray);
+  transition: all 120ms;
+}
+
+.nota-accion-soon { opacity: .5; cursor: default; }
+.nota-accion-soon:hover { opacity: .65; }
+
+.nota-accion-archive {
+  border-color: rgba(34,197,94,.3);
+  color: var(--green);
+}
+
+.nota-accion-archive:hover { background: rgba(34,197,94,.08); }
+.nota-accion-archive.disabled { opacity: .4; cursor: default; }
+
+/* ── Links adjuntos ──────────────────────────────────────── */
+
+.nota-link-add-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nota-link-add-row .nota-input { flex: 1; min-width: 120px; }
+
+.nota-action-btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: var(--green);
+  color: #071107;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  transition: background 120ms;
+}
+
+.nota-action-btn:hover { background: var(--green-dark); }
+
+.nota-attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nota-link-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #60A5FA;
+  font-size: 13px;
+  text-decoration: none;
+  transition: border-color 120ms;
+}
+
+.nota-link-item:hover { border-color: rgba(96,165,250,.3); }
+
+/* ── Comentarios ─────────────────────────────────────────── */
+
+.nota-no-comments { font-size: 12px; color: var(--gray); padding: 4px 0; }
+
+.nota-comment {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nota-comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nota-comment-author {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.nota-comment-date {
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.nota-comment-text {
+  font-size: 13px;
+  color: rgba(255,255,255,.8);
+  line-height: 1.6;
+}
+
+#nd-comments-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+
+.nota-comment-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.nota-comment-input {
+  flex: 1;
+  resize: none;
+  min-height: 60px;
+  line-height: 1.5;
+}
+
+/* ── Menciones ───────────────────────────────────────────── */
+
+.nota-mention {
+  color: #60A5FA;
+  font-weight: 600;
+  background: rgba(96,165,250,.1);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
