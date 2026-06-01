@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="/css/os.css">
 <link rel="stylesheet" href="/css/costos.css">
 <link rel="stylesheet" href="/css/notas-os.css">
+<link rel="stylesheet" href="/css/operaciones.css">
 </head>
 <body>
 
@@ -1023,6 +1024,45 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
   </div>
 </div>
 
+<!-- MODAL: Nuevo SOP -->
+<div class="modal-overlay" id="modal-new-sop">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-title">Nuevo SOP</div>
+    <div class="modal-sub">Documentá un proceso estándar de operación. client_id obligatorio.</div>
+    <div id="modal-new-sop-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-new-sop')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="saveSop()">Guardar SOP</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nuevo Checklist -->
+<div class="modal-overlay" id="modal-new-checklist">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title">Nuevo Checklist</div>
+    <div class="modal-sub">Creá una lista de verificación operativa. Podés agregar items uno por uno.</div>
+    <div id="modal-new-checklist-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-new-checklist')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="saveChecklist()">Guardar Checklist</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nueva Auditoría -->
+<div class="modal-overlay" id="modal-new-auditoria">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title">Nueva Auditoría</div>
+    <div class="modal-sub">Registrá una auditoría operativa con puntaje, área y observaciones.</div>
+    <div id="modal-new-auditoria-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-new-auditoria')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="saveAuditoria()">Guardar Auditoría</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Nueva Nota OS -->
 <div class="modal-overlay" id="modal-nueva-nota">
   <div class="modal" style="max-width:600px;">
@@ -1065,6 +1105,7 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/dashboard.js"></script>
 <script src="/js/admin-clients.js"></script>
 <script src="/js/integrations.js"></script>
+<script src="/js/operaciones.js"></script>
 <script src="/js/notificaciones.js"></script>
 <script src="/js/notas-os.js"></script>
 <script src="/js/costos.js"></script>
