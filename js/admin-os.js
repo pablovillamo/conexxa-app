@@ -22,7 +22,8 @@ const SIDEBAR_CORE = [
 ];
 
 const SIDEBAR_MODULES = [
-  { id:'ecom',        icon:'🛒', label:'Ecommerce OS',     status:'active',  action:() => showAdminView('ecommerce')    },
+  { id:'ecom',        icon:'🛒', label:'Ecommerce OS',        status:'active',  action:() => showAdminView('ecommerce')           },
+  { id:'store-intel', icon:'🏪', label:'Store Intelligence', status:'active',  action:() => showAdminView('store-intelligence') },
   { id:'finanzas',    icon:'💰', label:'Finanzas OS',      status:'active',  action:() => showAdminView('finanzas')     },
   { id:'ops',         icon:'⚙️', label:'Operaciones OS',  status:'active',  action:() => showAdminView('operaciones')  },
   { id:'analytics',   icon:'📊', label:'Analytics OS',    status:'coming'  },

@@ -39,6 +39,10 @@ function showAdminView(view) {
     showView('view-admin-costos');
     if (typeof renderCostosView === 'function') renderCostosView();
     if (typeof setSidebarActive === 'function') setSidebarActive('costos');
+  } else if (view === 'store-intelligence') {
+    showView('view-admin-store-intelligence');
+    if (typeof renderStoreIntelligenceView === 'function') renderStoreIntelligenceView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('store-intel');
   } else if (view === 'operaciones') {
     showView('view-admin-operaciones');
     if (typeof renderAdminOperacionesOS === 'function') renderAdminOperacionesOS();

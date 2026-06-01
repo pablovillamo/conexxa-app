@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="/css/costos.css">
 <link rel="stylesheet" href="/css/notas-os.css">
 <link rel="stylesheet" href="/css/operaciones.css">
+<link rel="stylesheet" href="/css/store-intelligence.css">
 </head>
 <body>
 
@@ -204,6 +205,9 @@
 
     <!-- ADMIN: Notificaciones -->
     <div id="view-admin-notificaciones" class="view"></div>
+
+    <!-- ADMIN: Store Intelligence -->
+    <div id="view-admin-store-intelligence" class="view"></div>
 
     <!-- ADMIN: Operaciones OS -->
     <div id="view-admin-operaciones" class="view"></div>
@@ -1024,6 +1028,42 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
   </div>
 </div>
 
+<!-- MODAL: Store Intelligence — Zona -->
+<div class="modal-overlay" id="modal-si-zone">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-title">Nueva zona</div>
+    <div class="modal-sub">Configurá una zona del croquis de la sucursal seleccionada.</div>
+    <div id="modal-si-zone-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-si-zone')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="createStoreZone()">Guardar zona</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Store Intelligence — Detalle zona -->
+<div class="modal-overlay" id="modal-si-detail">
+  <div class="modal" style="max-width:560px;">
+    <div id="modal-si-detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-si-detail')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Store Intelligence — Nueva sucursal -->
+<div class="modal-overlay" id="modal-si-store">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-title">Nueva sucursal</div>
+    <div class="modal-sub">Agregá una sucursal para el cliente seleccionado.</div>
+    <div id="modal-si-store-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-si-store')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="saveNewStore()">Guardar sucursal</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Nuevo SOP -->
 <div class="modal-overlay" id="modal-new-sop">
   <div class="modal" style="max-width:600px;">
@@ -1105,6 +1145,7 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/dashboard.js"></script>
 <script src="/js/admin-clients.js"></script>
 <script src="/js/integrations.js"></script>
+<script src="/js/store-intelligence.js"></script>
 <script src="/js/operaciones.js"></script>
 <script src="/js/notificaciones.js"></script>
 <script src="/js/notas-os.js"></script>
