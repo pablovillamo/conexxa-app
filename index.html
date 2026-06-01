@@ -870,17 +870,15 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
           <input class="ec-input" type="text" id="ec-nicho" placeholder="Ej: Joyería femenina LATAM" />
         </div>
         <div class="ec-field">
-          <div class="ec-label">Tipo de negocio</div>
-          <select class="ec-input" id="ec-business-type">
-            <option value="">— Seleccionar —</option>
-            <option value="ecommerce">Ecommerce</option>
-            <option value="retail">Retail</option>
-            <option value="app">App</option>
-            <option value="consulting">Consultoría</option>
-            <option value="personal_brand">Marca Personal</option>
-            <option value="franchise">Franquicia</option>
-            <option value="hybrid">Ecommerce & Retail</option>
-          </select>
+          <div class="ec-label">Tipo de negocio <span style="font-size:10px;color:var(--gray);font-weight:400;">(selección múltiple)</span></div>
+          <div class="ec-type-pills" id="ec-business-type-pills">
+            <label class="ec-type-pill"><input type="checkbox" value="ecommerce" />🛒 Ecommerce</label>
+            <label class="ec-type-pill"><input type="checkbox" value="retail" />🏪 Retail</label>
+            <label class="ec-type-pill"><input type="checkbox" value="app" />📱 App</label>
+            <label class="ec-type-pill"><input type="checkbox" value="consulting" />💼 Consultoría</label>
+            <label class="ec-type-pill"><input type="checkbox" value="personal_brand" />⭐ Marca Personal</label>
+            <label class="ec-type-pill"><input type="checkbox" value="franchise" />🔗 Franquicia</label>
+          </div>
         </div>
         <div class="ec-field">
           <div class="ec-label">País / mercado principal</div>

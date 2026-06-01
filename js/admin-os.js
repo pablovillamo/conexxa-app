@@ -108,11 +108,15 @@ function renderAdminOS() {
   const intActive  = 1;
   const intSoon    = 4;
 
-  // Stats por tipo de negocio
+  // Stats por tipo de negocio (multi-type: un cliente suma en todos sus tipos)
   const typeCount = {};
   clients.forEach(c => {
-    const t = (c.business_type || 'sin_tipo').toLowerCase();
-    typeCount[t] = (typeCount[t] || 0) + 1;
+    const types = parseBusinessTypes(c.business_type);
+    if (types.length === 0) {
+      typeCount['sin_tipo'] = (typeCount['sin_tipo'] || 0) + 1;
+    } else {
+      types.forEach(t => { typeCount[t] = (typeCount[t] || 0) + 1; });
+    }
   });
 
   const now = new Date();
@@ -576,12 +580,17 @@ function buildClientTypeTable(clients) {
         </thead>
         <tbody>
           ${clients.map(c => {
-            const bt = (c.business_type || '').toLowerCase();
-            const typeInfo = BUSINESS_TYPES[bt];
+            const types = parseBusinessTypes(c.business_type);
             const statusColor = c.client_status === 'activo' ? 'var(--green)' : c.client_status === 'pausado' ? 'var(--amber)' : 'var(--gray)';
             const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+            const typeBadges = types.length
+              ? types.map(t => {
+                  const info = BUSINESS_TYPES[t];
+                  return info ? `<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:${info.bg};color:${info.color};white-space:nowrap;">${info.icon} ${info.label}</span>` : '';
+                }).join('')
+              : `<span style="font-size:11px;color:var(--gray);">—</span>`;
             return `
-              <tr class="cc-client-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" data-type="${bt}">
+              <tr class="cc-client-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" data-types="${types.join(',')}">
                 <td style="padding:12px 16px;">
                   <div style="display:flex;align-items:center;gap:10px;">
                     <div style="width:28px;height:28px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--green);flex-shrink:0;">${initials}</div>
@@ -589,9 +598,7 @@ function buildClientTypeTable(clients) {
                   </div>
                 </td>
                 <td style="padding:12px 16px;">
-                  ${typeInfo
-                    ? `<span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:${typeInfo.bg};color:${typeInfo.color};">${typeInfo.icon} ${typeInfo.label}</span>`
-                    : `<span style="font-size:11px;color:var(--gray);">—</span>`}
+                  <div style="display:flex;gap:4px;flex-wrap:wrap;">${typeBadges}</div>
                 </td>
                 <td style="padding:12px 16px;font-size:12px;color:var(--gray);">${c.nicho || '—'}</td>
                 <td style="padding:12px 16px;">
@@ -612,11 +619,9 @@ function ccFilterClients(type, btn) {
   document.querySelectorAll('.cc-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelectorAll('.cc-client-row').forEach(row => {
-    if (type === 'all' || row.dataset.type === type) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
+    const types = (row.dataset.types || '').split(',').filter(Boolean);
+    const visible = type === 'all' || types.includes(type);
+    row.style.display = visible ? '' : 'none';
   });
 }
 
@@ -633,19 +638,23 @@ function renderAdminEcommerceOS() {
   const clients = all.filter(c => isEcommerceClient(c));
 
   const cardsHTML = clients.length === 0
-    ? `<div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:32px;text-align:center;color:var(--gray);font-size:14px;">No hay clientes ecommerce registrados.<br><span style="font-size:12px;margin-top:6px;display:block;">Asigná business_type "ecommerce" o "hybrid" a un cliente desde la ficha de edición.</span></div>`
+    ? `<div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:32px;text-align:center;color:var(--gray);font-size:14px;">No hay clientes con tipo Ecommerce registrados.<br><span style="font-size:12px;margin-top:6px;display:block;">Editá un cliente y seleccioná "Ecommerce" en sus tipos de negocio.</span></div>`
     : clients.map(c => {
-        const bt = BUSINESS_TYPES[c.business_type?.toLowerCase()] || {};
+        const types = parseBusinessTypes(c.business_type);
         const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
         const statusColor = c.client_status === 'activo' ? 'var(--green)' : 'var(--amber)';
+        const typeBadges = types.map(t => {
+          const info = BUSINESS_TYPES[t];
+          return info ? `<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:${info.bg};color:${info.color};">${info.icon} ${info.label}</span>` : '';
+        }).join('');
         return `
           <div class="cc-mod-card is-active" onclick="openClientDetail('${c.id}')">
             <div class="cc-mod-card-top">
               <div style="width:34px;height:34px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--green);">${initials}</div>
-              <span class="cc-mod-badge active" style="background:${bt.bg||'rgba(34,197,94,.1)'};color:${bt.color||'#86EFAC'};border-color:${bt.color||'rgba(34,197,94,.22)'};">${bt.icon||'🛒'} ${bt.label||'Ecommerce'}</span>
             </div>
             <div class="cc-mod-name">${c.full_name || c.email || '—'}</div>
             <div class="cc-mod-desc">${c.nicho || 'Sin nicho'}</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">${typeBadges}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
               <span style="font-size:11px;color:${statusColor};">● ${c.client_status || 'pendiente'}</span>
               <span style="font-size:12px;color:var(--green);">Ver →</span>
@@ -718,9 +727,14 @@ async function renderAdminIntegrationsPanel() {
     };
 
     const rows = clients.map(c => {
-      const bt = (c.business_type || 'ecommerce').toLowerCase();
-      const typeInfo = BUSINESS_TYPES[bt] || BUSINESS_TYPES['ecommerce'];
-      const relevantInts = INTEGRATIONS_BY_TYPE[bt] || INTEGRATIONS_BY_TYPE['ecommerce'];
+      const types = parseBusinessTypes(c.business_type);
+      const typeInfo = BUSINESS_TYPES[types[0]] || null;
+      // Union of all relevant integrations for all client types
+      const relevantInts = [...new Set(
+        types.length > 0
+          ? types.flatMap(t => INTEGRATIONS_BY_TYPE[t] || [])
+          : INTEGRATIONS_BY_TYPE['ecommerce']
+      )];
       const hasShopify = !!shopifyMap[c.id];
       const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
 
@@ -740,7 +754,12 @@ async function renderAdminIntegrationsPanel() {
             </div>
           </td>
           <td style="padding:10px 12px;border-right:1px solid rgba(255,255,255,0.04);">
-            ${typeInfo ? `<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:${typeInfo.bg};color:${typeInfo.color};">${typeInfo.icon} ${typeInfo.label}</span>` : '—'}
+            <div style="display:flex;gap:3px;flex-wrap:wrap;">
+            ${types.length ? types.map(t => {
+              const info = BUSINESS_TYPES[t];
+              return info ? `<span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:${info.bg};color:${info.color};">${info.icon}</span>` : '';
+            }).join('') : '—'}
+          </div>
           </td>
           ${intCells}
           <td style="padding:10px 12px;text-align:right;">

@@ -17,7 +17,11 @@ async function openEditClientModal() {
   s('ec-phone').value          = client.phone || '';
   s('ec-industry').value       = client.industry || '';
   s('ec-nicho').value          = client.nicho || '';
-  s('ec-business-type').value  = client.business_type || '';
+  // Cargar business_type como pills (múltiple)
+  const savedTypes = typeof parseBusinessTypes === 'function' ? parseBusinessTypes(client.business_type) : [];
+  document.querySelectorAll('#ec-business-type-pills input[type="checkbox"]').forEach(cb => {
+    cb.checked = savedTypes.includes(cb.value);
+  });
   s('ec-country').value        = client.country_market || '';
   s('ec-website').value        = client.website || '';
   s('ec-instagram').value      = client.instagram || '';
@@ -106,7 +110,10 @@ async function saveEditClient() {
       phone:             s('ec-phone')?.value.trim() || null,
       industry:          s('ec-industry')?.value.trim() || null,
       nicho:             s('ec-nicho')?.value.trim() || null,
-      business_type:     s('ec-business-type')?.value.trim() || null,
+      business_type:     (() => {
+        const checked = [...document.querySelectorAll('#ec-business-type-pills input:checked')].map(el => el.value);
+        return checked.length > 0 ? JSON.stringify(checked) : null;
+      })(),
       country_market:    s('ec-country')?.value.trim() || null,
       website:           s('ec-website')?.value.trim() || null,
       instagram:         s('ec-instagram')?.value.trim() || null,

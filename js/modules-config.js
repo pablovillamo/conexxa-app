@@ -265,13 +265,12 @@ window.getModuleById   = getModuleById;
 // ── Tipos de negocio ──────────────────────────────────────
 
 const BUSINESS_TYPES = {
-  ecommerce:      { label:'Ecommerce',      color:'#22C55E', bg:'rgba(34,197,94,.1)',   icon:'🛒' },
-  retail:         { label:'Retail',          color:'#6366F1', bg:'rgba(99,102,241,.1)',  icon:'🏪' },
-  app:            { label:'App',             color:'#14B8A6', bg:'rgba(20,184,166,.1)',  icon:'📱' },
-  consulting:     { label:'Consultoría',     color:'#F59E0B', bg:'rgba(245,158,11,.1)', icon:'💼' },
-  personal_brand: { label:'Marca Personal',  color:'#EC4899', bg:'rgba(236,72,153,.1)', icon:'⭐' },
-  franchise:      { label:'Franquicia',      color:'#8B5CF6', bg:'rgba(139,92,246,.1)', icon:'🔗' },
-  hybrid:         { label:'Ecommerce & Retail', color:'#F97316', bg:'rgba(249,115,22,.1)', icon:'🔀' },
+  ecommerce:      { label:'Ecommerce',     color:'#22C55E', bg:'rgba(34,197,94,.1)',   icon:'🛒' },
+  retail:         { label:'Retail',         color:'#6366F1', bg:'rgba(99,102,241,.1)',  icon:'🏪' },
+  app:            { label:'App',            color:'#14B8A6', bg:'rgba(20,184,166,.1)',  icon:'📱' },
+  consulting:     { label:'Consultoría',    color:'#F59E0B', bg:'rgba(245,158,11,.1)', icon:'💼' },
+  personal_brand: { label:'Marca Personal', color:'#EC4899', bg:'rgba(236,72,153,.1)', icon:'⭐' },
+  franchise:      { label:'Franquicia',     color:'#8B5CF6', bg:'rgba(139,92,246,.1)', icon:'🔗' },
 };
 
 const INTEGRATIONS_BY_TYPE = {
@@ -284,22 +283,26 @@ const INTEGRATIONS_BY_TYPE = {
   hybrid:         ['shopify','meta','klaviyo','pos','inventory','google-drive'],
 };
 
-// Tipos que califican como ecommerce para Ecommerce OS
-const ECOMMERCE_TYPES = ['ecommerce', 'hybrid'];
+// ── Parsing — soporta: null, string simple, JSON array ────
+function parseBusinessTypes(raw) {
+  if (!raw) return [];
+  const s = String(raw).trim();
+  if (s.startsWith('[')) {
+    try { return JSON.parse(s).map(x => x.toLowerCase().trim()).filter(Boolean); } catch {}
+  }
+  return s.split(',').map(x => x.toLowerCase().trim()).filter(Boolean);
+}
 
-function getBusinessType(raw) {
-  if (!raw) return null;
-  const key = raw.toLowerCase().trim();
-  return BUSINESS_TYPES[key] || null;
+function clientHasType(client, type) {
+  return parseBusinessTypes(client.business_type).includes(type);
 }
 
 function isEcommerceClient(client) {
-  const bt = (client.business_type || '').toLowerCase().trim();
-  return ECOMMERCE_TYPES.includes(bt);
+  return clientHasType(client, 'ecommerce');
 }
 
 window.BUSINESS_TYPES        = BUSINESS_TYPES;
 window.INTEGRATIONS_BY_TYPE  = INTEGRATIONS_BY_TYPE;
-window.ECOMMERCE_TYPES       = ECOMMERCE_TYPES;
-window.getBusinessType       = getBusinessType;
+window.parseBusinessTypes    = parseBusinessTypes;
+window.clientHasType         = clientHasType;
 window.isEcommerceClient     = isEcommerceClient;
