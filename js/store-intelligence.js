@@ -106,100 +106,110 @@ function si_photos_setPrincipal(photoId, zoneId) {
 // Preparado para Supabase Storage: reemplazar por upload a bucket
 
 function si_resizeImage(file, maxWidth = 900, quality = 0.78) {
-  console.log('[SI Photo] PASO 1 — archivo recibido:', file.name, file.type, (file.size/1024).toFixed(1)+'KB');
+  console.log('[SI Photo] PASO 1 — archivo recibido:', file.name, '| tipo:', file.type, '| tamaño:', (file.size/1024).toFixed(1)+'KB');
 
   return new Promise((resolve, reject) => {
 
-    // PASO 2 — Validación
-    if (!file.type.startsWith('image/')) {
-      const e = new Error('El archivo no es una imagen. Tipo detectado: ' + file.type);
-      console.error('[SI Photo] PASO 2 FAIL — tipo inválido:', e.message);
+    // PASO 2 — Validación de formato
+    const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
+    const HEIC    = ['image/heic', 'image/heif'];
+
+    if (HEIC.includes(file.type.toLowerCase())) {
+      const e = new Error('Este formato de iPhone (HEIC/HEIF) no es compatible en navegador. Convertí la foto a JPG o PNG antes de subirla.');
+      console.error('[SI Photo] PASO 2 FAIL — HEIC detectado:', file.type);
       reject(e); return;
     }
+
+    // Algunos iPhones envían tipo vacío para HEIC — detectar por extensión
+    const ext = (file.name || '').split('.').pop().toLowerCase();
+    if (ext === 'heic' || ext === 'heif') {
+      const e = new Error('Este formato de iPhone (HEIC/HEIF) no es compatible en navegador. Convertí la foto a JPG o PNG antes de subirla.');
+      console.error('[SI Photo] PASO 2 FAIL — HEIC por extensión:', ext);
+      reject(e); return;
+    }
+
+    if (!ALLOWED.includes(file.type.toLowerCase())) {
+      const e = new Error('Formato no soportado: ' + (file.type || 'desconocido') + '. Usá JPG, PNG o WEBP.');
+      console.error('[SI Photo] PASO 2 FAIL — formato no permitido:', e.message);
+      reject(e); return;
+    }
+
     if (file.size > 8 * 1024 * 1024) {
-      const e = new Error('La imagen no puede superar 8MB. Tamaño: ' + (file.size/1024/1024).toFixed(1)+'MB');
-      console.error('[SI Photo] PASO 2 FAIL — tamaño:', e.message);
+      const e = new Error('La imagen no puede superar 8MB. Tamaño recibido: ' + (file.size/1024/1024).toFixed(1)+'MB');
+      console.error('[SI Photo] PASO 2 FAIL — tamaño excedido:', e.message);
       reject(e); return;
     }
+
     console.log('[SI Photo] PASO 2 OK — validación pasada');
 
-    // PASO 3 — FileReader
-    console.log('[SI Photo] PASO 3 — iniciando FileReader...');
-    const reader = new FileReader();
+    // PASO 3 — Crear Object URL (más estable que FileReader para imágenes locales)
+    let objectUrl = null;
+    try {
+      objectUrl = URL.createObjectURL(file);
+      console.log('[SI Photo] PASO 3 OK — objectURL creado:', objectUrl.slice(0, 40) + '...');
+    } catch (urlErr) {
+      const e = new Error('No se pudo crear objectURL: ' + urlErr.message);
+      console.error('[SI Photo] PASO 3 FAIL:', e.message);
+      reject(e); return;
+    }
 
-    // FIX: onerror recibe ProgressEvent, no Error → convertir explícitamente
-    reader.onerror = () => {
-      const e = new Error('Error al leer el archivo (FileReader). Código: ' + (reader.error?.code ?? 'desconocido') + ' — ' + (reader.error?.message ?? ''));
-      console.error('[SI Photo] PASO 3 FAIL — FileReader.onerror:', e.message, reader.error);
+    // PASO 4 — Cargar imagen desde objectURL
+    console.log('[SI Photo] PASO 4 — cargando imagen con Image()...');
+    const img = new Image();
+
+    img.onerror = (ev) => {
+      URL.revokeObjectURL(objectUrl);
+      const e = new Error('La imagen no pudo cargarse. Verificá que el archivo no esté dañado.');
+      console.error('[SI Photo] PASO 4 FAIL — img.onerror:', ev);
       reject(e);
     };
 
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result;
-      console.log('[SI Photo] PASO 3 OK — FileReader.onload. DataURL length:', dataUrl?.length ?? 'null');
+    img.onload = () => {
+      console.log('[SI Photo] PASO 4 OK — dimensiones:', img.width, 'x', img.height);
 
-      if (!dataUrl) {
-        const e = new Error('FileReader no generó un resultado válido (dataUrl null).');
-        console.error('[SI Photo] PASO 3 FAIL —', e.message);
-        reject(e); return;
-      }
+      // Liberar objectURL en cuanto la imagen esté en memoria
+      URL.revokeObjectURL(objectUrl);
+      console.log('[SI Photo] PASO 4 — objectURL liberado (revokeObjectURL)');
 
-      // PASO 4 — Cargar imagen
-      console.log('[SI Photo] PASO 4 — creando Image() y asignando src...');
-      const img = new Image();
+      // PASO 5 — Canvas resize — try/catch porque img.onload es async y sus throws no llegan al Promise
+      try {
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        console.log('[SI Photo] PASO 5 — redimensionando a', w, 'x', h);
 
-      // FIX: onerror recibe Event, no Error → convertir explícitamente
-      img.onerror = (imgEv) => {
-        const e = new Error('La imagen no se pudo cargar desde el archivo (img.onerror). Puede ser formato no soportado o archivo corrupto.');
-        console.error('[SI Photo] PASO 4 FAIL — img.onerror:', e.message, imgEv);
-        reject(e);
-      };
+        const canvas = document.createElement('canvas');
+        canvas.width  = w;
+        canvas.height = h;
 
-      img.onload = () => {
-        console.log('[SI Photo] PASO 4 OK — img.onload. Dimensiones originales:', img.width, 'x', img.height);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('canvas.getContext("2d") devolvió null.');
 
-        // FIX: wrap completo en try/catch para atrapar errores de Canvas
-        // (los throws dentro de callbacks async NO son capturados por el Promise constructor)
-        try {
-          // PASO 5 — Resize Canvas
-          let w = img.width, h = img.height;
-          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
-          console.log('[SI Photo] PASO 5 — redimensionando a:', w, 'x', h);
+        ctx.drawImage(img, 0, 0, w, h);
+        console.log('[SI Photo] PASO 5 OK — drawImage completado');
 
-          const canvas = document.createElement('canvas');
-          canvas.width  = w;
-          canvas.height = h;
+        // PASO 6 — base64 con fallback PNG si JPEG falla
+        console.log('[SI Photo] PASO 6 — convirtiendo a base64 (quality=' + quality + ')...');
+        let base64 = canvas.toDataURL('image/jpeg', quality);
 
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            throw new Error('canvas.getContext("2d") devolvió null. El navegador puede no soportar Canvas en este contexto.');
-          }
-
-          ctx.drawImage(img, 0, 0, w, h);
-          console.log('[SI Photo] PASO 5 OK — drawImage completado');
-
-          // PASO 6 — Conversión base64
-          console.log('[SI Photo] PASO 6 — convirtiendo a base64 JPEG (quality=' + quality + ')...');
-          const base64 = canvas.toDataURL('image/jpeg', quality);
-
-          if (!base64 || base64 === 'data:,') {
-            throw new Error('canvas.toDataURL devolvió un resultado vacío o inválido.');
-          }
-
-          console.log('[SI Photo] PASO 6 OK — base64 generado. Tamaño final:', (base64.length/1024).toFixed(1)+'KB');
-          resolve(base64);
-
-        } catch (canvasErr) {
-          console.error('[SI Photo] PASO 5-6 FAIL — error en Canvas:', canvasErr.message);
-          console.error('[SI Photo] Stack:', canvasErr.stack);
-          reject(canvasErr);
+        if (!base64 || base64 === 'data:,') {
+          console.warn('[SI Photo] PASO 6 — JPEG falló, intentando PNG fallback...');
+          base64 = canvas.toDataURL('image/png');
         }
-      };
 
-      img.src = dataUrl;
+        if (!base64 || base64 === 'data:,') {
+          throw new Error('canvas.toDataURL no generó resultado válido en ningún formato.');
+        }
+
+        console.log('[SI Photo] PASO 6 OK — base64 listo:', (base64.length/1024).toFixed(1)+'KB');
+        resolve(base64);
+
+      } catch (canvasErr) {
+        console.error('[SI Photo] PASO 5-6 FAIL:', canvasErr.message, canvasErr.stack);
+        reject(canvasErr);
+      }
     };
 
-    reader.readAsDataURL(file);
+    img.src = objectUrl;
   });
 }
 
@@ -869,7 +879,7 @@ function si_openUploadArea(zoneId) {
         <div class="si-upload-drop-icon">📁</div>
         <div class="si-upload-drop-text">Clic para seleccionar imagen</div>
         <div class="si-upload-drop-sub">JPG, PNG, WEBP · Máx 8MB · Se comprime automáticamente</div>
-        <input type="file" id="si-file-input-${zoneId}" accept="image/*"
+        <input type="file" id="si-file-input-${zoneId}" accept="image/jpeg,image/png,image/webp"
           style="display:none;" onchange="si_handleFileSelect(event,'${zoneId}')" />
       </div>
       <div id="si-upload-preview-${zoneId}" style="display:none;">
