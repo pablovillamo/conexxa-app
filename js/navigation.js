@@ -23,6 +23,18 @@ function showAdminView(view) {
     showView('view-admin-tasks');
     if (typeof renderAdminTasksView === 'function') renderAdminTasksView();
     if (typeof setSidebarActive === 'function') setSidebarActive('tasks');
+  } else if (view === 'ecommerce') {
+    showView('view-admin-ecommerce');
+    if (typeof renderAdminEcommerceOS === 'function') renderAdminEcommerceOS();
+    if (typeof setSidebarActive === 'function') setSidebarActive('ecom');
+  } else if (view === 'integrations') {
+    showView('view-admin-integrations');
+    if (typeof renderAdminIntegrationsPanel === 'function') renderAdminIntegrationsPanel();
+    if (typeof setSidebarActive === 'function') setSidebarActive('integrations');
+  } else if (view === 'metodologia') {
+    showView('view-admin-metodologia');
+    if (typeof renderAdminMetodologia === 'function') renderAdminMetodologia();
+    if (typeof setSidebarActive === 'function') setSidebarActive('metodologia');
   } else if (view === 'detail') {
     showView('view-admin-detail');
   }

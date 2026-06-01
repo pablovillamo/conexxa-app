@@ -184,6 +184,15 @@
     <!-- ADMIN: OS Dashboard -->
     <div id="view-admin-os" class="view"></div>
 
+    <!-- ADMIN: Ecommerce OS -->
+    <div id="view-admin-ecommerce" class="view"></div>
+
+    <!-- ADMIN: Panel Integraciones -->
+    <div id="view-admin-integrations" class="view"></div>
+
+    <!-- ADMIN: Metodología 90 Días -->
+    <div id="view-admin-metodologia" class="view"></div>
+
     <!-- ADMIN: Brain Empresarial (módulo independiente) -->
     <div id="view-admin-brain" class="view">
 
@@ -862,7 +871,16 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
         </div>
         <div class="ec-field">
           <div class="ec-label">Tipo de negocio</div>
-          <input class="ec-input" type="text" id="ec-business-type" placeholder="Ej: DTC, Marketplace, Físico..." />
+          <select class="ec-input" id="ec-business-type">
+            <option value="">— Seleccionar —</option>
+            <option value="ecommerce">Ecommerce</option>
+            <option value="retail">Retail</option>
+            <option value="app">App</option>
+            <option value="consulting">Consultoría</option>
+            <option value="personal_brand">Marca Personal</option>
+            <option value="franchise">Franquicia</option>
+            <option value="hybrid">Híbrido</option>
+          </select>
         </div>
         <div class="ec-field">
           <div class="ec-label">País / mercado principal</div>

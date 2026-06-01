@@ -21,17 +21,19 @@ const SIDEBAR_CORE = [
 ];
 
 const SIDEBAR_MODULES = [
-  { id:'ceo',      icon:'🎯', label:'CEO OS',            status:'coming'  },
-  { id:'ops',      icon:'⚙️', label:'Operaciones OS',   status:'coming'  },
-  { id:'inv',      icon:'📦', label:'Inventario OS',     status:'coming'  },
-  { id:'purch',    icon:'🛍️', label:'Compras OS',       status:'coming'  },
-  { id:'rrhh',     icon:'🤝', label:'RRHH OS',           status:'coming'  },
-  { id:'ecom',     icon:'🛒', label:'Ecommerce OS',      status:'active',  action:() => showAdminView('clients') },
-  { id:'cx',       icon:'💬', label:'Customer Success',  status:'coming'  },
-  { id:'franchise',icon:'🏪', label:'Franquicias OS',    status:'locked'  },
-  { id:'brand',    icon:'🎨', label:'Marca y Producto',  status:'coming'  },
-  { id:'ia-os',    icon:'🤖', label:'IA OS',             status:'coming'  },
-  { id:'vg',       icon:'🚀', label:'Villamo Growth',    status:'active',  action:() => showAdminView('clients') },
+  { id:'ecom',        icon:'🛒', label:'Ecommerce OS',      status:'active',  action:() => showAdminView('ecommerce')     },
+  { id:'integrations',icon:'🔌', label:'Integraciones',     status:'active',  action:() => showAdminView('integrations')  },
+  { id:'metodologia', icon:'🗓️', label:'Metodología 90D',  status:'active',  action:() => showAdminView('metodologia')   },
+  { id:'ceo',         icon:'🎯', label:'CEO OS',            status:'coming'  },
+  { id:'ops',         icon:'⚙️', label:'Operaciones OS',   status:'coming'  },
+  { id:'inv',         icon:'📦', label:'Inventario OS',     status:'coming'  },
+  { id:'purch',       icon:'🛍️', label:'Compras OS',       status:'coming'  },
+  { id:'rrhh',        icon:'🤝', label:'RRHH OS',           status:'coming'  },
+  { id:'cx',          icon:'💬', label:'Customer Success',  status:'coming'  },
+  { id:'franchise',   icon:'🏪', label:'Franquicias OS',    status:'locked'  },
+  { id:'brand',       icon:'🎨', label:'Marca y Producto',  status:'coming'  },
+  { id:'ia-os',       icon:'🤖', label:'IA OS',             status:'coming'  },
+  { id:'vg',          icon:'🚀', label:'Villamo Growth',    status:'active',  action:() => showAdminView('clients')        },
 ];
 
 // ── Sync sidebar avatar + name ────────────────────────────
@@ -99,12 +101,19 @@ function renderAdminOS() {
   if (!root) return;
 
   const clients    = typeof allClientsData !== 'undefined' ? allClientsData : [];
-  const active     = clients.filter(c => (c.client_status || c.status || '') === 'activo').length;
+  const active     = clients.filter(c => (c.client_status || '') === 'activo').length;
   const total      = clients.length;
   const modActive  = OS_MODULES.filter(m => m.status === 'active').length;
   const modSoon    = OS_MODULES.filter(m => m.status === 'coming_soon').length;
-  const intActive  = 1; // Shopify conectado
-  const intSoon    = 4; // Meta, Klaviyo, ManyChat, Google
+  const intActive  = 1;
+  const intSoon    = 4;
+
+  // Stats por tipo de negocio
+  const typeCount = {};
+  clients.forEach(c => {
+    const t = (c.business_type || 'sin_tipo').toLowerCase();
+    typeCount[t] = (typeCount[t] || 0) + 1;
+  });
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('es-CR', { weekday:'long', day:'numeric', month:'long' });
@@ -193,28 +202,56 @@ function renderAdminOS() {
       <div class="cc-quick-stats">
         <div class="cc-qs-card green">
           <div class="cc-qs-val" id="cc-qs-active">${active}</div>
-          <div class="cc-qs-label">Clientes activos</div>
+          <div class="cc-qs-label">Activos</div>
         </div>
         <div class="cc-qs-card">
           <div class="cc-qs-val">${total}</div>
           <div class="cc-qs-label">Total clientes</div>
         </div>
         <div class="cc-qs-card green">
+          <div class="cc-qs-val">${typeCount['ecommerce'] || 0}</div>
+          <div class="cc-qs-label">Ecommerce</div>
+        </div>
+        <div class="cc-qs-card">
+          <div class="cc-qs-val">${typeCount['retail'] || 0}</div>
+          <div class="cc-qs-label">Retail</div>
+        </div>
+        <div class="cc-qs-card">
+          <div class="cc-qs-val">${typeCount['app'] || 0}</div>
+          <div class="cc-qs-label">Apps</div>
+        </div>
+        <div class="cc-qs-card">
+          <div class="cc-qs-val">${typeCount['consulting'] || 0}</div>
+          <div class="cc-qs-label">Consultoría</div>
+        </div>
+        <div class="cc-qs-card green">
           <div class="cc-qs-val">${modActive}</div>
           <div class="cc-qs-label">Módulos activos</div>
         </div>
         <div class="cc-qs-card amber">
-          <div class="cc-qs-val">${modSoon}</div>
-          <div class="cc-qs-label">Próximamente</div>
-        </div>
-        <div class="cc-qs-card green">
           <div class="cc-qs-val">${intActive}</div>
           <div class="cc-qs-label">Integraciones</div>
         </div>
-        <div class="cc-qs-card purple">
-          <div class="cc-qs-val">${intSoon}</div>
-          <div class="cc-qs-label">Int. pendientes</div>
+      </div>
+
+      <!-- Type Filters -->
+      <div class="cc-type-filters" style="margin-bottom:28px;">
+        <div class="cc-section-title" style="margin-bottom:12px;">Filtrar por tipo</div>
+        <div class="cc-filter-row">
+          <button class="cc-filter-btn active" onclick="ccFilterClients('all', this)">Todos (${total})</button>
+          ${Object.entries(BUSINESS_TYPES).filter(([k]) => typeCount[k]).map(([k, v]) =>
+            `<button class="cc-filter-btn" onclick="ccFilterClients('${k}', this)" style="--ft-color:${v.color};">${v.icon} ${v.label} (${typeCount[k]})</button>`
+          ).join('')}
         </div>
+      </div>
+
+      <!-- Client Table by type -->
+      <div class="cc-modules" id="cc-client-table" style="margin-bottom:36px;">
+        <div class="cc-section-header" style="margin-bottom:12px;">
+          <span class="cc-section-title">Clientes en plataforma</span>
+          <button class="btn-action" style="font-size:12px;padding:7px 14px;" onclick="showAdminView('clients')">Ver todos →</button>
+        </div>
+        ${buildClientTypeTable(clients)}
       </div>
 
       <!-- Modules -->
@@ -521,8 +558,315 @@ function openClientBrainMaster(slug) {
 window.renderClientBrainView  = renderClientBrainView;
 window.openClientBrainMaster  = openClientBrainMaster;
 
+// ── Client type table helper ──────────────────────────────
+
+function buildClientTypeTable(clients) {
+  if (!clients.length) return `<div style="color:var(--gray);font-size:13px;padding:16px 0;">Sin clientes registrados.</div>`;
+  return `
+    <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="padding:12px 16px;text-align:left;font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.08em;">Cliente</th>
+            <th style="padding:12px 16px;text-align:left;font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.08em;">Tipo</th>
+            <th style="padding:12px 16px;text-align:left;font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.08em;">Nicho</th>
+            <th style="padding:12px 16px;text-align:left;font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.08em;">Estado</th>
+            <th style="padding:12px 16px;text-align:right;font-size:11px;color:var(--gray);font-weight:600;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${clients.map(c => {
+            const bt = (c.business_type || '').toLowerCase();
+            const typeInfo = BUSINESS_TYPES[bt];
+            const statusColor = c.client_status === 'activo' ? 'var(--green)' : c.client_status === 'pausado' ? 'var(--amber)' : 'var(--gray)';
+            const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+            return `
+              <tr class="cc-client-row" style="border-bottom:1px solid rgba(255,255,255,0.04);" data-type="${bt}">
+                <td style="padding:12px 16px;">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:28px;height:28px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--green);flex-shrink:0;">${initials}</div>
+                    <span style="font-size:13px;font-weight:500;color:var(--white);">${c.full_name || c.email || '—'}</span>
+                  </div>
+                </td>
+                <td style="padding:12px 16px;">
+                  ${typeInfo
+                    ? `<span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;background:${typeInfo.bg};color:${typeInfo.color};">${typeInfo.icon} ${typeInfo.label}</span>`
+                    : `<span style="font-size:11px;color:var(--gray);">—</span>`}
+                </td>
+                <td style="padding:12px 16px;font-size:12px;color:var(--gray);">${c.nicho || '—'}</td>
+                <td style="padding:12px 16px;">
+                  <span style="font-size:12px;color:${statusColor};">● ${c.client_status || 'pendiente'}</span>
+                </td>
+                <td style="padding:12px 16px;text-align:right;">
+                  <button onclick="openClientDetail('${c.id}')" style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--gray);font-size:12px;padding:5px 10px;cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s,border-color .15s;" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.2)'" onmouseout="this.style.color='var(--gray)';this.style.borderColor='var(--border)'">Ver →</button>
+                </td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function ccFilterClients(type, btn) {
+  document.querySelectorAll('.cc-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.cc-client-row').forEach(row => {
+    if (type === 'all' || row.dataset.type === type) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+
+window.buildClientTypeTable = buildClientTypeTable;
+window.ccFilterClients      = ccFilterClients;
+
+// ── Ecommerce OS View ─────────────────────────────────────
+
+function renderAdminEcommerceOS() {
+  const root = document.getElementById('view-admin-ecommerce');
+  if (!root) return;
+
+  const all = typeof allClientsData !== 'undefined' ? allClientsData : [];
+  const clients = all.filter(c => isEcommerceClient(c));
+
+  const cardsHTML = clients.length === 0
+    ? `<div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:32px;text-align:center;color:var(--gray);font-size:14px;">No hay clientes ecommerce registrados.<br><span style="font-size:12px;margin-top:6px;display:block;">Asigná business_type "ecommerce" o "hybrid" a un cliente desde la ficha de edición.</span></div>`
+    : clients.map(c => {
+        const bt = BUSINESS_TYPES[c.business_type?.toLowerCase()] || {};
+        const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+        const statusColor = c.client_status === 'activo' ? 'var(--green)' : 'var(--amber)';
+        return `
+          <div class="cc-mod-card is-active" onclick="openClientDetail('${c.id}')">
+            <div class="cc-mod-card-top">
+              <div style="width:34px;height:34px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--green);">${initials}</div>
+              <span class="cc-mod-badge active" style="background:${bt.bg||'rgba(34,197,94,.1)'};color:${bt.color||'#86EFAC'};border-color:${bt.color||'rgba(34,197,94,.22)'};">${bt.icon||'🛒'} ${bt.label||'Ecommerce'}</span>
+            </div>
+            <div class="cc-mod-name">${c.full_name || c.email || '—'}</div>
+            <div class="cc-mod-desc">${c.nicho || 'Sin nicho'}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <span style="font-size:11px;color:${statusColor};">● ${c.client_status || 'pendiente'}</span>
+              <span style="font-size:12px;color:var(--green);">Ver →</span>
+            </div>
+          </div>`;
+      }).join('');
+
+  root.innerHTML = `
+    <div class="cc-body">
+      <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:24px;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al OS
+      </button>
+      <p class="os-eyebrow" style="margin-bottom:8px;">Módulos Empresariales</p>
+      <h1 style="font-size:28px;font-weight:700;color:var(--white);margin-bottom:6px;">Ecommerce OS</h1>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:28px;">${clients.length} cliente${clients.length !== 1 ? 's' : ''} con operación ecommerce activa.</p>
+      <div class="cc-section-header" style="margin-bottom:14px;">
+        <span class="cc-section-title">Clientes Ecommerce</span>
+        <span style="font-size:11px;color:var(--gray);">Filtrado: ecommerce · hybrid</span>
+      </div>
+      <div class="cc-modules-grid">${cardsHTML}</div>
+    </div>
+  `;
+}
+
+window.renderAdminEcommerceOS = renderAdminEcommerceOS;
+
+// ── Integrations Panel ────────────────────────────────────
+
+async function renderAdminIntegrationsPanel() {
+  const root = document.getElementById('view-admin-integrations');
+  if (!root) return;
+
+  root.innerHTML = `
+    <div class="cc-body">
+      <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:24px;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al OS
+      </button>
+      <p class="os-eyebrow" style="margin-bottom:8px;">Panel Global</p>
+      <h1 style="font-size:28px;font-weight:700;color:var(--white);margin-bottom:6px;">Integraciones</h1>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:28px;">Estado de integraciones por cliente.</p>
+      <div id="integrations-panel-content" style="color:var(--gray);font-size:13px;">Cargando...</div>
+    </div>
+  `;
+
+  try {
+    const { data: connections } = await sb
+      .from('shopify_connections')
+      .select('user_id, shop_domain, status, updated_at')
+      .eq('status', 'connected');
+
+    const shopifyMap = {};
+    (connections || []).forEach(conn => { shopifyMap[conn.user_id] = conn; });
+
+    const clients = typeof allClientsData !== 'undefined' ? allClientsData : [];
+
+    const INT_LABELS = {
+      shopify: 'Shopify', meta: 'Meta Ads', klaviyo: 'Klaviyo',
+      manychat: 'ManyChat', whatsapp: 'WhatsApp', 'google-drive': 'Google Drive',
+      payment: 'Pagos', pos: 'POS/ERP', inventory: 'Inventario',
+      analytics: 'Analytics', crm: 'CRM', email: 'Email', calendar: 'Calendario',
+      auditorias: 'Auditorías', sucursales: 'Sucursales', kpis: 'KPIs',
+    };
+
+    const statusDot = (s) => {
+      if (s === 'active')   return `<span style="color:var(--green);font-size:12px;">✓ Activo</span>`;
+      if (s === 'na')       return `<span style="color:var(--gray);font-size:12px;">N/A</span>`;
+      return `<span style="color:var(--amber);font-size:11px;">⏳ Pendiente</span>`;
+    };
+
+    const rows = clients.map(c => {
+      const bt = (c.business_type || 'ecommerce').toLowerCase();
+      const typeInfo = BUSINESS_TYPES[bt] || BUSINESS_TYPES['ecommerce'];
+      const relevantInts = INTEGRATIONS_BY_TYPE[bt] || INTEGRATIONS_BY_TYPE['ecommerce'];
+      const hasShopify = !!shopifyMap[c.id];
+      const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+
+      const intCells = ['shopify','meta','klaviyo','manychat','whatsapp','google-drive'].map(key => {
+        const relevant = relevantInts.includes(key);
+        const isActive = key === 'shopify' ? hasShopify : false;
+        const status = !relevant ? 'na' : isActive ? 'active' : 'pending';
+        return `<td style="padding:10px 12px;text-align:center;border-right:1px solid rgba(255,255,255,0.04);">${statusDot(status)}</td>`;
+      }).join('');
+
+      return `
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+          <td style="padding:10px 16px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:26px;height:26px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--green);flex-shrink:0;">${initials}</div>
+              <span style="font-size:13px;font-weight:500;">${c.full_name || c.email || '—'}</span>
+            </div>
+          </td>
+          <td style="padding:10px 12px;border-right:1px solid rgba(255,255,255,0.04);">
+            ${typeInfo ? `<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;background:${typeInfo.bg};color:${typeInfo.color};">${typeInfo.icon} ${typeInfo.label}</span>` : '—'}
+          </td>
+          ${intCells}
+          <td style="padding:10px 12px;text-align:right;">
+            <button onclick="openClientDetail('${c.id}')" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--gray);font-size:11px;padding:4px 9px;cursor:pointer;font-family:'Inter',sans-serif;">Ver</button>
+          </td>
+        </tr>`;
+    }).join('');
+
+    const legend = `
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:11px;color:var(--gray);">
+        <span>✓ <span style="color:var(--green);">Activo</span></span>
+        <span>⏳ <span style="color:var(--amber);">Pendiente</span></span>
+        <span>N/A Sin integración requerida</span>
+      </div>`;
+
+    document.getElementById('integrations-panel-content').innerHTML = legend + `
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;background:var(--black-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;min-width:760px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="padding:10px 16px;text-align:left;font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.08em;">Cliente</th>
+              <th style="padding:10px 12px;text-align:left;font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.04);">Tipo</th>
+              <th style="padding:10px 12px;text-align:center;font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.04);">Shopify</th>
+              <th style="padding:10px 12px;text-align:center;font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.04);">Meta</th>
+              <th style="padding:10px 12px;text-align:center;font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.04);">Klaviyo</th>
+              <th style="padding:10px 12px;text-align:center;font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.04);">ManyChat</th>
+              <th style="padding:10px 12px;text-align:center;font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.04);">WhatsApp</th>
+              <th style="padding:10px 12px;text-align:center;font-size:10px;color:var(--gray);font-weight:600;text-transform:uppercase;border-right:1px solid rgba(255,255,255,0.04);">Drive</th>
+              <th style="padding:10px 12px;text-align:right;font-size:10px;color:var(--gray);"></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+  } catch (err) {
+    document.getElementById('integrations-panel-content').innerHTML =
+      `<div style="color:var(--red);font-size:13px;">Error cargando integraciones: ${err.message}</div>`;
+  }
+}
+
+window.renderAdminIntegrationsPanel = renderAdminIntegrationsPanel;
+
+// ── Metodología 90 Días ───────────────────────────────────
+
+function renderAdminMetodologia() {
+  const root = document.getElementById('view-admin-metodologia');
+  if (!root) return;
+
+  const fases = [
+    {
+      num: 'Días 1–30', name: 'Fundamento y Diagnóstico', color: '#22C55E',
+      items: [
+        'Auditoría Shopify completa',
+        'Auditoría de oferta',
+        'Auditoría de marca',
+        'Auditoría de conversión',
+        'Revisión y análisis de datos',
+        'Instalación de tracking (GA4, Pixel)',
+        'Priorización de oportunidades',
+      ]
+    },
+    {
+      num: 'Días 31–60', name: 'Optimización y Sistemas', color: '#6366F1',
+      items: [
+        'SEO base (estructura técnica)',
+        'Optimización de fichas de producto',
+        'Captación de datos y leads',
+        'Flujos de email marketing',
+        'Automatizaciones (ManyChat, Klaviyo)',
+        'Segmentación de audiencias',
+        'Mejoras de conversión en checkout',
+      ]
+    },
+    {
+      num: 'Días 61–90', name: 'Escalamiento y Control', color: '#F59E0B',
+      items: [
+        'Dashboard de métricas (CR, AOV, LTV)',
+        'Campañas de adquisición',
+        'Estrategia de retención',
+        'Automatización comercial',
+        'Reportes semanales',
+        'Documentación de SOPs',
+        'Plan de crecimiento mensual',
+      ]
+    },
+  ];
+
+  const fasesHTML = fases.map((f, idx) => `
+    <div class="met-fase" style="--fase-color:${f.color};">
+      <div class="met-fase-header">
+        <div class="met-fase-dot"></div>
+        <div>
+          <div class="met-fase-num">${f.num}</div>
+          <div class="met-fase-name">${f.name}</div>
+        </div>
+        <div class="met-fase-badge">${String(idx+1).padStart(2,'0')}</div>
+      </div>
+      <div class="met-fase-items">
+        ${f.items.map(item => `
+          <div class="met-fase-item">
+            <svg viewBox="0 0 12 12" fill="none" style="width:10px;height:10px;flex-shrink:0;margin-top:2px;"><path d="M2 6l3 3 5-5" stroke="${f.color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>${item}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  root.innerHTML = `
+    <div class="cc-body">
+      <button class="back-btn" onclick="showAdminView('os')" style="margin-bottom:24px;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al OS
+      </button>
+      <p class="os-eyebrow" style="margin-bottom:8px;">Villamo Growth · Metodología</p>
+      <h1 style="font-size:28px;font-weight:700;color:var(--white);margin-bottom:6px;">Programa 90 Días</h1>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:32px;">Sistema de implementación ecommerce estructurado en 3 fases de 30 días.</p>
+      <div class="met-grid">${fasesHTML}</div>
+    </div>
+  `;
+}
+
+window.renderAdminMetodologia = renderAdminMetodologia;
+
 window.renderAdminOS        = renderAdminOS;
-window.handleOSModuleClick  = handleOSModuleClick;
 window.osModuleSoon         = osModuleSoon;
 window.osModuleLocked       = osModuleLocked;
 window.showOSToast          = showOSToast;

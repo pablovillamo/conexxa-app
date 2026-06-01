@@ -689,6 +689,114 @@
   .os-toast { left: 50%; }
 }
 
+/* ── Type Filters ───────────────────────────────────────── */
+
+.cc-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cc-filter-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--gray);
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.cc-filter-btn:hover {
+  border-color: rgba(255,255,255,.15);
+  color: var(--white);
+}
+
+.cc-filter-btn.active {
+  background: rgba(34,197,94,.1);
+  border-color: rgba(34,197,94,.3);
+  color: var(--green);
+}
+
+/* ── Metodología 90 Días ────────────────────────────────── */
+
+.met-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.met-fase {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--fase-color, var(--green));
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.met-fase-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.met-fase-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--fase-color, var(--green));
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.met-fase-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fase-color, var(--green));
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 4px;
+}
+
+.met-fase-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.met-fase-badge {
+  margin-left: auto;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--fase-color, var(--green));
+  opacity: .15;
+  line-height: 1;
+  font-family: 'DM Mono', monospace;
+}
+
+.met-fase-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.met-fase-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .met-grid { grid-template-columns: 1fr; }
+}
+
 /* ── Brain Admin Header ─────────────────────────────────── */
 
 .brain-admin-header {

@@ -261,3 +261,45 @@ function getModuleById(id) {
 window.OS_MODULES      = OS_MODULES;
 window.getModulesByCategory = getModulesByCategory;
 window.getModuleById   = getModuleById;
+
+// ── Tipos de negocio ──────────────────────────────────────
+
+const BUSINESS_TYPES = {
+  ecommerce:      { label:'Ecommerce',      color:'#22C55E', bg:'rgba(34,197,94,.1)',   icon:'🛒' },
+  retail:         { label:'Retail',          color:'#6366F1', bg:'rgba(99,102,241,.1)',  icon:'🏪' },
+  app:            { label:'App',             color:'#14B8A6', bg:'rgba(20,184,166,.1)',  icon:'📱' },
+  consulting:     { label:'Consultoría',     color:'#F59E0B', bg:'rgba(245,158,11,.1)', icon:'💼' },
+  personal_brand: { label:'Marca Personal',  color:'#EC4899', bg:'rgba(236,72,153,.1)', icon:'⭐' },
+  franchise:      { label:'Franquicia',      color:'#8B5CF6', bg:'rgba(139,92,246,.1)', icon:'🔗' },
+  hybrid:         { label:'Híbrido',         color:'#F97316', bg:'rgba(249,115,22,.1)', icon:'🔀' },
+};
+
+const INTEGRATIONS_BY_TYPE = {
+  ecommerce:      ['shopify','meta','klaviyo','manychat','whatsapp','google-drive','payment'],
+  retail:         ['pos','inventory','google-drive','whatsapp','meta','auditorias','reports'],
+  app:            ['analytics','users','subscriptions','crm','email','google-drive'],
+  consulting:     ['crm','proposals','documents','google-drive','calendar','email'],
+  personal_brand: ['instagram','tiktok','email','crm','google-drive','calendar'],
+  franchise:      ['auditorias','sucursales','manuales','kpis','inventory','google-drive'],
+  hybrid:         ['shopify','meta','klaviyo','pos','inventory','google-drive'],
+};
+
+// Tipos que califican como ecommerce para Ecommerce OS
+const ECOMMERCE_TYPES = ['ecommerce', 'hybrid'];
+
+function getBusinessType(raw) {
+  if (!raw) return null;
+  const key = raw.toLowerCase().trim();
+  return BUSINESS_TYPES[key] || null;
+}
+
+function isEcommerceClient(client) {
+  const bt = (client.business_type || '').toLowerCase().trim();
+  return ECOMMERCE_TYPES.includes(bt);
+}
+
+window.BUSINESS_TYPES        = BUSINESS_TYPES;
+window.INTEGRATIONS_BY_TYPE  = INTEGRATIONS_BY_TYPE;
+window.ECOMMERCE_TYPES       = ECOMMERCE_TYPES;
+window.getBusinessType       = getBusinessType;
+window.isEcommerceClient     = isEcommerceClient;
