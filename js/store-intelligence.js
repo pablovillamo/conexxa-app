@@ -21,6 +21,15 @@ const SI_PHOTOS_KEY = 'si_photos_v1';
 let si_clientId = null;
 let si_storeId  = null;
 
+// ── Estado comparativo — FASE 1.3 ─────────────────────────
+// FASE 1.4 (futura): comparar orden visual, saturación, cambios de campaña con IA
+
+let _siCompA      = null;  // id de foto seleccionada como A (Antes)
+let _siCompB      = null;  // id de foto seleccionada como B (Después)
+let _siCompZone   = null;  // zoneId actual del comparativo
+let _siCompFilter = 'all'; // filtro por tipo_evidencia
+let _siCompSort   = 'reciente'; // 'reciente' | 'antigua'
+
 // ── Tipos de zona ─────────────────────────────────────────
 
 const SI_ZONE_TYPES = {
@@ -767,7 +776,16 @@ function openZoneDetail(zoneId) {
           : zone.notes.map(n => `<div style="font-size:13px;color:var(--gray);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);">${n}</div>`).join('')}
       </div>
 
+      <!-- Comparativo visual — FASE 1.3 -->
+      <div class="si-detail-section">
+        <div class="si-detail-section-label">🔄 Comparativo visual</div>
+        <div id="si-comp-${zone.id}">
+          ${si_renderComparativo(zone.id)}
+        </div>
+      </div>
+
       <!-- IA visual — FASE 3 -->
+      <!-- FASE 1.4: conectar si_renderComparativoResult con análisis IA -->
       <div class="si-detail-section">
         <button class="si-ia-btn" disabled title="Disponible en Fase 3 — Análisis IA Visual">
           🤖 Analizar con IA Visual — Próximamente
@@ -999,6 +1017,190 @@ function si_setMainPhoto(photoId, zoneId) {
   si_renderStoreContent();
 }
 
+// ── Comparativo visual — FASE 1.3 ────────────────────────
+//
+// FASE 1.4 (preparado en comentarios):
+// - Comparar orden visual entre fotos
+// - Detectar saturación de colores
+// - Detectar cambios de campaña
+// - Score mejora/empeoramiento por fecha
+// Para Supabase: fotos ya tienen zone_id y created_at — sin cambio de schema.
+
+function si_getFilteredPhotos(zoneId) {
+  let photos = si_photos_forZone(zoneId);
+  if (_siCompFilter !== 'all') {
+    photos = photos.filter(p => (p.tipo_evidencia || 'General') === _siCompFilter);
+  }
+  photos.sort((a, b) => {
+    const dA = new Date(a.created_at).getTime();
+    const dB = new Date(b.created_at).getTime();
+    return _siCompSort === 'antigua' ? dA - dB : dB - dA;
+  });
+  return photos;
+}
+
+function si_renderComparativo(zoneId) {
+  if (_siCompZone !== zoneId) {
+    _siCompA = null; _siCompB = null;
+    _siCompZone   = zoneId;
+    _siCompFilter = 'all';
+    _siCompSort   = 'reciente';
+  }
+
+  const allPhotos = si_photos_forZone(zoneId);
+
+  if (allPhotos.length < 2) {
+    return `
+      <div class="si-comp-empty">
+        <span>📷</span>
+        Necesitás al menos 2 fotos para comparar esta zona.
+        <span style="font-size:11px;display:block;margin-top:4px;color:rgba(136,135,128,.6);">
+          Subí más fotos en la sección "Historial fotográfico".
+        </span>
+      </div>`;
+  }
+
+  const photos = si_getFilteredPhotos(zoneId);
+  const tiposPresentes = [...new Set(allPhotos.map(p => p.tipo_evidencia || 'General'))];
+
+  const tipoOptions = ['all', ...tiposPresentes].map(t =>
+    `<option value="${t}" ${_siCompFilter === t ? 'selected' : ''}>${t === 'all' ? 'Todos los tipos' : t}</option>`
+  ).join('');
+
+  const thumbA = _siCompA ? allPhotos.find(p => p.id === _siCompA) : null;
+  const thumbB = _siCompB ? allPhotos.find(p => p.id === _siCompB) : null;
+
+  const photoSelectOpts = photos.map(p => {
+    const d = new Date(p.created_at).toLocaleDateString('es-CR',{day:'numeric',month:'short',year:'numeric'});
+    return `<option value="${p.id}">${p.tipo_evidencia || 'General'} · ${d}${p.responsable ? ' · ' + p.responsable : ''}</option>`;
+  }).join('');
+
+  const canCompare = _siCompA && _siCompB && _siCompA !== _siCompB;
+
+  return `
+    <div class="si-comp-filters">
+      <select class="si-input si-comp-select" onchange="si_compFilterChange('${zoneId}',this.value,'filter')">
+        ${tipoOptions}
+      </select>
+      <select class="si-input si-comp-select" onchange="si_compFilterChange('${zoneId}',this.value,'sort')">
+        <option value="reciente" ${_siCompSort==='reciente'?'selected':''}>Más reciente primero</option>
+        <option value="antigua"  ${_siCompSort==='antigua' ?'selected':''}>Más antigua primero</option>
+      </select>
+    </div>
+
+    <div class="si-comp-selectors">
+      <div class="si-comp-col">
+        <div class="si-comp-col-label">📅 Foto A — Antes</div>
+        <select class="si-input si-comp-photo-select" onchange="si_selectCompPhoto('${zoneId}','a',this.value)">
+          <option value="">— Seleccionar —</option>
+          ${photos.map(p => {
+            const d = new Date(p.created_at).toLocaleDateString('es-CR',{day:'numeric',month:'short',year:'numeric'});
+            return `<option value="${p.id}" ${p.id === _siCompA ? 'selected' : ''}>${p.tipo_evidencia||'General'} · ${d}</option>`;
+          }).join('')}
+        </select>
+        ${thumbA
+          ? `<div class="si-comp-preview"><img src="${thumbA.url}" alt="Foto A" /></div>`
+          : `<div class="si-comp-preview-empty">Sin selección</div>`}
+      </div>
+
+      <div class="si-comp-divider">↔</div>
+
+      <div class="si-comp-col">
+        <div class="si-comp-col-label">📅 Foto B — Después</div>
+        <select class="si-input si-comp-photo-select" onchange="si_selectCompPhoto('${zoneId}','b',this.value)">
+          <option value="">— Seleccionar —</option>
+          ${photos.map(p => {
+            const d = new Date(p.created_at).toLocaleDateString('es-CR',{day:'numeric',month:'short',year:'numeric'});
+            return `<option value="${p.id}" ${p.id === _siCompB ? 'selected' : ''}>${p.tipo_evidencia||'General'} · ${d}</option>`;
+          }).join('')}
+        </select>
+        ${thumbB
+          ? `<div class="si-comp-preview"><img src="${thumbB.url}" alt="Foto B" /></div>`
+          : `<div class="si-comp-preview-empty">Sin selección</div>`}
+      </div>
+    </div>
+
+    <button class="si-comp-btn${canCompare ? '' : ' disabled'}"
+      onclick="si_runComparativo('${zoneId}')" ${canCompare ? '' : 'disabled'}>
+      🔄 Comparar fotos
+    </button>
+
+    <div id="si-comp-result-${zoneId}"></div>
+  `;
+}
+
+function si_compFilterChange(zoneId, value, kind) {
+  if (kind === 'filter') _siCompFilter = value;
+  else                   _siCompSort   = value;
+  _siCompA = null; _siCompB = null;
+  const c = document.getElementById(`si-comp-${zoneId}`);
+  if (c) c.innerHTML = si_renderComparativo(zoneId);
+}
+
+function si_selectCompPhoto(zoneId, slot, photoId) {
+  if (slot === 'a') _siCompA = photoId || null;
+  else              _siCompB = photoId || null;
+  if (_siCompA && _siCompB && _siCompA === _siCompB) {
+    if (slot === 'a') _siCompB = null;
+    else              _siCompA = null;
+  }
+  const c = document.getElementById(`si-comp-${zoneId}`);
+  if (c) c.innerHTML = si_renderComparativo(zoneId);
+}
+
+function si_runComparativo(zoneId) {
+  if (!_siCompA || !_siCompB || _siCompA === _siCompB) return;
+
+  const allPhotos = si_photos_forZone(zoneId);
+  const photoA    = allPhotos.find(p => p.id === _siCompA);
+  const photoB    = allPhotos.find(p => p.id === _siCompB);
+  if (!photoA || !photoB) return;
+
+  const resultEl = document.getElementById(`si-comp-result-${zoneId}`);
+  if (!resultEl) return;
+
+  const fmtDate = (iso) => new Date(iso).toLocaleDateString('es-CR',{
+    day:'numeric', month:'long', year:'numeric',
+  });
+
+  const dateA    = new Date(photoA.created_at).getTime();
+  const dateB    = new Date(photoB.created_at).getTime();
+  const [antes, despues] = dateA <= dateB ? [photoA, photoB] : [photoB, photoA];
+  const diffDays = Math.abs(Math.round((dateA - dateB) / 86400000));
+  const diffLabel = diffDays === 0 ? 'mismo día'
+    : `${diffDays} día${diffDays !== 1 ? 's' : ''} de diferencia`;
+
+  const buildCard = (photo, label) => `
+    <div class="si-comp-result-card">
+      <div class="si-comp-result-label">${label}</div>
+      <div class="si-comp-result-img">
+        <img src="${photo.url}" alt="${label}" loading="lazy" />
+        ${photo.es_principal ? `<span class="si-comp-principal-tag">★ Principal</span>` : ''}
+      </div>
+      <div class="si-comp-result-meta">
+        <div class="si-comp-meta-row"><span class="si-comp-meta-key">📅 Fecha</span><span class="si-comp-meta-val">${fmtDate(photo.created_at)}</span></div>
+        ${photo.responsable ? `<div class="si-comp-meta-row"><span class="si-comp-meta-key">👤 Responsable</span><span class="si-comp-meta-val">${photo.responsable}</span></div>` : ''}
+        <div class="si-comp-meta-row"><span class="si-comp-meta-key">📌 Tipo</span><span class="si-comp-meta-val">${photo.tipo_evidencia || 'General'}</span></div>
+        ${photo.comentario ? `<div class="si-comp-meta-row"><span class="si-comp-meta-key">💬 Comentario</span><span class="si-comp-meta-val">${photo.comentario}</span></div>` : ''}
+      </div>
+    </div>`;
+
+  resultEl.innerHTML = `
+    <div class="si-comp-result">
+      <div class="si-comp-result-header">
+        <div class="si-comp-result-title">Comparativo</div>
+        <div class="si-comp-result-diff">🕐 ${diffLabel}</div>
+      </div>
+      <div class="si-comp-result-grid">
+        ${buildCard(antes,   '📅 Antes')}
+        ${buildCard(despues, '📅 Después')}
+      </div>
+    </div>
+  `;
+
+  resultEl.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
 // ── Exports ───────────────────────────────────────────────
 
 window.renderStoreIntelligenceView = renderStoreIntelligenceView;
@@ -1020,3 +1222,7 @@ window.si_savePhoto                = si_savePhoto;
 window.si_cancelUpload             = si_cancelUpload;
 window.si_deletePhoto              = si_deletePhoto;
 window.si_setMainPhoto             = si_setMainPhoto;
+window.si_renderComparativo        = si_renderComparativo;
+window.si_compFilterChange         = si_compFilterChange;
+window.si_selectCompPhoto          = si_selectCompPhoto;
+window.si_runComparativo           = si_runComparativo;
