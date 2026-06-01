@@ -606,7 +606,7 @@ function buildClientTypeTable(clients) {
                   <span style="font-size:12px;color:${statusColor};">● ${c.client_status || 'pendiente'}</span>
                 </td>
                 <td style="padding:12px 16px;text-align:right;">
-                  <button onclick="openClientDetail('${c.id}')" style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--gray);font-size:12px;padding:5px 10px;cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s,border-color .15s;" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.2)'" onmouseout="this.style.color='var(--gray)';this.style.borderColor='var(--border)'">Ver →</button>
+                  <button onclick="openClientOverview('${c.id}')" style="background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--gray);font-size:12px;padding:5px 10px;cursor:pointer;font-family:'Inter',sans-serif;transition:color .15s,border-color .15s;" onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.2)'" onmouseout="this.style.color='var(--gray)';this.style.borderColor='var(--border)'">Ver →</button>
                 </td>
               </tr>`;
           }).join('')}
@@ -764,7 +764,7 @@ async function renderAdminIntegrationsPanel() {
           </td>
           ${intCells}
           <td style="padding:10px 12px;text-align:right;">
-            <button onclick="openClientDetail('${c.id}')" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--gray);font-size:11px;padding:4px 9px;cursor:pointer;font-family:'Inter',sans-serif;">Ver</button>
+            <button onclick="openClientOverview('${c.id}')" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--gray);font-size:11px;padding:4px 9px;cursor:pointer;font-family:'Inter',sans-serif;">Ver</button>
           </td>
         </tr>`;
     }).join('');

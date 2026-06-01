@@ -115,7 +115,7 @@ function renderClientsTable(clients) {
     const status = c.status || 'activo';
     const statusMap = {activo:'status-activo',pausado:'status-pausado',finalizado:'status-finalizado',pendiente:'status-pendiente'};
     const statusLabel = {activo:'Activo',pausado:'Pausado',finalizado:'Finalizado',pendiente:'Pendiente'};
-    return `<tr onclick="openClientDetail('${c.id}')">
+    return `<tr onclick="openClientOverview('${c.id}')" style="cursor:pointer;">
       <td><div style="display:flex;align-items:center;gap:10px;">
         <div class="client-avatar-cell"${avatarStyleAttr}>${avatarContent}</div>
         <div><div class="client-name-cell">${c.full_name || c.email}</div><div class="client-nicho-cell">${c.email}</div></div>
@@ -161,6 +161,98 @@ function filterClients() {
   }
   renderClientsTable(filtered);
 }
+
+// ── Vista general del cliente (nueva entrada desde Clientes) ─
+
+function openClientOverview(clientId) {
+  selectedClientId = clientId;
+  const clients = typeof allClientsData !== 'undefined' ? allClientsData : [];
+  const client  = clients.find(c => c.id === clientId) || { id: clientId };
+
+  showView('view-admin-client-dashboard');
+  if (typeof setSidebarActive === 'function') setSidebarActive('clients');
+  renderClientOverview(client);
+}
+
+function renderClientOverview(client) {
+  const root = document.getElementById('view-admin-client-dashboard');
+  if (!root) return;
+
+  const name     = client.full_name || client.email || '—';
+  const initials = name.substring(0, 2).toUpperCase();
+  const types    = typeof parseBusinessTypes === 'function' ? parseBusinessTypes(client.business_type) : [];
+  const typeBadges = types.map(t => {
+    const info = typeof BUSINESS_TYPES !== 'undefined' ? BUSINESS_TYPES[t] : null;
+    return info ? `<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:${info.bg};color:${info.color};">${info.icon} ${info.label}</span>` : '';
+  }).join('');
+  const statusColor = client.client_status === 'activo' ? 'var(--green)' : client.client_status === 'pausado' ? 'var(--amber)' : 'var(--gray)';
+
+  const futureMods = [
+    { icon:'📊', name:'Resumen general',   desc:'KPIs, progreso y métricas clave del cliente.' },
+    { icon:'⚡', name:'Módulos activos',    desc:'Todos los módulos habilitados para esta cuenta.' },
+    { icon:'🔌', name:'Integraciones',      desc:'Estado de todas las conexiones activas.' },
+    { icon:'₡',  name:'Costos',            desc:'Dashboard de gastos y costos operativos.' },
+    { icon:'✅', name:'Tareas',             desc:'Seguimiento de tareas asignadas.' },
+    { icon:'📈', name:'KPIs',              desc:'Métricas de rendimiento y objetivos.' },
+    { icon:'🛒', name:'Ecommerce OS',      desc:'Shopify, productos, órdenes y métricas.' },
+    { icon:'⚙️', name:'Operaciones OS',   desc:'Flujos, SOPs y operación del negocio.' },
+    { icon:'📦', name:'Inventario OS',     desc:'Stock, movimientos y alertas de inventario.' },
+    { icon:'🛍️', name:'Compras OS',       desc:'Proveedores, órdenes de compra y costos.' },
+  ];
+
+  root.innerHTML = `
+    <div class="cc-body">
+
+      <!-- Back -->
+      <button class="back-btn" onclick="showAdminView('clients')" style="margin-bottom:20px;">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver a Clientes
+      </button>
+
+      <!-- Client header -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--green-dim);border:2px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--green);flex-shrink:0;">${initials}</div>
+        <div style="flex:1;">
+          <h1 style="font-size:22px;font-weight:700;color:var(--white);margin-bottom:4px;">${name}</h1>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:12px;color:${statusColor};">● ${client.client_status || 'pendiente'}</span>
+            ${client.nicho ? `<span style="font-size:12px;color:var(--gray);">${client.nicho}</span>` : ''}
+            ${typeBadges}
+          </div>
+        </div>
+        <button class="btn-action" style="font-size:12px;padding:8px 16px;" onclick="openClientDetail('${client.id}')">
+          Ver OS Ecommerce →
+        </button>
+      </div>
+
+      <!-- Placeholder banner -->
+      <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:14px;padding:24px;margin-bottom:32px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:8px;">🚧</div>
+        <div style="font-size:15px;font-weight:600;color:var(--white);margin-bottom:6px;">Dashboard del Cliente — Próximamente</div>
+        <div style="font-size:13px;color:var(--gray);max-width:520px;margin:0 auto;line-height:1.6;">Aquí se centralizará la vista general del cliente por tipo de negocio, módulos activos, integraciones, costos, tareas, KPIs y progreso.</div>
+      </div>
+
+      <!-- Future modules grid -->
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);font-family:'DM Mono',monospace;margin-bottom:14px;">Módulos futuros de esta vista</div>
+      <div class="cc-modules-grid">
+        ${futureMods.map(m => `
+          <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:18px;opacity:.6;">
+            <div style="font-size:20px;margin-bottom:8px;">${m.icon}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px;">${m.name}</div>
+            <div style="font-size:12px;color:var(--gray);line-height:1.4;">${m.desc}</div>
+            <div style="font-size:10px;color:var(--amber);margin-top:10px;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;">⏳ En construcción</div>
+          </div>
+        `).join('')}
+      </div>
+
+    </div>
+  `;
+}
+
+window.openClientOverview  = openClientOverview;
+window.renderClientOverview = renderClientOverview;
+
+// ── Vista detallada ecommerce (preservada para Ecommerce OS) ─
 
 async function openClientDetail(clientId) {
   selectedClientId = clientId;
