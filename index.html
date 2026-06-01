@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="/css/integrations.css">
 <link rel="stylesheet" href="/css/os.css">
 <link rel="stylesheet" href="/css/costos.css">
+<link rel="stylesheet" href="/css/notas-os.css">
 </head>
 <body>
 
@@ -196,6 +197,9 @@
 
     <!-- ADMIN: Costos OS -->
     <div id="view-admin-costos" class="view"></div>
+
+    <!-- ADMIN: Notas OS -->
+    <div id="view-admin-notas-os" class="view"></div>
 
     <!-- ADMIN: Finanzas OS -->
     <div id="view-admin-finanzas" class="view"></div>
@@ -1003,6 +1007,19 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
   </div>
 </div>
 
+<!-- MODAL: Nueva Nota OS -->
+<div class="modal-overlay" id="modal-nueva-nota">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-title">Nueva nota</div>
+    <div class="modal-sub">Documentá ideas, decisiones, problemas o aprendizajes. client_id obligatorio.</div>
+    <div id="modal-nueva-nota-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('modal-nueva-nota')">Cancelar</button>
+      <button class="btn-primary" style="flex:2;margin-top:0;" onclick="saveNota()">Guardar nota</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Agregar Gasto -->
 <div class="modal-overlay" id="modal-new-costo">
   <div class="modal" style="max-width:560px;">
@@ -1032,6 +1049,7 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/dashboard.js"></script>
 <script src="/js/admin-clients.js"></script>
 <script src="/js/integrations.js"></script>
+<script src="/js/notas-os.js"></script>
 <script src="/js/costos.js"></script>
 <script src="/js/admin-os.js"></script>
 </body>

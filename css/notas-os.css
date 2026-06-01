@@ -1,0 +1,448 @@
+/* ============================================================
+   NOTAS OS — Memoria Empresarial
+   ============================================================ */
+
+.notas-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 36px 80px;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+.notas-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.notas-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--green);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 8px;
+}
+
+.notas-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.notas-sub {
+  font-size: 13px;
+  color: var(--gray);
+  max-width: 560px;
+  line-height: 1.5;
+}
+
+.notas-add-btn {
+  background: var(--green);
+  color: #071107;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 120ms;
+}
+
+.notas-add-btn:hover { background: var(--green-dark); }
+
+/* ── KPIs ────────────────────────────────────────────────── */
+
+.notas-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.notas-kpi {
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--nk, var(--border));
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.notas-kpi-main {
+  background: rgba(34,197,94,.04);
+  border-left-color: var(--green);
+  border-color: rgba(34,197,94,.2);
+}
+
+.notas-kpi-icon { font-size: 16px; margin-bottom: 2px; }
+
+.notas-kpi-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.notas-kpi-main .notas-kpi-val { color: var(--green); font-size: 28px; }
+
+.notas-kpi-label {
+  font-size: 11px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+/* ── Tipo filters ────────────────────────────────────────── */
+
+.notas-tipo-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.notas-tipo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--gray);
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 120ms;
+  white-space: nowrap;
+}
+
+.notas-tipo-btn:hover {
+  border-color: rgba(255,255,255,.18);
+  color: var(--white);
+}
+
+.notas-tipo-btn.active {
+  background: rgba(255,255,255,.06);
+  border-color: var(--nt-color, rgba(255,255,255,.2));
+  color: var(--nt-color, var(--white));
+}
+
+/* Botón "Todas" activo */
+.notas-tipo-btn:first-child.active {
+  background: rgba(34,197,94,.1);
+  border-color: rgba(34,197,94,.3);
+  color: var(--green);
+}
+
+/* ── Row filters ─────────────────────────────────────────── */
+
+.notas-row-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.notas-search {
+  flex: 1;
+  min-width: 200px;
+  background: var(--black-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 9px;
+  color: var(--white);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  padding: 9px 14px;
+}
+
+.notas-search:focus { outline: none; border-color: var(--green); }
+.notas-search::placeholder { color: var(--gray); }
+
+.notas-select {
+  background: var(--black-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 9px;
+  color: var(--white);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  padding: 9px 30px 9px 12px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23888780' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 11px;
+  min-width: 160px;
+}
+
+.notas-select:focus { outline: none; border-color: var(--green); }
+
+/* ── Note Cards Grid ─────────────────────────────────────── */
+
+.notas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.nota-card {
+  background: var(--black-card);
+  border: 1px solid var(--nc-border, var(--border));
+  border-left: 4px solid var(--nc, var(--border));
+  border-radius: 14px;
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: background 140ms;
+}
+
+.nota-card:hover {
+  background: rgba(255,255,255,.02);
+}
+
+.nota-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nota-tipo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 99px;
+  border: 1px solid;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-family: 'DM Mono', monospace;
+}
+
+.nota-prioridad-badge {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.nota-titulo {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.4;
+}
+
+.nota-preview {
+  font-size: 12px;
+  color: var(--gray);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Tags ────────────────────────────────────────────────── */
+
+.nota-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.nota-tag {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(255,255,255,.06);
+  color: var(--gray);
+  border: 1px solid rgba(255,255,255,.08);
+  font-family: 'DM Mono', monospace;
+}
+
+.nota-tag-more {
+  background: rgba(255,255,255,.04);
+  color: rgba(136,135,128,.6);
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+
+.nota-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  flex-wrap: wrap;
+}
+
+.nota-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nota-client, .nota-date {
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.nota-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nota-estado {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.nota-delete-btn {
+  background: transparent;
+  border: none;
+  color: rgba(136,135,128,.5);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: color 120ms;
+  line-height: 1;
+}
+
+.nota-delete-btn:hover { color: var(--red); }
+
+/* ── Empty state ─────────────────────────────────────────── */
+
+.notas-empty {
+  text-align: center;
+  padding: 60px 24px;
+  background: var(--black-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+/* ── Form modal ──────────────────────────────────────────── */
+
+.nota-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.nota-form-field { display: flex; flex-direction: column; gap: 5px; }
+.nota-form-field.full { grid-column: span 2; }
+
+.nota-form-label {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.nota-form-label .req { color: var(--red); margin-left: 2px; }
+
+.nota-input {
+  background: var(--black-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 9px;
+  color: var(--white);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  padding: 10px 12px;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.nota-input:focus {
+  outline: none;
+  border-color: var(--green);
+  background: rgba(34,197,94,.02);
+}
+
+.nota-input::placeholder { color: var(--gray-mid); }
+
+select.nota-input {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23888780' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 11px;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+.nota-textarea { resize: vertical; line-height: 1.6; min-height: 100px; }
+
+/* ── Tag selector ────────────────────────────────────────── */
+
+.nota-tag-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  background: var(--black-card);
+  border: 1px solid var(--border-mid);
+  border-radius: 9px;
+}
+
+.nota-tag-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--gray);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 100ms;
+  user-select: none;
+  font-family: 'Inter', sans-serif;
+}
+
+.nota-tag-pick input { display: none; }
+
+.nota-tag-pick:hover {
+  border-color: rgba(255,255,255,.18);
+  color: var(--white);
+}
+
+.nota-tag-pick:has(input:checked) {
+  background: rgba(34,197,94,.1);
+  border-color: rgba(34,197,94,.3);
+  color: var(--green);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .notas-body { padding: 20px 16px 60px; }
+  .notas-title { font-size: 22px; }
+  .notas-kpis { grid-template-columns: repeat(2, 1fr); }
+  .notas-kpi-main { grid-column: span 2; }
+  .notas-grid { grid-template-columns: 1fr; }
+  .nota-form-grid { grid-template-columns: 1fr; }
+  .nota-form-field.full { grid-column: span 1; }
+}

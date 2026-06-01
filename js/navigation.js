@@ -12,6 +12,10 @@ function showAdminView(view) {
   } else if (view === 'clients') {
     showView('view-admin-clients');
     if (typeof setSidebarActive === 'function') setSidebarActive('clients');
+  } else if (view === 'notas-os') {
+    showView('view-admin-notas-os');
+    if (typeof renderNotasOSView === 'function') renderNotasOSView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('notes');
   } else if (view === 'brain') {
     showView('view-admin-brain');
     if (typeof renderAdminBrainView === 'function') renderAdminBrainView();

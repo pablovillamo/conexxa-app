@@ -11,7 +11,7 @@ const SIDEBAR_CORE = [
   { id:'clients',  icon:'👥', label:'Clientes',    status:'active', action:() => showAdminView('clients') },
   { id:'brain',    icon:'🧠', label:'Brain IA',    status:'active', action:() => showAdminView('brain')   },
   { id:'tasks',    icon:'✅', label:'Tareas',       status:'active', action:() => showAdminView('tasks')  },
-  { id:'notes',    icon:'📝', label:'Notas',        status:'coming' },
+  { id:'notes',    icon:'📝', label:'Notas OS',      status:'active', action:() => showAdminView('notas-os') },
   { id:'crm',      icon:'🗃️', label:'CRM',         status:'coming' },
   { id:'docs',     icon:'📄', label:'Documentos',  status:'coming' },
   { id:'resources',icon:'📚', label:'Recursos',    status:'coming' },
