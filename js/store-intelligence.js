@@ -28,12 +28,25 @@ let _siLayoutDraft    = {};
 let _siDragState      = null;
 
 // ── Estado editor de plano — FASE 1.7 (croquis físico) ────
-// FASE 1.8 (futura): imagen de plano real como fondo, calibrar medidas reales, gemelo digital 3D, heatmaps, IA
+// FASE 1.8 (futura): imagen de plano real como fondo, calibrar medidas, gemelo digital 3D, IA
 
-let si_floorPlanMode  = false;
-let _siFloorPlanDraft = null;  // { elements: [], walls: [], labels: [], version: 1 }
-let _siActiveTool     = 'select';
-let _siWallStart      = null;  // { x, y } — punto de inicio de pared en dibujo
+let si_floorPlanMode   = false;
+let _siFloorPlanDraft  = null;
+let _siActiveTool      = 'select';
+let _siWallStart       = null;
+let _siSelectedElement = null;   // id del elemento físico seleccionado
+let _siFloorPlanZoom   = 1.0;    // zoom activo (no persiste entre sesiones hasta guardar)
+let _siElDragState     = null;   // { elementId, startX, startY, origX, origY, moved, rect }
+let _siPanState        = null;   // { vpEl, startX, startY, scrollLeft, scrollTop }
+
+// ── Undo / Redo — snapshots en memoria, máx 50 ─────────────
+let _siUndoStack = [];
+let _siRedoStack = [];
+const SI_MAX_UNDO = 50;
+
+// ── Estado snap / grid — FASE 1.7 ─────────────────────────
+let _siSnapToGrid = false;    // toggle ON/OFF
+const SI_GRID_SIZE = 10;      // tamaño de celda en unidades SVG (espacio 0-100)
 
 // ── Estado campañas visuales — FASE 1.6 ───────────────────
 // FASE 1.7 (futura): checklist de ejecución, evidencia fotográfica obligatoria, auditoría de cumplimiento, IA
@@ -53,18 +66,43 @@ let _siSelectedFlowPoint  = null;  // id del punto seleccionado en edit mode
   document.addEventListener('mousemove', function(e) {
     if (_siDragState && si_layoutEditMode) si_onDragMove(e.clientX, e.clientY);
     if (si_floorPlanMode && _siWallStart && _siActiveTool === 'wall') si_updateWallPreview(e.clientX, e.clientY);
+    if (_siElDragState && si_floorPlanMode) si_onElementDragMove(e.clientX, e.clientY);
+    if (_siPanState) si_onPanMove(e.clientX, e.clientY);
   });
   document.addEventListener('mouseup', function(e) {
     if (_siDragState) _siDragState = null;
     if (si_floorPlanMode && _siWallStart && _siActiveTool === 'wall') si_finishDrawingWall(e.clientX, e.clientY);
+    if (_siElDragState) {
+      if (_siElDragState.moved) {
+        // Rebuild SVG completo UNA VEZ al terminar — durante el drag se usaron updates quirúrgicos
+        si_refreshFloorPlanSVG();
+        if (_siSelectedElement) si_renderElementToolbar(_siSelectedElement);
+      } else {
+        _siUndoStack.pop(); // cancelar entry especulativo — no hubo movimiento real
+      }
+      _siElDragState = null;
+    }
+    if (_siPanState) { _siPanState.vpEl.classList.remove('si-pan-active'); _siPanState = null; }
   });
   document.addEventListener('touchmove', function(e) {
     if (_siDragState && si_layoutEditMode) { e.preventDefault(); si_onDragMove(e.touches[0].clientX, e.touches[0].clientY); }
     if (si_floorPlanMode && _siWallStart && _siActiveTool === 'wall') { e.preventDefault(); si_updateWallPreview(e.touches[0].clientX, e.touches[0].clientY); }
+    if (_siElDragState && si_floorPlanMode) { e.preventDefault(); si_onElementDragMove(e.touches[0].clientX, e.touches[0].clientY); }
+    if (_siPanState) { e.preventDefault(); si_onPanMove(e.touches[0].clientX, e.touches[0].clientY); }
   }, { passive: false });
   document.addEventListener('touchend', function(e) {
     if (_siDragState) _siDragState = null;
     if (si_floorPlanMode && _siWallStart && _siActiveTool === 'wall' && e.changedTouches[0]) si_finishDrawingWall(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    if (_siElDragState) {
+      if (_siElDragState.moved) {
+        si_refreshFloorPlanSVG();
+        if (_siSelectedElement) si_renderElementToolbar(_siSelectedElement);
+      } else {
+        _siUndoStack.pop();
+      }
+      _siElDragState = null;
+    }
+    if (_siPanState) { _siPanState.vpEl.classList.remove('si-pan-active'); _siPanState = null; }
   });
 })();
 
@@ -1531,33 +1569,70 @@ function si_renderInteractiveCroquis(zones) {
       </div>`;
   })();
 
+  const fpConfig = si_getFloorPlanConfig();
+  const cw       = fpConfig.canvasWidth  || 2400;
+  const ch       = fpConfig.canvasHeight || 1600;
+  const zoom     = _siFloorPlanZoom || fpConfig.zoom || 1;
+
+  const zoomBar = `
+    <div class="si-fp-zoom-bar">
+      <button class="si-fp-zbtn" onclick="si_zoomOut()" title="Alejar">−</button>
+      <span class="si-fp-zoom-val">${Math.round(zoom*100)}%</span>
+      <button class="si-fp-zbtn" onclick="si_zoomIn()" title="Acercar">+</button>
+      <button class="si-fp-zbtn" onclick="si_resetZoom()" title="Reset zoom">↺ 100%</button>
+      <button class="si-fp-zbtn" onclick="si_centerFloorPlan()" title="Centrar vista">⊙</button>
+      ${si_floorPlanMode ? `
+        <span class="si-fp-size-sep">·</span>
+        <span class="si-fp-size-val">${cw} × ${ch} px</span>
+        <button class="si-fp-zbtn" onclick="si_expandCanvas('w+')" title="Expandir ancho">↔+</button>
+        <button class="si-fp-zbtn" onclick="si_expandCanvas('w-')" title="Reducir ancho">↔−</button>
+        <button class="si-fp-zbtn" onclick="si_expandCanvas('h+')" title="Expandir alto">↕+</button>
+        <button class="si-fp-zbtn" onclick="si_expandCanvas('h-')" title="Reducir alto">↕−</button>` : ''}
+    </div>`;
+
   return toolbar + `
     <div class="si-fp-layout${si_floorPlanMode ? ' si-fp-with-panel' : ''}">
       <div class="si-fp-main">
         ${si_floorPlanMode ? si_renderFloorPlanToolbar() : ''}
-        <div class="si-floor-plan${si_flowEditMode ? ' si-flow-edit-active' : ''}${si_floorPlanMode ? ' si-floor-plan-blueprint' : ''}"
-          id="si-floor-plan-${si_storeId}">
+        ${zoomBar}
 
-          <!-- Structural layer: walls + physical elements -->
-          <div class="si-fp-struct-wrap" id="si-fp-struct-wrap-${si_storeId}">
-            ${si_renderFloorPlanSVG()}
-            <div class="si-fp-tool-overlay" id="si-fp-overlay-${si_storeId}"
-              style="pointer-events:${si_floorPlanMode && _siActiveTool !== 'select' && _siActiveTool !== 'borrar' ? 'all' : 'none'}"
-              onmousedown="si_onToolMousedown(event)"
-              onmousemove="si_onToolMousemove(event)"
-              ontouchstart="si_onToolTouchstart(event)">
-            </div>
-          </div>
+        <!-- Viewport: scrollable window -->
+        <div class="si-fp-viewport${si_floorPlanMode ? ' si-fp-viewport-blueprint' : ''}"
+          id="si-fp-viewport-${si_storeId}">
 
-          <!-- Zone blocks + flow SVG (existing) -->
-          <div class="si-floor-plan-inner" id="si-floor-plan-inner-${si_storeId}"
-            ${si_flowEditMode ? `onclick="si_addFlowPointFromClick(event)"` : ''}>
-            ${blocksHTML}
-            <div id="si-flow-svg-wrap-${si_storeId}" class="si-flow-svg-wrap">
-              ${si_renderCustomerFlowLayer()}
-            </div>
-          </div>
-        </div>
+          <!-- Scale wrapper: su tamaño = canvas * zoom → define el área scrollable correctamente -->
+          <div id="si-fp-scale-wrap-${si_storeId}"
+            style="width:${Math.round(cw*zoom)}px;height:${Math.round(ch*zoom)}px;position:relative;flex-shrink:0;min-width:100%;min-height:100%;">
+
+            <!-- Canvas: workspace real. position:absolute para no empujar el scroll wrap. -->
+            <div class="si-fp-canvas${si_flowEditMode ? ' si-flow-edit-active' : ''}"
+              id="si-fp-canvas-${si_storeId}"
+              style="position:absolute;top:0;left:0;width:${cw}px;height:${ch}px;transform:scale(${zoom});transform-origin:top left;">
+
+              <!-- Structural layer: walls + physical elements -->
+              <div class="si-fp-struct-wrap" id="si-fp-struct-wrap-${si_storeId}">
+                ${si_renderFloorPlanSVG()}
+                <div class="si-fp-tool-overlay" id="si-fp-overlay-${si_storeId}"
+                  style="pointer-events:${si_floorPlanMode && _siActiveTool !== 'select' && _siActiveTool !== 'borrar' ? 'all' : 'none'}"
+                  onmousedown="si_onToolMousedown(event)"
+                  onmousemove="si_onToolMousemove(event)"
+                  ontouchstart="si_onToolTouchstart(event)">
+                </div>
+              </div>
+
+              <!-- Zone blocks + flow SVG -->
+              <div class="si-floor-plan-inner" id="si-floor-plan-inner-${si_storeId}"
+                ${si_flowEditMode ? `onclick="si_addFlowPointFromClick(event)"` : ''}>
+                ${blocksHTML}
+                <div id="si-flow-svg-wrap-${si_storeId}" class="si-flow-svg-wrap">
+                  ${si_renderCustomerFlowLayer()}
+                </div>
+              </div>
+
+            </div><!-- /.si-fp-canvas -->
+          </div><!-- /.si-fp-scale-wrap -->
+        </div><!-- /.si-fp-viewport -->
+
         ${legendHTML}
         ${flowLegend}
         <div id="si-flow-edit-panel-${si_storeId}" class="si-flow-edit-panel">
@@ -1625,8 +1700,8 @@ function si_resetLayout() {
 }
 
 function si_centerView() {
-  const plan = document.getElementById(`si-floor-plan-${si_storeId}`);
-  if (plan) plan.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const vp = document.getElementById(`si-fp-viewport-${si_storeId}`);
+  if (vp) vp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function si_refreshCroquisSection() {
@@ -1634,6 +1709,7 @@ function si_refreshCroquisSection() {
   if (!section) return;
   const zones = si_storeId ? si_zones_forStore(si_storeId) : [];
   section.innerHTML = si_renderInteractiveCroquis(zones);
+  si_initViewportPan();
 }
 
 // ── Drag & resize handlers ────────────────────────────────
@@ -1711,10 +1787,6 @@ function si_onZoneClick(e, zoneId) {
   if (si_layoutEditMode || si_flowEditMode) return;
   openZoneDetail(zoneId);
 }
-
-// ── Exports ───────────────────────────────────────────────
-
-window.renderStoreIntelligenceView = renderStoreIntelligenceView;
 
 window.si_renderComparativo        = si_renderComparativo;
 window.si_compFilterChange         = si_compFilterChange;
@@ -2245,6 +2317,188 @@ function si_refreshCampaignsSection() {
 // - Heatmaps superpuestos
 // - IA análisis espacial
 
+// ── Config helper ─────────────────────────────────────────
+
+function si_getFloorPlanConfig() {
+  const fp = si_getFloorPlan();
+  return {
+    ...fp,
+    canvasWidth:  fp.canvasWidth  || 2400,
+    canvasHeight: fp.canvasHeight || 1600,
+    zoom:         fp.zoom         || 1.0,
+  };
+}
+
+// ── Zoom ──────────────────────────────────────────────────
+
+function si_setFloorPlanZoom(z) {
+  _siFloorPlanZoom = Math.max(0.25, Math.min(3.0, Math.round(z * 4) / 4)); // snap to 0.25
+  const config = _siFloorPlanDraft
+    ? { canvasWidth: _siFloorPlanDraft.canvasWidth||2400, canvasHeight: _siFloorPlanDraft.canvasHeight||1600 }
+    : si_getFloorPlanConfig();
+  const cw = config.canvasWidth;
+  const ch = config.canvasHeight;
+
+  const canvas = document.getElementById(`si-fp-canvas-${si_storeId}`);
+  if (canvas) canvas.style.transform = `scale(${_siFloorPlanZoom})`;
+
+  // Scale wrapper define el área scrollable real = canvas * zoom
+  const scaleWrap = document.getElementById(`si-fp-scale-wrap-${si_storeId}`);
+  if (scaleWrap) {
+    scaleWrap.style.width  = Math.round(cw * _siFloorPlanZoom) + 'px';
+    scaleWrap.style.height = Math.round(ch * _siFloorPlanZoom) + 'px';
+  }
+
+  const val = document.querySelector('.si-fp-zoom-val');
+  if (val) val.textContent = Math.round(_siFloorPlanZoom * 100) + '%';
+  if (_siFloorPlanDraft) _siFloorPlanDraft.zoom = _siFloorPlanZoom;
+  si_hideElementToolbar();
+  if (_siSelectedElement) si_renderElementToolbar(_siSelectedElement);
+}
+
+function si_zoomIn()    { si_setFloorPlanZoom((_siFloorPlanZoom || 1) + 0.25); }
+function si_zoomOut()   { si_setFloorPlanZoom((_siFloorPlanZoom || 1) - 0.25); }
+function si_resetZoom() { si_setFloorPlanZoom(1.0); }
+
+// ── Canvas expand ─────────────────────────────────────────
+
+function si_expandCanvas(dir) {
+  const STEP = 400;
+  if (!_siFloorPlanDraft) return;
+  const cw = _siFloorPlanDraft.canvasWidth  || 2400;
+  const ch = _siFloorPlanDraft.canvasHeight || 1600;
+  if (dir === 'w+') _siFloorPlanDraft.canvasWidth  = Math.min(5000, cw + STEP);
+  if (dir === 'w-') _siFloorPlanDraft.canvasWidth  = Math.max(1200, cw - STEP);
+  if (dir === 'h+') _siFloorPlanDraft.canvasHeight = Math.min(3500, ch + STEP);
+  if (dir === 'h-') _siFloorPlanDraft.canvasHeight = Math.max(800,  ch - STEP);
+
+  const zoom = _siFloorPlanZoom || 1;
+  const nw   = _siFloorPlanDraft.canvasWidth;
+  const nh   = _siFloorPlanDraft.canvasHeight;
+
+  // Actualizar canvas layout
+  const canvas = document.getElementById(`si-fp-canvas-${si_storeId}`);
+  if (canvas) { canvas.style.width = nw + 'px'; canvas.style.height = nh + 'px'; }
+
+  // Actualizar scale wrap para que el scroll sea correcto
+  const scaleWrap = document.getElementById(`si-fp-scale-wrap-${si_storeId}`);
+  if (scaleWrap) {
+    scaleWrap.style.width  = Math.round(nw * zoom) + 'px';
+    scaleWrap.style.height = Math.round(nh * zoom) + 'px';
+  }
+
+  const sv = document.querySelector('.si-fp-size-val');
+  if (sv) sv.textContent = `${nw} × ${nh} px`;
+}
+
+// ── Center view ───────────────────────────────────────────
+
+function si_centerFloorPlan() {
+  const vp = document.getElementById(`si-fp-viewport-${si_storeId}`);
+  if (!vp) return;
+  const config  = si_getFloorPlanConfig();
+  const zoom    = _siFloorPlanZoom || config.zoom || 1;
+  const scaledW = (config.canvasWidth  || 2400) * zoom;
+  const scaledH = (config.canvasHeight || 1600) * zoom;
+  vp.scrollLeft = Math.max(0, (scaledW - vp.clientWidth)  / 2);
+  vp.scrollTop  = Math.max(0, (scaledH - vp.clientHeight) / 2);
+}
+
+// ── Element selection + toolbar ───────────────────────────
+
+function si_selectFloorElement(id) {
+  _siSelectedElement = (_siSelectedElement === id) ? null : id;
+  si_refreshFloorPlanSVG();
+}
+
+function si_renderElementToolbar(elementId) {
+  const fp  = _siFloorPlanDraft || si_getFloorPlan();
+  const e   = (fp.elements || []).find(el => el.id === elementId);
+  if (!e) { si_hideElementToolbar(); return; }
+
+  const config = si_getFloorPlanConfig();
+  const cw     = config.canvasWidth  || 2400;
+  const ch     = config.canvasHeight || 1600;
+  const zoom   = _siFloorPlanZoom || config.zoom || 1;
+  const ft     = SI_FLOOR_ELEMENTS[e.type] || {};
+  const rot    = e.rotation || 0;
+
+  const px = (e.x / 100) * cw;
+  const py = (e.y / 100) * ch;
+
+  const canvas = document.getElementById(`si-fp-canvas-${si_storeId}`);
+  if (!canvas) return;
+
+  let tb = document.getElementById('si-fp-el-tb');
+  if (!tb) {
+    tb = document.createElement('div');
+    tb.id = 'si-fp-el-tb';
+    tb.className = 'si-fp-el-tb';
+    canvas.appendChild(tb);
+  }
+
+  tb.style.left    = px + 'px';
+  tb.style.top     = Math.max(0, py - 42) + 'px';
+  tb.style.display = 'flex';
+
+  tb.innerHTML = e.locked ? `
+    <span class="si-fp-el-tb-name">${ft.icon} ${e.label || ft.label}</span>
+    <span class="si-fp-el-tb-locked">🔒 Bloqueado</span>
+    <button class="si-fp-el-tb-btn" onclick="si_toggleLockFloorElement('${e.id}')" title="Desbloquear elemento">🔓 Desbloquear</button>
+  ` : `
+    <span class="si-fp-el-tb-name">${ft.icon} ${e.label || ft.label}</span>
+    <button class="si-fp-el-tb-btn" onclick="si_rotateFloorElement('${e.id}',45)"  title="↻ 45°">↻45°</button>
+    <button class="si-fp-el-tb-btn" onclick="si_rotateFloorElement('${e.id}',90)"  title="↻ 90°">↻90°</button>
+    <button class="si-fp-el-tb-btn" onclick="si_rotateFloorElement('${e.id}',-45)" title="↺ 45°">↺45°</button>
+    <button class="si-fp-el-tb-btn" onclick="si_editFloorElementLabel('${e.id}')"  title="Editar nombre">✏</button>
+    <button class="si-fp-el-tb-btn" onclick="si_toggleLockFloorElement('${e.id}')" title="Bloquear elemento">🔒</button>
+    <button class="si-fp-el-tb-btn danger" onclick="si_confirmDeleteFloorElement('${e.id}')" title="Eliminar">✕</button>
+    <span class="si-fp-el-tb-rot">${rot}°</span>
+  `;
+}
+
+function si_hideElementToolbar() {
+  const tb = document.getElementById('si-fp-el-tb');
+  if (tb) tb.style.display = 'none';
+}
+
+// ── Rotation ──────────────────────────────────────────────
+
+function si_rotateFloorElement(id, degrees) {
+  const fp = _siFloorPlanDraft;
+  if (!fp) return;
+  const e = (fp.elements || []).find(el => el.id === id);
+  if (!e || e.locked) return;
+  si_pushHistory();
+  e.rotation = ((e.rotation || 0) + degrees + 360) % 360;
+  si_refreshFloorPlanSVG();
+  si_renderElementToolbar(id);
+}
+
+// ── Edit label ────────────────────────────────────────────
+
+function si_editFloorElementLabel(id) {
+  const fp = _siFloorPlanDraft;
+  if (!fp) return;
+  const e  = (fp.elements || []).find(el => el.id === id);
+  if (!e || e.locked) return;
+  const ft = SI_FLOOR_ELEMENTS[e.type] || {};
+  const lbl = prompt(`Nombre del elemento (${ft.label}):`, e.label || ft.label);
+  if (lbl !== null) {
+    si_pushHistory();
+    e.label = lbl.trim() || ft.label;
+    si_refreshFloorPlanSVG();
+    si_renderElementToolbar(id);
+  }
+}
+
+// ── Delete with confirmation ──────────────────────────────
+
+function si_confirmDeleteFloorElement(id) {
+  if (!confirm('¿Eliminar este elemento del plano?')) return;
+  si_deleteFloorElement(id, 'element');
+}
+
 // ── Storage ───────────────────────────────────────────────
 
 function si_getFloorPlan() {
@@ -2272,24 +2526,48 @@ function si_renderFloorPlanSVG() {
     return `<line ${delAttr} data-id="${w.id}" x1="${w.x1}" y1="${w.y1}" x2="${w.x2}" y2="${w.y2}" />`;
   }).join('');
 
+  const isSelectTool = si_floorPlanMode && _siActiveTool === 'select';
+
   const elemShapes = elements.map(e => {
-    const ft = SI_FLOOR_ELEMENTS[e.type] || {};
-    const cx = e.x + e.w/2, cy = e.y + e.h/2;
-    const delAttr = isBorrar ? `onclick="event.stopPropagation();si_deleteFloorElement('${e.id}','element')" style="cursor:pointer;"` : '';
+    const ft  = SI_FLOOR_ELEMENTS[e.type] || {};
+    const cx  = e.x + e.w/2, cy = e.y + e.h/2;
+    const rot = e.rotation || 0;
+    const isSel = _siSelectedElement === e.id;
+
+    const clickAttr = isBorrar
+      ? `onclick="event.stopPropagation();si_deleteFloorElement('${e.id}','element')" style="cursor:pointer;"`
+      : isSelectTool
+        ? `onmousedown="event.stopPropagation();si_onElementMousedown(event,'${e.id}')" ontouchstart="event.stopPropagation();si_onElementTouchstart(event,'${e.id}')" style="cursor:move;"`
+        : '';
+
     return `
-      <g class="si-fp-el${isBorrar ? ' si-fp-deletable' : ''}" data-id="${e.id}" ${delAttr}>
+      <g class="si-fp-el${isBorrar||isSelectTool ? ' si-fp-deletable' : ''}${isSel?' si-fp-el-sel':''}"
+        data-id="${e.id}" ${clickAttr}
+        transform="rotate(${rot},${cx},${cy})">
+        ${isSel ? `<rect x="${e.x-0.8}" y="${e.y-0.8}" width="${e.w+1.6}" height="${e.h+1.6}"
+          fill="none" stroke="#22C55E" stroke-width="0.7" stroke-dasharray="1.5,0.8" rx="1" pointer-events="none"/>` : ''}
         <rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}"
-          fill="${ft.color}1A" stroke="${ft.color}" stroke-width="0.6" rx="0.6" />
-        <text x="${cx}" y="${cy + 1.2}" text-anchor="middle" dominant-baseline="middle"
-          font-size="3" font-family="Inter,sans-serif" fill="${ft.color}" pointer-events="none">${ft.icon||''}</text>
-        ${e.label ? `<text x="${cx}" y="${e.y + e.h + 3.5}" text-anchor="middle"
-          font-size="2" fill="${ft.color}BB" font-family="Inter,sans-serif" pointer-events="none">${e.label}</text>` : ''}
+          fill="${ft.color}20" stroke="${ft.color}" stroke-width="0.6" rx="0.6" />
+        <text x="${cx}" y="${cy + 1}" text-anchor="middle" dominant-baseline="middle"
+          font-size="3.2" font-family="Inter,sans-serif" fill="${ft.color}" pointer-events="none">${ft.icon||''}</text>
+        <text x="${cx}" y="${e.y+e.h-1.2}" text-anchor="middle"
+          font-size="1.8" fill="${ft.color}CC" font-family="Inter,sans-serif" pointer-events="none">${e.label||ft.label||''}</text>
+        ${e.locked ? `<text x="${e.x+e.w-0.8}" y="${e.y+2.5}" text-anchor="end"
+          font-size="2.5" pointer-events="none" opacity="0.75">🔒</text>` : ''}
       </g>`;
   }).join('');
 
   return `
     <svg class="si-fp-struct-svg" id="si-fp-struct-svg-${storeIdSafe}"
       viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      ${_siSnapToGrid ? `
+      <defs>
+        <pattern id="si-grid-${storeIdSafe}" width="${SI_GRID_SIZE}" height="${SI_GRID_SIZE}" patternUnits="userSpaceOnUse">
+          <path d="M ${SI_GRID_SIZE} 0 L 0 0 0 ${SI_GRID_SIZE}" fill="none"
+            stroke="rgba(59,130,246,0.1)" stroke-width="0.15" pointer-events="none"/>
+        </pattern>
+      </defs>
+      <rect width="100" height="100" fill="url(#si-grid-${storeIdSafe})" pointer-events="none"/>` : ''}
       <!-- Store boundary — FASE 1.8: bg image here -->
       <rect class="si-fp-boundary" x="0.3" y="0.3" width="99.4" height="99.4" />
       <!-- Walls -->
@@ -2333,8 +2611,14 @@ function si_renderFloorPlanToolbar() {
           <span class="si-tool-icon">${t.icon}</span>
           <span class="si-tool-label">${t.label}</span>
         </button>`).join('')}
+      <div class="si-tool-sep"></div>
+      <button class="si-tool-btn${_siSnapToGrid ? ' snap-active' : ''}"
+        onclick="si_toggleSnapToGrid()" title="Snap to Grid — ${_siSnapToGrid ? 'ON' : 'OFF'}">
+        <span class="si-tool-icon">⊞</span>
+        <span class="si-tool-label">Snap</span>
+      </button>
     </div>
-    <div class="si-fp-tool-hint">${activeHint}</div>`;
+    <div class="si-fp-tool-hint">${_siSnapToGrid ? '⊞ Snap activo · ' : ''}${activeHint}</div>`;
 }
 
 // ── Zone side panel ───────────────────────────────────────
@@ -2401,29 +2685,37 @@ function si_toggleFloorPlanMode() {
 
 function si_saveFloorPlan() {
   si_saveStoreFloorPlan(_siFloorPlanDraft);
-  // Save zone layouts too
   const zones = si_zones_forStore(si_storeId);
   zones.forEach(z => { if (_siLayoutDraft[z.id]) si_zones_save({ ...z, layout: _siLayoutDraft[z.id] }); });
   si_floorPlanMode  = false;
   si_layoutEditMode = false;
   _siFloorPlanDraft = null;
   _siActiveTool     = 'select';
+  _siSelectedElement = null;
+  _siUndoStack      = [];
+  _siRedoStack      = [];
+  si_hideElementToolbar();
   si_refreshCroquisSection();
   if (typeof showOSToast === 'function') showOSToast('Plano guardado correctamente');
 }
 
 function si_cancelFloorPlan() {
-  si_floorPlanMode  = false;
-  si_layoutEditMode = false;
-  _siFloorPlanDraft = null;
-  _siLayoutDraft    = {};
-  _siActiveTool     = 'select';
-  _siWallStart      = null;
+  si_floorPlanMode   = false;
+  si_layoutEditMode  = false;
+  _siFloorPlanDraft  = null;
+  _siLayoutDraft     = {};
+  _siActiveTool      = 'select';
+  _siWallStart       = null;
+  _siSelectedElement = null;
+  _siUndoStack       = [];
+  _siRedoStack       = [];
+  si_hideElementToolbar();
   si_refreshCroquisSection();
 }
 
 function si_clearFloorPlan() {
   if (!confirm('¿Eliminar todas las paredes y elementos del plano?')) return;
+  si_pushHistory();
   _siFloorPlanDraft = { elements:[], walls:[], labels:[], version:1 };
   si_refreshFloorPlanSVG();
 }
@@ -2508,6 +2800,7 @@ function si_finishDrawingWall(clientX, clientY) {
 
   if (!_siFloorPlanDraft) _siFloorPlanDraft = { elements:[], walls:[], labels:[] };
   _siFloorPlanDraft.walls = _siFloorPlanDraft.walls || [];
+  si_pushHistory();
   _siFloorPlanDraft.walls.push({
     id: crypto.randomUUID(),
     type: 'wall',
@@ -2530,22 +2823,41 @@ function si_addFloorElement(type, cx, cy) {
   if (!ft || ft.isWall) return;
   if (!_siFloorPlanDraft) _siFloorPlanDraft = { elements:[], walls:[], labels:[] };
   _siFloorPlanDraft.elements = _siFloorPlanDraft.elements || [];
-  const w = ft.dw, h = ft.dh;
+  si_pushHistory();
+  const w  = ft.dw, h = ft.dh;
+  const sx = _siSnapToGrid ? Math.round(cx / SI_GRID_SIZE) * SI_GRID_SIZE : cx;
+  const sy = _siSnapToGrid ? Math.round(cy / SI_GRID_SIZE) * SI_GRID_SIZE : cy;
   _siFloorPlanDraft.elements.push({
-    id:    crypto.randomUUID(),
+    id:     crypto.randomUUID(),
     type,
-    x:     Math.max(0, Math.min(100-w, cx - w/2)),
-    y:     Math.max(0, Math.min(100-h, cy - h/2)),
+    x:      Math.max(0, Math.min(100-w, sx - w/2)),
+    y:      Math.max(0, Math.min(100-h, sy - h/2)),
     w, h,
-    label: ft.label,
+    label:  ft.label,
+    locked: false,
   });
   si_refreshFloorPlanSVG();
 }
 
 function si_deleteFloorElement(id, kind) {
   if (!_siFloorPlanDraft) return;
-  if (kind === 'wall')    _siFloorPlanDraft.walls    = (_siFloorPlanDraft.walls    ||[]).filter(e => e.id !== id);
-  if (kind === 'element') _siFloorPlanDraft.elements = (_siFloorPlanDraft.elements ||[]).filter(e => e.id !== id);
+  // Elementos bloqueados: no se pueden eliminar (ni por toolbar ni por tool borrar ni por teclado)
+  if (kind === 'element') {
+    const target = (_siFloorPlanDraft.elements || []).find(e => e.id === id);
+    if (target?.locked) return;
+  }
+  si_pushHistory();
+  if (kind === 'wall') {
+    _siFloorPlanDraft.walls = (_siFloorPlanDraft.walls || []).filter(e => e.id !== id);
+  }
+  if (kind === 'element') {
+    _siFloorPlanDraft.elements = (_siFloorPlanDraft.elements || []).filter(e => e.id !== id);
+    if (_siSelectedElement === id) {
+      _siSelectedElement = null;
+      _siElDragState     = null;
+      si_hideElementToolbar();
+    }
+  }
   si_refreshFloorPlanSVG();
 }
 
@@ -2597,6 +2909,365 @@ function si_autoPlaceUnlocatedZones() {
   si_refreshCroquisSection();
 }
 
+// ── Undo / Redo ───────────────────────────────────────────
+
+function si_pushHistory() {
+  if (!_siFloorPlanDraft) return;
+  if (_siUndoStack.length >= SI_MAX_UNDO) _siUndoStack.shift();
+  _siUndoStack.push(JSON.parse(JSON.stringify(_siFloorPlanDraft)));
+  _siRedoStack = []; // nueva acción invalida el redo stack
+}
+
+function si_undo() {
+  if (!_siUndoStack.length || !si_floorPlanMode) return;
+  _siRedoStack.push(JSON.parse(JSON.stringify(_siFloorPlanDraft)));
+  _siFloorPlanDraft  = _siUndoStack.pop();
+  _siSelectedElement = null;
+  _siElDragState     = null;
+  si_hideElementToolbar();
+  si_refreshFloorPlanSVG();
+}
+
+function si_redo() {
+  if (!_siRedoStack.length || !si_floorPlanMode) return;
+  _siUndoStack.push(JSON.parse(JSON.stringify(_siFloorPlanDraft)));
+  _siFloorPlanDraft  = _siRedoStack.pop();
+  _siSelectedElement = null;
+  _siElDragState     = null;
+  si_hideElementToolbar();
+  si_refreshFloorPlanSVG();
+}
+
+// ── Update quirúrgico de SVG durante drag ──────────────────
+// Actualiza solo los atributos del <g> movido sin reconstruir el SVG completo.
+
+function si_updateElementSVGPosition(el) {
+  const storeIdSafe = (si_storeId || 'x').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const svg = document.getElementById(`si-fp-struct-svg-${storeIdSafe}`);
+  if (!svg) return;
+  const g = svg.querySelector(`g[data-id="${el.id}"]`);
+  if (!g) return;
+
+  const cx  = el.x + el.w / 2;
+  const cy  = el.y + el.h / 2;
+  const rot = el.rotation || 0;
+
+  g.setAttribute('transform', `rotate(${rot},${cx},${cy})`);
+
+  g.querySelectorAll('rect').forEach(r => {
+    if (r.getAttribute('fill') === 'none') {
+      // Rect de selección (dashed border)
+      r.setAttribute('x', el.x - 0.8);
+      r.setAttribute('y', el.y - 0.8);
+    } else {
+      // Rect principal del elemento
+      r.setAttribute('x', el.x);
+      r.setAttribute('y', el.y);
+    }
+  });
+
+  const texts = g.querySelectorAll('text');
+  if (texts[0]) { texts[0].setAttribute('x', cx); texts[0].setAttribute('y', cy + 1); }
+  if (texts[1]) { texts[1].setAttribute('x', cx); texts[1].setAttribute('y', el.y + el.h - 1.2); }
+  if (texts[2]) { texts[2].setAttribute('x', el.x + el.w - 0.8); texts[2].setAttribute('y', el.y + 2.5); } // lock icon
+}
+
+// Reposiciona el toolbar flotante sin re-renderizarlo (solo top/left)
+function si_updateElementToolbarPosition(el) {
+  const tb = document.getElementById('si-fp-el-tb');
+  if (!tb || tb.style.display === 'none') return;
+  const cw = _siFloorPlanDraft?.canvasWidth  || 2400;
+  const ch = _siFloorPlanDraft?.canvasHeight || 1600;
+  tb.style.left = Math.round((el.x / 100) * cw) + 'px';
+  tb.style.top  = Math.max(0, Math.round((el.y / 100) * ch) - 42) + 'px';
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────────
+
+function si_initKeyboardShortcuts() {
+  if (window._siKeyboardInit) return;
+  window._siKeyboardInit = true;
+
+  document.addEventListener('keydown', function(e) {
+    // No capturar cuando el foco está en un campo de texto
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+    // Solo activo en modo diseño de plano
+    if (!si_floorPlanMode) return;
+
+    const isMeta = navigator.platform.toLowerCase().includes('mac') ? e.metaKey : e.ctrlKey;
+
+    switch (true) {
+      // Escape: deseleccionar elemento
+      case e.key === 'Escape':
+        if (_siSelectedElement) {
+          _siSelectedElement = null;
+          si_hideElementToolbar();
+          si_refreshFloorPlanSVG();
+        }
+        break;
+
+      // Delete / Backspace: eliminar elemento seleccionado (sin confirm — undo disponible)
+      // No eliminar si el elemento está bloqueado
+      case (e.key === 'Delete' || e.key === 'Backspace') && !!_siSelectedElement: {
+        const selEl = (_siFloorPlanDraft?.elements || []).find(el => el.id === _siSelectedElement);
+        if (!selEl?.locked) {
+          e.preventDefault();
+          si_deleteFloorElement(_siSelectedElement, 'element');
+        }
+        break;
+      }
+
+      // Ctrl/Cmd + Z: undo
+      case isMeta && e.key === 'z' && !e.shiftKey:
+        e.preventDefault();
+        si_undo();
+        break;
+
+      // Ctrl/Cmd + Y  o  Ctrl/Cmd + Shift + Z: redo
+      case isMeta && (e.key === 'y' || (e.key === 'z' && e.shiftKey)):
+        e.preventDefault();
+        si_redo();
+        break;
+
+      // Ctrl/Cmd + D: duplicar elemento seleccionado
+      case isMeta && e.key === 'd' && !!_siSelectedElement:
+        e.preventDefault();
+        si_duplicateFloorElement(_siSelectedElement);
+        break;
+    }
+  });
+}
+
+// ── Wheel Zoom ────────────────────────────────────────────
+// Zoom hacia el cursor: mantiene el punto del canvas bajo el cursor fijo en pantalla.
+
+function si_wheelZoom(e, vp) {
+  e.preventDefault();
+  const oldZoom = _siFloorPlanZoom || 1;
+  const delta   = e.deltaY < 0 ? 0.25 : -0.25;
+  const newZoom = Math.max(0.25, Math.min(3.0, Math.round((oldZoom + delta) * 4) / 4));
+  if (newZoom === oldZoom) return;
+
+  // Posición del cursor relativa al viewport
+  const vpRect    = vp.getBoundingClientRect();
+  const cursorVpX = e.clientX - vpRect.left;
+  const cursorVpY = e.clientY - vpRect.top;
+
+  // Punto del canvas bajo el cursor (en coordenadas de canvas, antes del zoom)
+  const canvasX = (vp.scrollLeft + cursorVpX) / oldZoom;
+  const canvasY = (vp.scrollTop  + cursorVpY) / oldZoom;
+
+  // Aplicar zoom (actualiza canvas transform y scale wrapper)
+  si_setFloorPlanZoom(newZoom);
+
+  // Ajustar scroll para que el mismo punto del canvas quede bajo el cursor
+  vp.scrollLeft = Math.max(0, canvasX * newZoom - cursorVpX);
+  vp.scrollTop  = Math.max(0, canvasY * newZoom - cursorVpY);
+}
+
+// ── Snap to Grid ──────────────────────────────────────────
+
+function si_snap(v) {
+  return _siSnapToGrid ? Math.round(v / SI_GRID_SIZE) * SI_GRID_SIZE : v;
+}
+
+function si_toggleSnapToGrid() {
+  _siSnapToGrid = !_siSnapToGrid;
+  // Actualizar el botón de snap sin re-renderizar el toolbar completo
+  const btn = document.querySelector('.si-tool-btn[onclick*="si_toggleSnapToGrid"]');
+  if (btn) {
+    btn.classList.toggle('snap-active', _siSnapToGrid);
+    btn.title = `Snap to Grid — ${_siSnapToGrid ? 'ON' : 'OFF'}`;
+  }
+  // Actualizar el hint
+  const hint = document.querySelector('.si-fp-tool-hint');
+  if (hint && _siSnapToGrid && !hint.textContent.startsWith('⊞')) {
+    hint.textContent = '⊞ Snap activo · ' + hint.textContent;
+  } else if (hint && !_siSnapToGrid) {
+    hint.textContent = hint.textContent.replace('⊞ Snap activo · ', '');
+  }
+  si_refreshFloorPlanSVG(); // mostrar/ocultar grid visual
+}
+
+// ── Duplicate Element ─────────────────────────────────────
+
+function si_duplicateFloorElement(elementId) {
+  if (!elementId || !_siFloorPlanDraft) return;
+  const src = (_siFloorPlanDraft.elements || []).find(el => el.id === elementId);
+  if (!src) return;
+  si_pushHistory();
+  const offset = SI_GRID_SIZE; // desplazar por una celda de grid
+  const copy   = {
+    ...JSON.parse(JSON.stringify(src)),
+    id:     crypto.randomUUID(),
+    x:      Math.max(0, Math.min(100 - src.w, src.x + offset)),
+    y:      Math.max(0, Math.min(100 - src.h, src.y + offset)),
+    locked: false,  // las copias no heredan el estado bloqueado
+  };
+  _siFloorPlanDraft.elements.push(copy);
+  _siSelectedElement = copy.id;
+  si_refreshFloorPlanSVG();
+  si_renderElementToolbar(copy.id);
+}
+
+// ── Lock / Unlock Element ─────────────────────────────────
+
+function si_toggleLockFloorElement(id) {
+  const fp = _siFloorPlanDraft;
+  if (!fp) return;
+  const e = (fp.elements || []).find(el => el.id === id);
+  if (!e) return;
+  si_pushHistory();
+  e.locked = !e.locked;
+  si_refreshFloorPlanSVG();
+  si_renderElementToolbar(id);
+}
+
+// ── Pan (arrastrar el viewport) ───────────────────────────
+
+function si_initViewportPan() {
+  const vp = document.getElementById(`si-fp-viewport-${si_storeId}`);
+  if (!vp || vp._siPanInit) return;
+  vp._siPanInit = true;
+
+  vp.addEventListener('mousedown', function(e) {
+    // No pan si el clic es sobre un elemento interactivo
+    if (e.target.closest('.si-fp-zone')) return;
+    if (e.target.closest('.si-fp-point')) return;
+    if (e.target.closest('.si-fp-el-tb')) return;
+    if (e.target.closest('.si-fp-zbtn')) return;
+    if (e.target.closest('.si-tool-btn')) return;
+    if (e.target.closest('.si-resize-handle')) return;
+    // No pan si el overlay de herramientas está activo (modo dibujo)
+    const overlay = document.getElementById(`si-fp-overlay-${si_storeId}`);
+    if (overlay && overlay.style.pointerEvents === 'all') return;
+
+    _siPanState = {
+      vpEl: vp,
+      startX: e.clientX, startY: e.clientY,
+      scrollLeft: vp.scrollLeft, scrollTop: vp.scrollTop,
+    };
+    vp.classList.add('si-pan-active');
+    e.preventDefault();
+  });
+
+  vp.addEventListener('touchstart', function(e) {
+    if (e.target.closest('.si-fp-zone')) return;
+    if (e.target.closest('.si-fp-point')) return;
+    if (e.target.closest('.si-fp-el-tb')) return;
+    if (e.target.closest('.si-resize-handle')) return;
+    const overlay = document.getElementById(`si-fp-overlay-${si_storeId}`);
+    if (overlay && overlay.style.pointerEvents === 'all') return;
+
+    _siPanState = {
+      vpEl: vp,
+      startX: e.touches[0].clientX, startY: e.touches[0].clientY,
+      scrollLeft: vp.scrollLeft, scrollTop: vp.scrollTop,
+    };
+    vp.classList.add('si-pan-active');
+  }, { passive: true });
+
+  // Wheel zoom — hacia el cursor, solo sobre este viewport
+  vp.addEventListener('wheel', function(e) {
+    si_wheelZoom(e, vp);
+  }, { passive: false });
+}
+
+function si_onPanMove(clientX, clientY) {
+  if (!_siPanState) return;
+  const dx = clientX - _siPanState.startX;
+  const dy = clientY - _siPanState.startY;
+  _siPanState.vpEl.scrollLeft = _siPanState.scrollLeft - dx;
+  _siPanState.vpEl.scrollTop  = _siPanState.scrollTop  - dy;
+}
+
+// ── Drag de elementos SVG (mover después de colocar) ──────
+
+function si_onElementMousedown(e, elementId) {
+  if (_siActiveTool !== 'select') return;
+  e.preventDefault(); e.stopPropagation();
+  const fp = _siFloorPlanDraft;
+  if (!fp) return;
+  const el = (fp.elements || []).find(el => el.id === elementId);
+  if (!el) return;
+
+  _siSelectedElement = elementId;
+
+  // Elementos bloqueados: se pueden seleccionar para ver toolbar y desbloquear, pero no arrastar
+  if (el.locked) {
+    si_refreshFloorPlanSVG();      // mostrar indicador de selección
+    si_renderElementToolbar(elementId);
+    return;
+  }
+
+  // Capturar estado antes del drag (especulativo — se cancela en mouseup si no hubo movimiento)
+  si_pushHistory();
+
+  // Cachear rect UNA VEZ — sin getBoundingClientRect en cada mousemove
+  const container = document.getElementById(`si-floor-plan-inner-${si_storeId}`);
+  const rect = container ? container.getBoundingClientRect() : null;
+  const startX = rect ? Math.round(Math.max(1, Math.min(99, ((e.clientX - rect.left) / rect.width)  * 100)) * 10) / 10 : 50;
+  const startY = rect ? Math.round(Math.max(1, Math.min(99, ((e.clientY - rect.top)  / rect.height) * 100)) * 10) / 10 : 50;
+
+  _siElDragState = { elementId, startX, startY, origX: el.x, origY: el.y, moved: false, rect };
+  si_renderElementToolbar(elementId);
+}
+
+function si_onElementTouchstart(e, elementId) {
+  if (_siActiveTool !== 'select') return;
+  e.stopPropagation();
+  const fp = _siFloorPlanDraft;
+  if (!fp) return;
+  const el = (fp.elements || []).find(el => el.id === elementId);
+  if (!el) return;
+
+  _siSelectedElement = elementId;
+
+  if (el.locked) {
+    si_refreshFloorPlanSVG();
+    si_renderElementToolbar(elementId);
+    return;
+  }
+
+  si_pushHistory();
+
+  const container = document.getElementById(`si-floor-plan-inner-${si_storeId}`);
+  const rect  = container ? container.getBoundingClientRect() : null;
+  const touch = e.touches[0];
+  const startX = rect ? Math.round(Math.max(1, Math.min(99, ((touch.clientX - rect.left) / rect.width)  * 100)) * 10) / 10 : 50;
+  const startY = rect ? Math.round(Math.max(1, Math.min(99, ((touch.clientY - rect.top)  / rect.height) * 100)) * 10) / 10 : 50;
+
+  _siElDragState = { elementId, startX, startY, origX: el.x, origY: el.y, moved: false, rect };
+  si_renderElementToolbar(elementId);
+}
+
+function si_onElementDragMove(clientX, clientY) {
+  if (!_siElDragState || !_siFloorPlanDraft) return;
+  const { rect } = _siElDragState;
+  if (!rect) return;
+
+  // Usar rect cacheado del mousedown — cero getBoundingClientRect() durante el drag
+  const x  = Math.round(Math.max(1, Math.min(99, ((clientX - rect.left) / rect.width)  * 100)) * 10) / 10;
+  const y  = Math.round(Math.max(1, Math.min(99, ((clientY - rect.top)  / rect.height) * 100)) * 10) / 10;
+  const dx = x - _siElDragState.startX;
+  const dy = y - _siElDragState.startY;
+
+  if (!_siElDragState.moved && Math.abs(dx) < 0.3 && Math.abs(dy) < 0.3) return;
+  _siElDragState.moved = true;
+
+  const el = (_siFloorPlanDraft.elements || []).find(el => el.id === _siElDragState.elementId);
+  if (!el) return;
+
+  const rawX = Math.max(0, Math.min(100 - el.w, _siElDragState.origX + dx));
+  const rawY = Math.max(0, Math.min(100 - el.h, _siElDragState.origY + dy));
+  el.x = _siSnapToGrid ? Math.round(rawX / SI_GRID_SIZE) * SI_GRID_SIZE : rawX;
+  el.y = _siSnapToGrid ? Math.round(rawY / SI_GRID_SIZE) * SI_GRID_SIZE : rawY;
+
+  // Update quirúrgico: solo el <g> del elemento movido, sin reconstruir todo el SVG
+  si_updateElementSVGPosition(el);
+  si_updateElementToolbarPosition(el);
+}
+
 window.si_renderInteractiveCroquis = si_renderInteractiveCroquis;
 window.si_toggleLayoutEditMode     = si_toggleLayoutEditMode;
 window.si_saveLayout               = si_saveLayout;
@@ -2622,6 +3293,32 @@ window.si_deleteFloorElement       = si_deleteFloorElement;
 window.si_centerZoneOnPlan         = si_centerZoneOnPlan;
 window.si_autoPlaceUnlocatedZones  = si_autoPlaceUnlocatedZones;
 window.SI_FLOOR_ELEMENTS           = SI_FLOOR_ELEMENTS;
+// FASE 1.7 — zoom, pan, element interaction
+window.si_zoomIn                   = si_zoomIn;
+window.si_zoomOut                  = si_zoomOut;
+window.si_resetZoom                = si_resetZoom;
+window.si_centerFloorPlan          = si_centerFloorPlan;
+window.si_expandCanvas             = si_expandCanvas;
+window.si_selectFloorElement       = si_selectFloorElement;
+window.si_rotateFloorElement       = si_rotateFloorElement;
+window.si_editFloorElementLabel    = si_editFloorElementLabel;
+window.si_confirmDeleteFloorElement= si_confirmDeleteFloorElement;
+window.si_onElementMousedown       = si_onElementMousedown;
+window.si_onElementTouchstart      = si_onElementTouchstart;
+window.si_initViewportPan          = si_initViewportPan;
+window.si_pushHistory              = si_pushHistory;
+window.si_undo                     = si_undo;
+window.si_redo                     = si_redo;
+window.si_updateElementSVGPosition = si_updateElementSVGPosition;
+// Bloque 2 — UX Profesional
+window.si_wheelZoom                = si_wheelZoom;
+window.si_snap                     = si_snap;
+window.si_toggleSnapToGrid         = si_toggleSnapToGrid;
+window.si_duplicateFloorElement    = si_duplicateFloorElement;
+window.si_toggleLockFloorElement   = si_toggleLockFloorElement;
+
+// Registrar keyboard shortcuts una vez al cargar el módulo
+si_initKeyboardShortcuts();
 window.si_toggleFlowEditMode       = si_toggleFlowEditMode;
 window.si_saveCustomerFlow         = si_saveCustomerFlow;
 window.si_cancelCustomerFlow       = si_cancelCustomerFlow;

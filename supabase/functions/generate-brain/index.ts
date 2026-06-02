@@ -9,7 +9,7 @@ const corsHeaders = {
 
 // Supabase Edge Functions hard limit: 150s
 // Claude claude-sonnet-4-6 at ~4000 output tokens: ~50-80s — safe
-const MODEL = ""claude-sonnet-4-6";
+const MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS = 4096;
 
 serve(async (req) => {

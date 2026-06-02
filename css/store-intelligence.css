@@ -2042,3 +2042,209 @@ select.si-upload-field { cursor: pointer; }
   .si-comp-divider    { padding-top: 0; transform: rotate(90deg); }
   .si-comp-result-grid{ grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   FASE 1.7 ADICIONAL — VIEWPORT, CANVAS, ZOOM, ELEMENT TOOLBAR
+   Clases generadas por JS que faltaban en CSS.
+   ============================================================ */
+
+/* ── Viewport: contenedor scrolleable del canvas ─────────── */
+
+.si-fp-viewport {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  overflow: auto;
+  background: #080808;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  cursor: grab;
+  scroll-behavior: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.1) transparent;
+  -webkit-overflow-scrolling: touch;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.si-fp-viewport.si-pan-active { cursor: grabbing; }
+
+.si-fp-viewport-blueprint {
+  background-color: #080E14;
+  background-image:
+    linear-gradient(rgba(59,130,246,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,.06) 1px, transparent 1px),
+    linear-gradient(rgba(59,130,246,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,.02) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  border-color: rgba(59,130,246,.25);
+  box-shadow: inset 0 0 40px rgba(59,130,246,.04), 0 0 0 1px rgba(59,130,246,.1);
+}
+
+/* ── Canvas: el workspace real (dimensionado por JS) ──────── */
+/* position:absolute top:0 left:0 lo pone el JS inline para que no afecte el scroll wrap */
+
+.si-fp-canvas {
+  transform-origin: top left;
+}
+
+/* ── Layout modifier cuando hay panel lateral activo ──────── */
+
+.si-fp-layout.si-fp-with-panel .si-fp-viewport {
+  border-radius: 12px 0 0 12px;
+}
+
+/* ── Barra de zoom ────────────────────────────────────────── */
+
+.si-fp-zoom-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 4px 0;
+  flex-wrap: wrap;
+}
+
+.si-fp-zbtn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-mid);
+  background: var(--black-card);
+  color: var(--gray);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  transition: all 120ms;
+}
+
+.si-fp-zbtn:hover { border-color: rgba(255,255,255,.2); color: var(--white); background: rgba(255,255,255,.04); }
+
+.si-fp-zoom-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--white);
+  min-width: 46px;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  padding: 0 2px;
+}
+
+.si-fp-size-sep {
+  font-size: 12px;
+  color: rgba(136,135,128,.35);
+  margin: 0 2px;
+}
+
+.si-fp-size-val {
+  font-size: 11px;
+  color: var(--gray);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Element toolbar flotante (dentro del canvas) ─────────── */
+
+.si-fp-el-tb {
+  position: absolute;
+  z-index: 200;
+  display: none;                   /* JS lo activa con display:flex */
+  align-items: center;
+  gap: 4px;
+  background: #1A1A1A;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 8px;
+  padding: 5px 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.65);
+  pointer-events: all;
+  white-space: nowrap;
+  /* SIN transform: el JS ya posiciona en (px, py-42), que es sobre el elemento */
+}
+
+.si-fp-el-tb-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--white);
+  padding: 0 6px 0 2px;
+  border-right: 1px solid rgba(255,255,255,.1);
+  margin-right: 2px;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.si-fp-el-tb-btn {
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: transparent;
+  color: var(--gray);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 120ms;
+  white-space: nowrap;
+}
+
+.si-fp-el-tb-btn:hover          { border-color: rgba(255,255,255,.22); color: var(--white); background: rgba(255,255,255,.05); }
+.si-fp-el-tb-btn.danger         { border-color: rgba(239,68,68,.3); color: #FCA5A5; }
+.si-fp-el-tb-btn.danger:hover   { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.5); }
+
+.si-fp-el-tb-rot {
+  font-size: 10px;
+  color: rgba(136,135,128,.55);
+  font-family: 'DM Mono', monospace;
+  padding-left: 4px;
+  border-left: 1px solid rgba(255,255,255,.08);
+  margin-left: 2px;
+}
+
+/* ── Snap to Grid — botón activo ─────────────────────────── */
+
+.si-tool-btn.snap-active {
+  background: rgba(34,197,94,.1);
+  border-color: rgba(34,197,94,.4);
+  color: var(--green);
+  box-shadow: 0 0 0 2px rgba(34,197,94,.12);
+}
+
+/* ── Separador visual entre herramientas y opciones ──────── */
+
+.si-tool-sep {
+  width: 1px;
+  background: rgba(255,255,255,.08);
+  align-self: stretch;
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ── Lock indicator en el toolbar flotante ───────────────── */
+
+.si-fp-el-tb-locked {
+  font-size: 10px;
+  font-weight: 600;
+  color: #F59E0B;
+  padding: 0 6px;
+  font-family: 'DM Mono', monospace;
+  border-right: 1px solid rgba(255,255,255,.1);
+  margin-right: 2px;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .si-fp-viewport          { height: 360px; }
+  .si-fp-el-tb             { flex-wrap: wrap; max-width: 240px; }
+  .si-fp-el-tb-name        { max-width: 80px; }
+}
+
+@media (max-width: 480px) {
+  .si-fp-viewport          { height: 300px; }
+  .si-fp-zbtn              { padding: 4px 7px; font-size: 11px; }
+}
