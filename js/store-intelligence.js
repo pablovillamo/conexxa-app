@@ -2740,6 +2740,8 @@ function si_setFloorPlanTool(tool) {
   if (hintEl) hintEl.textContent = hints[tool] || 'Clic en el plano para colocar el elemento.';
   // Cancel preview if switching away from wall
   if (tool !== 'wall') si_clearWallPreview();
+  // Reconstruir SVG para que los elementos tengan los handlers correctos del tool activo
+  si_refreshFloorPlanSVG();
 }
 
 // ── Tool actions ──────────────────────────────────────────
@@ -3200,10 +3202,14 @@ function si_onElementMousedown(e, elementId) {
     return;
   }
 
+  // Mostrar anillo de selección inmediatamente (antes de saber si habrá drag)
+  si_refreshFloorPlanSVG();
+
   // Capturar estado antes del drag (especulativo — se cancela en mouseup si no hubo movimiento)
   si_pushHistory();
 
   // Cachear rect UNA VEZ — sin getBoundingClientRect en cada mousemove
+  // getBoundingClientRect DESPUÉS de refreshFloorPlanSVG para que el rect sea del nuevo DOM
   const container = document.getElementById(`si-floor-plan-inner-${si_storeId}`);
   const rect = container ? container.getBoundingClientRect() : null;
   const startX = rect ? Math.round(Math.max(1, Math.min(99, ((e.clientX - rect.left) / rect.width)  * 100)) * 10) / 10 : 50;
