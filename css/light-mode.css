@@ -5,6 +5,11 @@
    variables CSS y que solo funcionan sobre fondo oscuro.
    ============================================================ */
 
+/* ── Sidebar logo sub (v1.0) ────────────────────────────────── */
+[data-theme="light"] .osb-logo-sub {
+  color: var(--text-muted);
+}
+
 /* ── app.css ── topbar, loading, hover rows ────────────────── */
 [data-theme="light"] .topbar {
   background: var(--panel-surface);
