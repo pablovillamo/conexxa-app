@@ -27,8 +27,8 @@
   width: 232px;
   min-width: 232px;
   height: 100vh;
-  background: #0C0C0C;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  background: var(--dark-core);
+  border-right: 1px solid var(--border-line);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -37,6 +37,7 @@
   top: 0;
   z-index: 50;
   scrollbar-width: none;
+  transition: background 200ms ease, border-color 200ms ease;
 }
 
 .os-sidebar::-webkit-scrollbar { display: none; }
@@ -47,7 +48,7 @@
   align-items: center;
   gap: 10px;
   padding: 20px 16px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--border-line);
   flex-shrink: 0;
 }
 
@@ -55,7 +56,8 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: #000;
+  background: var(--panel-surface);
+  border: 1px solid var(--border-line);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -101,9 +103,9 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: rgba(136, 135, 128, 0.6);
+  color: var(--text-muted);
   padding: 8px 8px 4px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .osb-item {
@@ -127,12 +129,12 @@
 }
 
 .osb-item:hover {
-  background: rgba(255,255,255,0.05);
+  background: var(--border);
   color: var(--white);
 }
 
 .osb-item.active {
-  background: rgba(34, 197, 94, 0.1);
+  background: var(--accent-soft);
   color: var(--white);
 }
 
@@ -174,34 +176,34 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   flex-shrink: 0;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .osb-badge-active {
-  background: rgba(34, 197, 94, 0.15);
-  color: #86EFAC;
+  background: var(--stable-soft);
+  color: var(--stable);
 }
 
 .osb-badge-soon {
-  background: rgba(245, 158, 11, 0.12);
-  color: #FCD34D;
+  background: var(--warning-soft);
+  color: var(--warning);
 }
 
 .osb-badge-locked {
-  background: rgba(239, 68, 68, 0.1);
-  color: #FCA5A5;
+  background: var(--critical-soft);
+  color: var(--critical);
 }
 
 .osb-divider {
   height: 1px;
-  background: rgba(255,255,255,0.05);
+  background: var(--border-line);
   margin: 6px 8px;
 }
 
 /* Sidebar footer */
 .osb-footer {
   padding: 12px;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--border-line);
   flex-shrink: 0;
 }
 
@@ -211,8 +213,8 @@
   gap: 10px;
   padding: 8px;
   border-radius: 9px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: var(--border);
+  border: 1px solid var(--border-line);
 }
 
 .osb-user-avatar {
@@ -266,7 +268,7 @@
 
 .osb-logout-btn:hover {
   color: var(--white);
-  background: rgba(255,255,255,0.07);
+  background: var(--border-line);
 }
 
 .osb-logout-btn svg {
@@ -290,7 +292,7 @@
   overflow-y: auto;
   height: 100%;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.08) transparent;
+  scrollbar-color: var(--border-line) transparent;
 }
 
 /* ── Command Center ─────────────────────────────────────── */
@@ -339,8 +341,8 @@
   font-size: 12px;
   color: var(--gray);
   font-family: 'DM Mono', monospace;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
+  background: var(--panel-surface);
+  border: 1px solid var(--border-line);
   border-radius: 8px;
   padding: 8px 14px;
   white-space: nowrap;
@@ -536,7 +538,7 @@
   overflow-x: auto;
   padding-bottom: 8px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.08) transparent;
+  scrollbar-color: var(--border-line) transparent;
 }
 
 .cc-phase {

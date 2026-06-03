@@ -1,0 +1,283 @@
+/* ============================================================
+   CONEXXA — LIGHT MODE OVERRIDES
+   Activo cuando: <html data-theme="light">
+   Propósito: neutralizar colores hardcodeados que no usan
+   variables CSS y que solo funcionan sobre fondo oscuro.
+   ============================================================ */
+
+/* ── app.css ── topbar, loading, hover rows ────────────────── */
+[data-theme="light"] .topbar {
+  background: var(--panel-surface);
+  border-bottom-color: var(--border-line);
+}
+
+[data-theme="light"] .app-loading {
+  background: var(--background);
+}
+
+[data-theme="light"] .spinner {
+  border-color: var(--border-line);
+  border-top-color: var(--stable);
+}
+
+[data-theme="light"] .task-no-email-tag {
+  background: rgba(0,0,0,0.04);
+  border-color: var(--border-line);
+  color: var(--text-muted);
+}
+
+/* ── os.css ── command center cards y cc- elementos ─────────── */
+[data-theme="light"] .cc-qs-card {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+[data-theme="light"] .cc-mod-card {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+[data-theme="light"] .cc-mod-card:hover {
+  border-color: var(--accent-border);
+}
+
+[data-theme="light"] .cc-mod-card.is-locked,
+[data-theme="light"] .cc-mod-card.is-soon {
+  opacity: 0.65;
+}
+
+[data-theme="light"] .os-toast {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+  color: var(--text-primary);
+}
+
+/* ── os.css ── active item borde izquierdo ─────────────────── */
+[data-theme="light"] .osb-item.active {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  border-left: 2px solid var(--stable);
+}
+
+[data-theme="light"] .osb-item:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--text-primary);
+}
+
+/* ── os.css ── user avatar en sidebar ───────────────────────── */
+[data-theme="light"] .osb-user-avatar {
+  background: var(--stable-soft);
+  border-color: var(--stable-border);
+  color: var(--stable);
+}
+
+/* ── admin.css ── tables, rows hover ───────────────────────── */
+[data-theme="light"] .clients-table tr:hover td {
+  background: rgba(0,0,0,0.025);
+}
+
+[data-theme="light"] .clients-table th {
+  background: var(--background);
+  color: var(--text-muted);
+  border-bottom-color: var(--border-line);
+}
+
+[data-theme="light"] .clients-table td {
+  border-bottom-color: var(--border-line);
+}
+
+[data-theme="light"] .shopify-task-row:hover {
+  background: rgba(0,0,0,0.025);
+}
+
+[data-theme="light"] .task-state-done {
+  background: var(--stable-soft);
+  color: var(--stable);
+}
+
+[data-theme="light"] .task-state-skip {
+  background: var(--critical-soft);
+  color: var(--critical);
+}
+
+[data-theme="light"] .task-state-pending {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+/* ── admin.css ── status badges ────────────────────────────── */
+[data-theme="light"] .status-activo {
+  background: var(--stable-soft);
+  color: var(--stable);
+  border-color: var(--stable-border);
+}
+
+[data-theme="light"] .status-pausado {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border-color: var(--warning-border);
+}
+
+[data-theme="light"] .status-finalizado {
+  background: rgba(99,102,241,0.08);
+  color: #5B5FC7;
+  border-color: rgba(99,102,241,0.20);
+}
+
+[data-theme="light"] .status-pendiente {
+  background: rgba(0,0,0,0.04);
+  color: var(--text-muted);
+  border-color: var(--border-line);
+}
+
+/* ── admin.css ── kpi cards ────────────────────────────────── */
+[data-theme="light"] .kpi-card {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+[data-theme="light"] .alert-card {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+[data-theme="light"] .client-card {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+[data-theme="light"] .client-card:hover {
+  border-color: var(--border-strong, #B8C0CC);
+}
+
+/* ── admin.css ── notas/tasks items ────────────────────────── */
+[data-theme="light"] .note-item,
+[data-theme="light"] .task-item-inner {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+/* ── app.css ── phase cards, module rows ───────────────────── */
+[data-theme="light"] .phase-card {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+[data-theme="light"] .module-row {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+[data-theme="light"] .task-row {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+/* ── client.css ── dashboard modules ───────────────────────── */
+[data-theme="light"] .dash-module-card {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+[data-theme="light"] .dash-module-card:hover {
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-panel);
+}
+
+[data-theme="light"] .client-data-card,
+[data-theme="light"] .sistema-card,
+[data-theme="light"] .config-card {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+/* ── client.css ── tracker / progress ──────────────────────── */
+[data-theme="light"] .big-progress-track {
+  background: var(--border-line);
+}
+
+[data-theme="light"] .tracker-header {
+  border-bottom-color: var(--border-line);
+}
+
+/* ── client.css ── hardcoded colors ───────────────────────── */
+[data-theme="light"] .tasks-msg {
+  color: var(--text-secondary);
+}
+
+/* ── dropdown ───────────────────────────────────────────────── */
+[data-theme="light"] .user-dropdown {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+  box-shadow: var(--shadow-panel);
+}
+
+[data-theme="light"] .user-dropdown .dropdown-item:hover {
+  background: rgba(0,0,0,0.04);
+}
+
+[data-theme="light"] .dropdown-divider {
+  background: var(--border-line);
+}
+
+/* ── modals ─────────────────────────────────────────────────── */
+[data-theme="light"] .modal-overlay {
+  background: rgba(0,0,0,0.35);
+}
+
+[data-theme="light"] .modal-box,
+[data-theme="light"] .modal-inner {
+  background: var(--panel-surface);
+  border-color: var(--border-line);
+}
+
+/* ── forms / inputs ─────────────────────────────────────────── */
+[data-theme="light"] .config-input,
+[data-theme="light"] .config-select,
+[data-theme="light"] .field input,
+[data-theme="light"] .field select {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .config-input:focus,
+[data-theme="light"] .config-select:focus,
+[data-theme="light"] .field input:focus {
+  border-color: var(--input-border-focus);
+}
+
+[data-theme="light"] .config-input::placeholder,
+[data-theme="light"] .field input::placeholder {
+  color: var(--input-placeholder);
+}
+
+/* ── search/filter inputs ───────────────────────────────────── */
+[data-theme="light"] .search-input,
+[data-theme="light"] .filter-select,
+[data-theme="light"] input[type="text"],
+[data-theme="light"] input[type="email"],
+[data-theme="light"] input[type="search"],
+[data-theme="light"] select {
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+/* ── os.css main-content scrollbar ─────────────────────────── */
+[data-theme="light"] .os-main-content {
+  scrollbar-color: var(--border-line) transparent;
+}
+
+/* ── transitions globales al cambiar tema ───────────────────── */
+[data-theme="light"] .os-sidebar,
+[data-theme="light"] .topbar,
+[data-theme="light"] .kpi-card,
+[data-theme="light"] .client-card,
+[data-theme="light"] .phase-card,
+[data-theme="light"] .module-row,
+[data-theme="light"] .task-row,
+[data-theme="light"] .cc-mod-card,
+[data-theme="light"] .config-card {
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+}
