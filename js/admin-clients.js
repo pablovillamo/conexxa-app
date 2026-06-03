@@ -11,8 +11,8 @@ function getClientImageUrl(client) {
 }
 
 async function loadAdminClients() {
-  // Transición: incluye 'client' (legacy) y 'ceo' hasta completar migración
-  const { data: clients } = await sb.from('profiles').select('*').in('role',['client','ceo']).order('created_at',{ascending:false});
+  // Cuentas comerciales: ceo, program_90d y client (legacy). Excluye admin y collaborator.
+  const { data: clients } = await sb.from('profiles').select('*').in('role',['client','ceo','program_90d']).order('created_at',{ascending:false});
   const { data: allProgress } = await sb.from('client_modules').select('*');
   const { data: allTasks } = await sb.from('tasks').select('*');
 
@@ -93,8 +93,12 @@ function renderClientsTable(clients) {
     const done = prog.filter(p => p.completed).length;
     const pct = Math.round((done/9)*100);
     const initials = (c.full_name || c.email || 'CX').substring(0,2).toUpperCase();
-    console.log('[Client image debug]', c.full_name || c.email, { profile_image_url: c.profile_image_url, photo_url: c.photo_url, avatar_url: c.avatar_url, logo_url: c.logo_url });
     const imgUrl = getClientImageUrl(c);
+    const roleMap   = { ceo:'CEO', program_90d:'Programa 90D', client:'Legacy' };
+    const roleLabel = roleMap[c.role] || c.role || '';
+    const roleCls   = c.role === 'program_90d' ? 'color:#818CF8;background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.2);'
+                    : c.role === 'client'       ? 'color:var(--text-muted);background:rgba(255,255,255,.04);border-color:var(--border-line);'
+                    : 'color:var(--acid);background:rgba(166,255,0,.08);border-color:rgba(166,255,0,.2);';
     let avatarContent, avatarStyleAttr;
     if (imgUrl) {
       avatarContent = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="" onerror="this.parentElement.style.padding='';this.parentElement.textContent='${initials}';" />`;
@@ -120,7 +124,13 @@ function renderClientsTable(clients) {
     return `<tr onclick="openClientOverview('${c.id}')" style="cursor:pointer;">
       <td><div style="display:flex;align-items:center;gap:10px;">
         <div class="client-avatar-cell"${avatarStyleAttr}>${avatarContent}</div>
-        <div><div class="client-name-cell">${c.full_name || c.email}</div><div class="client-nicho-cell">${c.email}</div></div>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <div class="client-name-cell">${c.full_name || c.email}</div>
+            <span style="font-size:10px;font-family:var(--font-mono);padding:1px 6px;border-radius:4px;border:1px solid;${roleCls}">${roleLabel}</span>
+          </div>
+          <div class="client-nicho-cell">${c.email}</div>
+        </div>
       </div></td>
       <td style="color:var(--gray);font-size:12px;">${c.nicho || '—'}</td>
       <td style="color:var(--gray);font-size:12px;">${startStr}</td>
