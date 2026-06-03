@@ -201,7 +201,7 @@ function renderAdminOS() {
       <div class="cc-welcome">
         <div>
           <p class="cc-greeting">Hola, ${adminName} <span>👋</span></p>
-          <h1 class="cc-headline">V-Growth OS</h1>
+          <h1 class="cc-headline">Conexxa OS</h1>
           <p class="cc-sub">Sistema Operativo Empresarial · ${total} cliente${total !== 1 ? 's' : ''} en plataforma</p>
         </div>
         <div class="cc-date">${dateStr.charAt(0).toUpperCase() + dateStr.slice(1)}</div>
