@@ -35,18 +35,18 @@ if(tab === 'shopify') {
 
 // ============================================================ FRASES
 const FRASES = [
-  { text: 'El éxito no es el destino, es el resultado de sistemas bien construidos.', author: 'Villamo Growth' },
-  { text: 'Tu marca no crece por accidente. Crece por diseño.', author: 'Villamo Growth' },
-  { text: 'No vendas productos. Construye experiencias que la gente no pueda ignorar.', author: 'Villamo Growth' },
-  { text: 'La consistencia hace lo que el talento no puede hacer solo.', author: 'Villamo Growth' },
-  { text: 'El mercado recompensa a quienes entienden a su cliente mejor que nadie.', author: 'Villamo Growth' },
-  { text: 'Escalar no es trabajar más. Es construir el sistema correcto.', author: 'Villamo Growth' },
-  { text: 'Tu ecommerce es tan fuerte como los datos que decides entender.', author: 'Villamo Growth' },
-  { text: 'La automatización no reemplaza tu marca. La libera.', author: 'Villamo Growth' },
-  { text: 'Cada decisión sin datos es una apuesta. Cada decisión con datos es estrategia.', author: 'Villamo Growth' },
-  { text: 'Una marca con estructura puede escalar. Una sin estructura solo sobrevive.', author: 'Villamo Growth' },
-  { text: 'El crecimiento sostenible no se improvisa. Se diseña paso a paso.', author: 'Villamo Growth' },
-  { text: 'No esperes el momento perfecto. Construye el sistema que lo crea.', author: 'Villamo Growth' },
+  { text: 'El éxito no es el destino, es el resultado de sistemas bien construidos.', author: 'Conexxa' },
+  { text: 'Tu marca no crece por accidente. Crece por diseño.', author: 'Conexxa' },
+  { text: 'No vendas productos. Construye experiencias que la gente no pueda ignorar.', author: 'Conexxa' },
+  { text: 'La consistencia hace lo que el talento no puede hacer solo.', author: 'Conexxa' },
+  { text: 'El mercado recompensa a quienes entienden a su cliente mejor que nadie.', author: 'Conexxa' },
+  { text: 'Escalar no es trabajar más. Es construir el sistema correcto.', author: 'Conexxa' },
+  { text: 'Tu ecommerce es tan fuerte como los datos que decides entender.', author: 'Conexxa' },
+  { text: 'La automatización no reemplaza tu marca. La libera.', author: 'Conexxa' },
+  { text: 'Cada decisión sin datos es una apuesta. Cada decisión con datos es estrategia.', author: 'Conexxa' },
+  { text: 'Una marca con estructura puede escalar. Una sin estructura solo sobrevive.', author: 'Conexxa' },
+  { text: 'El crecimiento sostenible no se improvisa. Se diseña paso a paso.', author: 'Conexxa' },
+  { text: 'No esperes el momento perfecto. Construye el sistema que lo crea.', author: 'Conexxa' },
 ];
 
 function loadDashboard() {
@@ -66,7 +66,7 @@ async function loadClientView() {
 
   const p = currentProfile;
   const titleEl = document.getElementById('client-tracker-title');
-  if (titleEl) titleEl.textContent = p?.full_name || 'Mi programa';
+  if (titleEl) titleEl.textContent = p?.full_name || 'Mi plan';
 
   let dayNum = 1;
   if (p?.start_date) {

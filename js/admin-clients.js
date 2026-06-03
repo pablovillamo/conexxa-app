@@ -74,7 +74,7 @@ async function loadAdminClients() {
   document.getElementById('alert-atrasados').textContent = atrasados;
   document.getElementById('alert-vencidas').textContent = vencidas;
   document.getElementById('alert-top').textContent = topClient ? (topClient.full_name || topClient.email).split(' ')[0] + ' ' + topPct + '%' : '—';
-  document.getElementById('admin-subtitle').textContent = `${total} cliente${total!==1?'s':''} · Sistema Operativo Villamo Growth`;
+  document.getElementById('admin-subtitle').textContent = `${total} cliente${total!==1?'s':''} · Conexxa`;
   renderClientsTable(allClientsData);
 }
 

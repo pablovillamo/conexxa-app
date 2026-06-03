@@ -71,6 +71,7 @@ function showScreen(name) {
   if (name === 'app')  document.getElementById('screen-app').classList.add('active');
   document.getElementById('app-loading').style.display = 'none';
 }
+window.showScreen = showScreen;
 
 function showView(viewId) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));

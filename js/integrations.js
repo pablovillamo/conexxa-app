@@ -18,8 +18,8 @@ function renderIntegrationsModule() {
         <p class="section-kicker">Integraciones</p>
         <h1>Conexiones Ecommerce</h1>
         <p class="section-description">
-          Conectá herramientas externas para convertir el tracker
-          en un sistema operativo ecommerce.
+          Conectá herramientas externas para convertir Conexxa
+          en un sistema operativo ecommerce completo.
         </p>
       </div>
 

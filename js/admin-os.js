@@ -38,7 +38,7 @@ const SIDEBAR_MODULES = [
   { id:'franchise',   icon:'🏪', label:'Franquicias OS',    status:'locked'  },
   { id:'brand',       icon:'🎨', label:'Marca y Producto',  status:'coming'  },
   { id:'ia-os',       icon:'🤖', label:'IA OS',             status:'coming'  },
-  { id:'vg',          icon:'🚀', label:'Villamo Growth',    status:'active',  action:() => showAdminView('clients')       },
+  { id:'vg',          icon:'🚀', label:'Conexxa',            status:'active',  action:() => showAdminView('clients')       },
 ];
 
 // ── Sync sidebar avatar + name ────────────────────────────
@@ -130,7 +130,7 @@ function renderAdminOS() {
 
   // ── Categories for module grid ──────────────────────────
   const catGroups = [
-    { label: 'Villamo Growth',    ids: ['vg-program','vg-brain','vg-ecommerce','vg-tasks'] },
+    { label: 'Conexxa',           ids: ['vg-program','vg-brain','vg-ecommerce','vg-tasks'] },
     { label: 'Core OS',           ids: ['core-crm','core-docs','core-meetings','core-kpis','core-resources'] },
     { label: 'Business OS',       ids: ['finanzas','os-operations','os-ceo','os-inventory','os-cx','os-brand'] },
     { label: 'Integraciones',     ids: ['int-shopify','int-meta','int-klaviyo','int-manychat'] },
@@ -880,8 +880,8 @@ function renderAdminMetodologia() {
         <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Volver al OS
       </button>
-      <p class="os-eyebrow" style="margin-bottom:8px;">Villamo Growth · Metodología</p>
-      <h1 style="font-size:28px;font-weight:700;color:var(--white);margin-bottom:6px;">Programa 90 Días</h1>
+      <p class="os-eyebrow" style="margin-bottom:8px;">Conexxa · Metodología</p>
+      <h1 style="font-size:28px;font-weight:700;color:var(--white);margin-bottom:6px;">Programa Conexxa</h1>
       <p style="font-size:13px;color:var(--gray);margin-bottom:32px;">Sistema de implementación ecommerce estructurado en 3 fases de 30 días.</p>
       <div class="met-grid">${fasesHTML}</div>
     </div>

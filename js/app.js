@@ -12,16 +12,27 @@ let currentProfile = null;
 let selectedClientId = null;
 let allModules = [];
 
+function safeShowScreen(name) {
+  if (typeof window.showScreen === 'function') {
+    window.showScreen(name);
+  } else {
+    console.error('[App] showScreen no está disponible — navigation.js no cargó correctamente');
+    document.getElementById('app-loading').style.display = 'none';
+    if (name === 'auth') document.getElementById('screen-auth')?.classList.add('active');
+    if (name === 'app')  document.getElementById('screen-app')?.classList.add('active');
+  }
+}
+
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await loadUserProfile(session.user);
   } else {
-    showScreen('auth');
+    safeShowScreen('auth');
   }
   sb.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) await loadUserProfile(session.user);
-    else if (event === 'SIGNED_OUT') showScreen('auth');
+    else if (event === 'SIGNED_OUT') safeShowScreen('auth');
   });
 }
 
@@ -58,7 +69,7 @@ async function loadUserProfile(user) {
     document.getElementById('admin-nav').style.display = 'none';
     document.getElementById('os-sidebar').style.display = 'flex';
     document.getElementById('screen-app').classList.add('admin-mode');
-    showScreen('app');
+    safeShowScreen('app');
     await loadAdminClients();
     if (typeof renderSidebarNav === 'function') renderSidebarNav();
     showAdminView('os');
@@ -66,7 +77,7 @@ async function loadUserProfile(user) {
     document.getElementById('admin-nav').style.display = 'none';
     document.getElementById('os-sidebar').style.display = 'none';
     document.getElementById('screen-app').classList.remove('admin-mode');
-    showScreen('app');
+    safeShowScreen('app');
     await loadClientView();
     loadDashboard();
   }
@@ -78,5 +89,7 @@ function openAuditoria(num) {
 }
 
 // ============================================================ START
-document.getElementById('app-loading').style.display = 'flex';
-init();
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('app-loading').style.display = 'flex';
+  init();
+});

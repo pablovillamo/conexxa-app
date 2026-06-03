@@ -446,7 +446,7 @@ async function downloadBrainPDF() {
     hline(34, 197, 94, 1.2);
     y += 8;
 
-    write('VILLAMO GROWTH', 20, true, [10, 10, 10]);
+    write('CONEXXA', 20, true, [10, 10, 10]);
     y += 2;
     write(modLabel, 14, true, [34, 197, 94]);
     y += 2;
@@ -542,7 +542,7 @@ async function downloadBrainPDF() {
       doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
       doc.setTextColor(170, 170, 170);
-      doc.text('Villamo Growth · ' + filename + ' · v1.0 · Confidencial', mX, y);
+      doc.text('Conexxa · ' + filename + ' · v1.0 · Confidencial', mX, y);
     }
 
     console.log('[PDF] Páginas generadas:', pageCount);
@@ -596,7 +596,7 @@ function mdToHtmlBrain(md, brandName, mod) {
   </style>
   <div class="pdf-doc">
   <div class="cover">
-    <div class="cover-brand">VILLAMO GROWTH</div>
+    <div class="cover-brand">CONEXXA</div>
     <div class="cover-doc">${docName}</div>
     <div class="cover-meta">
       <div>${modLabel}</div>
@@ -636,7 +636,7 @@ function mdToHtmlBrain(md, brandName, mod) {
   body = body.replace(/(<tr>.*?<\/tr>\s*)+/gs, m => '<table>' + m + '</table>');
 
   html += body;
-  html += `<div class="footer">Villamo Growth · ${docName} · v1.0 · Confidencial</div>`;
+  html += `<div class="footer">Conexxa · ${docName} · v1.0 · Confidencial</div>`;
   html += `</div>`; // cierre .pdf-doc
   return html;
 }
@@ -662,8 +662,8 @@ function openBrainEmailModal() {
   const mod = getBrainModulo(currentBrainModulo);
   const subjectEl = document.getElementById('brain-email-subject');
   const bodyEl    = document.getElementById('brain-email-body');
-  if (subjectEl && mod) subjectEl.value = `Tu documento ${mod.docName} — Villamo Growth`;
-  if (bodyEl && mod) bodyEl.value = `Adjunto encontrás el documento ${mod.docName} construido durante nuestra sesión. Este es el módulo ${mod.num} de tu Brain — ${mod.fullName}.\n\nRevisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.\n\n— Villamo Growth`;
+  if (subjectEl && mod) subjectEl.value = `Tu documento ${mod.docName} — Conexxa`;
+  if (bodyEl && mod) bodyEl.value = `Adjunto encontrás el documento ${mod.docName} construido durante nuestra sesión. Este es el módulo ${mod.num} de tu Brain — ${mod.fullName}.\n\nRevisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.\n\n— Conexxa`;
   modal.classList.add('open');
 }
 

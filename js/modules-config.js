@@ -1,19 +1,19 @@
 // ============================================================
-// V-GROWTH OS — REGISTRO CENTRAL DE MÓDULOS
+// CONEXXA — REGISTRO CENTRAL DE MÓDULOS
 // Fuente única de verdad para todas las cards del OS dashboard.
 // Estados: active | locked | coming_soon | hidden | internal
 // ============================================================
 
 const OS_MODULES = [
 
-  // ── VILLAMO GROWTH ────────────────────────────────────────
+  // ── CONEXXA ───────────────────────────────────────────────
   {
     id:          'vg-program',
-    name:        'Programa 90 Días',
+    name:        'Programa Conexxa',
     description: 'Gestión de clientes activos, progreso por fases y módulos del programa.',
     icon:        '🚀',
     status:      'active',
-    category:    'villamo',
+    category:    'conexxa',
     action:      () => showAdminView('clients'),
     order:       1,
   },
@@ -23,7 +23,7 @@ const OS_MODULES = [
     description: 'Documentos estratégicos generados con IA: identidad, oferta, cliente ideal y más.',
     icon:        '🧠',
     status:      'active',
-    category:    'villamo',
+    category:    'conexxa',
     action:      () => showAdminView('brain'),
     order:       2,
   },
@@ -33,17 +33,17 @@ const OS_MODULES = [
     description: 'Métricas Shopify, productos sincronizados, órdenes y conexiones ecommerce.',
     icon:        '🛒',
     status:      'active',
-    category:    'villamo',
+    category:    'conexxa',
     action:      () => showAdminView('clients'),
     order:       3,
   },
   {
     id:          'vg-tasks',
-    name:        'Tareas y Tracker',
+    name:        'Tareas y Seguimiento',
     description: 'Asignación de tareas, checklists operativos y seguimiento de entregables.',
     icon:        '✅',
     status:      'active',
-    category:    'villamo',
+    category:    'conexxa',
     action:      () => showAdminView('tasks'),
     order:       4,
   },

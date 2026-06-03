@@ -13,7 +13,7 @@ async function forgotPassword() {
   const email = document.getElementById('login-email').value.trim();
   const msg = document.getElementById('login-msg');
   if (!email) { showMsg(msg, 'error', 'Escribe tu correo arriba primero.'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://app.villamogrowth.com' });
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://app.getconexxa.com' });
   if (error) showMsg(msg, 'error', error.message);
   else showMsg(msg, 'success', '¡Correo enviado! Revisa tu bandeja de entrada.');
 }
@@ -27,7 +27,7 @@ async function login() {
   const btn = document.querySelector('#auth-login .btn-primary');
   btn.disabled = true; btn.textContent = 'Entrando...';
   const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'Entrar al programa';
+  btn.disabled = false; btn.textContent = 'Entrar al sistema';
   if (error) showMsg(msg,'error', error.message === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : error.message);
 }
 
