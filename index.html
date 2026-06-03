@@ -130,7 +130,7 @@
       </div>
     </div>
 
-    <div class="osb-nav">
+    <div class="osb-nav" id="osb-nav">
       <div class="osb-section">
         <div class="osb-section-label">Admin OS</div>
         <div id="osb-nav-admin"></div>
@@ -152,7 +152,7 @@
         <div class="osb-user-avatar" id="osb-user-avatar">CX</div>
         <div class="osb-user-info">
           <div class="osb-user-name" id="osb-user-name">—</div>
-          <div class="osb-user-role">Admin</div>
+          <div class="osb-user-role" id="osb-user-role">Admin</div>
         </div>
         <button class="osb-logout-btn" onclick="logout()" title="Salir">
           <svg viewBox="0 0 16 16" fill="none"><path d="M6 14H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -565,37 +565,26 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
           </button>
         </div>
 
-        <!-- KPIs -->
+        <!-- KPIs — resumen maestro de clientes comerciales -->
         <div class="kpi-strip" id="admin-kpis">
-          <div class="kpi-card"><div class="kpi-label">Clientes activos</div><div class="kpi-val kpi-trend-up" id="kpi-activos">—</div><div class="kpi-sub">En programa</div></div>
-          <div class="kpi-card"><div class="kpi-label">Completados</div><div class="kpi-val" id="kpi-completados" style="color:#818CF8">—</div><div class="kpi-sub">Finalizaron 90 días</div></div>
-          <div class="kpi-card"><div class="kpi-label">Pausados</div><div class="kpi-val kpi-trend-warn" id="kpi-pausados">—</div><div class="kpi-sub">Requieren atención</div></div>
-          <div class="kpi-card"><div class="kpi-label">Próx. a finalizar</div><div class="kpi-val kpi-trend-err" id="kpi-prox">—</div><div class="kpi-sub">Menos de 15 días</div></div>
-          <div class="kpi-card"><div class="kpi-label">Progreso promedio</div><div class="kpi-val kpi-trend-up" id="kpi-avg">—</div><div class="kpi-sub">De todos los clientes</div></div>
+          <div class="kpi-card"><div class="kpi-label">Clientes activos</div><div class="kpi-val kpi-trend-up" id="kpi-activos">—</div><div class="kpi-sub">Cuentas comerciales</div></div>
+          <div class="kpi-card"><div class="kpi-label">CEOs activos</div><div class="kpi-val" id="kpi-ceos" style="color:var(--acid)">—</div><div class="kpi-sub">Cuentas CEO</div></div>
+          <div class="kpi-card"><div class="kpi-label">Programa 90D</div><div class="kpi-val" id="kpi-prog90" style="color:#818CF8">—</div><div class="kpi-sub">En programa</div></div>
+          <div class="kpi-card"><div class="kpi-label">Consultoría / Servicios</div><div class="kpi-val" id="kpi-consultoria" style="color:#F59E0B">—</div><div class="kpi-sub">Servicios activos</div></div>
+          <div class="kpi-card"><div class="kpi-label">Apps</div><div class="kpi-val" id="kpi-apps" style="color:#14B8A6">—</div><div class="kpi-sub">Proyectos de app</div></div>
+          <div class="kpi-card"><div class="kpi-label">Clientes inactivos</div><div class="kpi-val kpi-trend-warn" id="kpi-inactivos">—</div><div class="kpi-sub">Cuentas desactivadas</div></div>
         </div>
 
-        <!-- Alertas -->
-        <div class="alerts-row" id="admin-alerts">
-          <div class="alert-card warn"><div class="alert-icon">⚠️</div><div class="alert-text">Clientes atrasados<br><span style="font-size:11px;opacity:.7;">Progreso por debajo de lo esperado</span></div><div class="alert-count" id="alert-atrasados">0</div></div>
-          <div class="alert-card danger"><div class="alert-icon">🔴</div><div class="alert-text">Tareas vencidas<br><span style="font-size:11px;opacity:.7;">Sin completar después del plazo</span></div><div class="alert-count" id="alert-vencidas">0</div></div>
-          <div class="alert-card success"><div class="alert-icon">🚀</div><div class="alert-text">Mayor avance<br><span style="font-size:11px;opacity:.7;">Cliente con mejor progreso</span></div><div class="alert-count" id="alert-top">—</div></div>
-        </div>
-
-        <!-- Toolbar -->
+        <!-- Toolbar — búsqueda, nicho y orden -->
         <div class="admin-toolbar">
           <input class="search-input" type="text" id="client-search" placeholder="🔍 Buscar cliente, nicho..." oninput="filterClients()" />
-          <select class="filter-select" id="filter-status" onchange="filterClients()">
-            <option value="">Todos los estados</option>
-            <option value="activo">Activo</option>
-            <option value="pausado">Pausado</option>
-            <option value="finalizado">Finalizado</option>
-            <option value="pendiente">Pendiente</option>
+          <select class="filter-select" id="filter-nicho" onchange="filterClients()">
+            <option value="">Todos los nichos</option>
           </select>
           <select class="filter-select" id="filter-sort" onchange="filterClients()">
-            <option value="date">Ordenar por fecha</option>
-            <option value="progress">Ordenar por progreso</option>
-            <option value="days">Ordenar por días restantes</option>
-            <option value="name">Ordenar por nombre</option>
+            <option value="recent">Más recientes</option>
+            <option value="old">Más antiguos</option>
+            <option value="name">Por nombre</option>
           </select>
         </div>
 
@@ -604,13 +593,13 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
           <table class="clients-table" id="clients-table">
             <thead>
               <tr>
-                <th>Cliente</th>
+                <th>Cliente / Empresa</th>
+                <th>Email</th>
+                <th>Tipo de cliente</th>
                 <th>Nicho</th>
-                <th>Ingreso</th>
-                <th>Día</th>
-                <th>Días restantes</th>
-                <th>Progreso</th>
                 <th>Estado</th>
+                <th>Usuarios</th>
+                <th>Ingreso</th>
                 <th></th>
               </tr>
             </thead>
@@ -1343,5 +1332,6 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/notas-os.js"></script>
 <script src="/js/costos.js"></script>
 <script src="/js/admin-os.js"></script>
+<script src="/js/client-workspace.js"></script>
 </body>
 </html>

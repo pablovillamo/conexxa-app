@@ -4,15 +4,61 @@ console.log("[AdminClients] loaded");
 let allClientsData = [];
 let allProgressData = [];
 let allTasksData = [];
+let collaboratorCountByAccount = {};   // parent_account_id → nº de colaboradores
+
+// Roles comerciales que aparecen en el módulo maestro de Clientes.
+// Excluye explícitamente admin y collaborator.
+const CLIENTS_COMMERCIAL_ROLES = (window.ConexxaRoles && window.ConexxaRoles.COMMERCIAL_ROLES)
+  || ['ceo', 'program_90d', 'app_client', 'service_client', 'client'];
 
 function getClientImageUrl(client) {
   if (!client) return null;
   return client.profile_image_url || client.photo_url || client.avatar_url || client.logo_url || client.image_url || null;
 }
 
+// Etiqueta legible del tipo de cliente según su rol.
+function clientTypeLabel(role) {
+  const r = (window.ConexxaRoles ? window.ConexxaRoles.normalizeRole(role) : role) || role;
+  const map = {
+    ceo:            'CEO',
+    program_90d:    'Programa 90D',
+    service_client: 'Consultoría / Servicios',
+    app_client:     'Apps',
+  };
+  // 'client' legacy se normaliza a 'ceo'; mostramos su origen como Legacy.
+  if (role === 'client') return 'Legacy';
+  return map[r] || r || '—';
+}
+
+function clientTypeBadgeStyle(role) {
+  switch (role) {
+    case 'program_90d':    return 'color:#818CF8;background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.2);';
+    case 'service_client': return 'color:#F59E0B;background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.2);';
+    case 'app_client':     return 'color:#14B8A6;background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.2);';
+    case 'client':         return 'color:var(--text-muted);background:rgba(255,255,255,.04);border-color:var(--border-line);';
+    default:               return 'color:var(--acid);background:rgba(166,255,0,.08);border-color:rgba(166,255,0,.2);';
+  }
+}
+
+// is_active === false → inactivo; cualquier otro valor (true/null) → activo.
+function clientIsActive(c) {
+  return c?.is_active !== false;
+}
+
 async function loadAdminClients() {
-  // Cuentas comerciales: todos los tipos de cliente. Excluye admin y collaborator.
-  const { data: clients } = await sb.from('profiles').select('*').in('role',['client','ceo','program_90d','app_client','service_client']).order('created_at',{ascending:false});
+  // Solo cuentas comerciales. Excluye admin y collaborator.
+  const { data: clients } = await sb.from('profiles')
+    .select('*')
+    .in('role', CLIENTS_COMMERCIAL_ROLES)
+    .order('created_at', { ascending: false });
+
+  // Colaboradores: para contar "usuarios vinculados" por parent_account_id.
+  const { data: collaborators } = await sb.from('profiles')
+    .select('id, parent_account_id')
+    .eq('role', 'collaborator');
+
+  // Datos de programa/tareas siguen disponibles para otras vistas (90D),
+  // pero ya NO alimentan métricas del módulo maestro de Clientes.
   const { data: allProgress } = await sb.from('client_modules').select('*');
   const { data: allTasks } = await sb.from('tasks').select('*');
 
@@ -21,63 +67,55 @@ async function loadAdminClients() {
   allTasksData = allTasks || [];
   window.ConexxaState.setAllClientsData(allClientsData);
 
-  // DEBUG: ver qué campos de imagen trae Supabase
-  if (allClientsData.length > 0) {
-    const sample = allClientsData[0];
-    console.log('[AdminClients] keys del primer cliente:', Object.keys(sample));
-    console.log('[AdminClients] campos de imagen:', {
-      profile_image_url: sample.profile_image_url,
-      photo_url: sample.photo_url,
-      avatar_url: sample.avatar_url,
-      logo_url: sample.logo_url,
-      image_url: sample.image_url
-    });
-  }
-
-  const total = allClientsData.length;
-  let activos=0, completados=0, pausados=0, proxFinish=0, totalPct=0;
-  let topClient = null, topPct = 0, vencidas = 0;
-  const today = new Date(); today.setHours(0,0,0,0);
-
-  allClientsData.forEach(c => {
-    const status = (c.status || 'activo').toLowerCase();
-    if(status === 'activo') activos++;
-    else if(status === 'finalizado') completados++;
-    else if(status === 'pausado') pausados++;
-    const prog = allProgressData.filter(p => p.client_id === c.id);
-    const done = prog.filter(p => p.completed).length;
-    const pct = Math.round((done/9)*100);
-    totalPct += pct;
-    if(pct > topPct) { topPct = pct; topClient = c; }
-    if(c.end_date) {
-      const daysLeft = Math.ceil((new Date(c.end_date) - today) / 86400000);
-      if(daysLeft > 0 && daysLeft <= 15) proxFinish++;
-    }
+  // Conteo de colaboradores por cuenta (parent_account_id).
+  collaboratorCountByAccount = {};
+  (collaborators || []).forEach(col => {
+    const pid = col.parent_account_id;
+    if (!pid) return;
+    collaboratorCountByAccount[pid] = (collaboratorCountByAccount[pid] || 0) + 1;
   });
 
-  allTasksData.forEach(t => { if(!t.completed && t.due_date && new Date(t.due_date) < today) vencidas++; });
+  // ── Métricas del módulo maestro de Clientes ──────────────
+  const total = allClientsData.length;
+  let activos = 0, ceos = 0, prog90 = 0, consultoria = 0, apps = 0, inactivos = 0;
 
-  const avgPct = total > 0 ? Math.round(totalPct/total) : 0;
-  const atrasados = allClientsData.filter(c => {
-    if(!c.start_date) return false;
-    const dayNum = Math.floor((Date.now() - new Date(c.start_date).getTime()) / 86400000) + 1;
-    const prog = allProgressData.filter(p => p.client_id === c.id);
-    const done = prog.filter(p => p.completed).length;
-    const pct = Math.round((done/9)*100);
-    const expectedPct = Math.round((Math.min(dayNum,90)/90)*100);
-    return pct < expectedPct - 20;
-  }).length;
+  allClientsData.forEach(c => {
+    const role   = window.ConexxaRoles ? window.ConexxaRoles.normalizeRole(c.role) : c.role;
+    const active = clientIsActive(c);
+    if (active) activos++; else inactivos++;
 
-  document.getElementById('kpi-activos').textContent = activos;
-  document.getElementById('kpi-completados').textContent = completados;
-  document.getElementById('kpi-pausados').textContent = pausados;
-  document.getElementById('kpi-prox').textContent = proxFinish;
-  document.getElementById('kpi-avg').textContent = avgPct + '%';
-  document.getElementById('alert-atrasados').textContent = atrasados;
-  document.getElementById('alert-vencidas').textContent = vencidas;
-  document.getElementById('alert-top').textContent = topClient ? (topClient.full_name || topClient.email).split(' ')[0] + ' ' + topPct + '%' : '—';
-  document.getElementById('admin-subtitle').textContent = `${total} cliente${total!==1?'s':''} · Conexxa`;
+    if (!active) return;       // los conteos por tipo son sobre cuentas activas
+    if (role === 'ceo')            ceos++;
+    else if (role === 'program_90d')    prog90++;
+    else if (role === 'service_client') consultoria++;
+    else if (role === 'app_client')     apps++;
+  });
+
+  const setKpi = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setKpi('kpi-activos',     activos);
+  setKpi('kpi-ceos',        ceos);
+  setKpi('kpi-prog90',      prog90);
+  setKpi('kpi-consultoria', consultoria);
+  setKpi('kpi-apps',        apps);
+  setKpi('kpi-inactivos',   inactivos);
+
+  const sub = document.getElementById('admin-subtitle');
+  if (sub) sub.textContent = `${total} cliente${total !== 1 ? 's' : ''} comercial${total !== 1 ? 'es' : ''} · Conexxa`;
+
+  populateNichoFilter(allClientsData);
   renderClientsTable(allClientsData);
+}
+
+// Rellena el select de nichos con los valores presentes en los clientes.
+function populateNichoFilter(clients) {
+  const sel = document.getElementById('filter-nicho');
+  if (!sel) return;
+  const current = sel.value;
+  const nichos = [...new Set((clients || []).map(c => (c.nicho || '').trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '<option value="">Todos los nichos</option>'
+    + nichos.map(n => `<option value="${n}">${n}</option>`).join('');
+  if (current && nichos.includes(current)) sel.value = current;
 }
 
 function renderClientsTable(clients) {
@@ -87,18 +125,12 @@ function renderClientsTable(clients) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--gray);">Sin clientes aún. Agrega el primero.</td></tr>';
     return;
   }
-  const today = new Date(); today.setHours(0,0,0,0);
   tbody.innerHTML = clients.map(c => {
-    const prog = allProgressData.filter(p => p.client_id === c.id);
-    const done = prog.filter(p => p.completed).length;
-    const pct = Math.round((done/9)*100);
     const initials = (c.full_name || c.email || 'CX').substring(0,2).toUpperCase();
     const imgUrl = getClientImageUrl(c);
-    const roleMap   = { ceo:'CEO', program_90d:'Programa 90D', client:'Legacy' };
-    const roleLabel = roleMap[c.role] || c.role || '';
-    const roleCls   = c.role === 'program_90d' ? 'color:#818CF8;background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.2);'
-                    : c.role === 'client'       ? 'color:var(--text-muted);background:rgba(255,255,255,.04);border-color:var(--border-line);'
-                    : 'color:var(--acid);background:rgba(166,255,0,.08);border-color:rgba(166,255,0,.2);';
+    const typeLabel = clientTypeLabel(c.role);
+    const typeStyle = clientTypeBadgeStyle(c.role);
+
     let avatarContent, avatarStyleAttr;
     if (imgUrl) {
       avatarContent = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="" onerror="this.parentElement.style.padding='';this.parentElement.textContent='${initials}';" />`;
@@ -107,40 +139,29 @@ function renderClientsTable(clients) {
       avatarContent = initials;
       avatarStyleAttr = '';
     }
-    const startStr = c.start_date ? new Date(c.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
-    let dayNum = '—', daysLeft = '—', daysClass = '';
-    if(c.start_date) {
-      const d = Math.floor((Date.now()-new Date(c.start_date).getTime())/86400000)+1;
-      dayNum = Math.min(90,Math.max(1,d));
-    }
-    if(c.end_date) {
-      const dl = Math.ceil((new Date(c.end_date)-today)/86400000);
-      daysLeft = dl > 0 ? dl + ' días' : 'Vencido';
-      daysClass = dl <= 0 ? 'days-urgent' : dl <= 15 ? 'days-warn' : 'days-ok';
-    }
-    const status = c.status || 'activo';
-    const statusMap = {activo:'status-activo',pausado:'status-pausado',finalizado:'status-finalizado',pendiente:'status-pendiente'};
-    const statusLabel = {activo:'Activo',pausado:'Pausado',finalizado:'Finalizado',pendiente:'Pendiente'};
-    return `<tr onclick="openClientOverview('${c.id}')" style="cursor:pointer;">
+
+    const createdStr = c.created_at ? new Date(c.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})
+                     : c.start_date ? new Date(c.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})
+                     : '—';
+
+    const active = clientIsActive(c);
+    const statusBadge = active
+      ? `<span class="status-badge status-activo">● Activo</span>`
+      : `<span class="status-badge status-pausado">● Inactivo</span>`;
+
+    const linkedUsers = collaboratorCountByAccount[c.id] || 0;
+
+    return `<tr onclick="openClientWorkspace('${c.id}')" style="cursor:pointer;">
       <td><div style="display:flex;align-items:center;gap:10px;">
         <div class="client-avatar-cell"${avatarStyleAttr}>${avatarContent}</div>
-        <div>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <div class="client-name-cell">${c.full_name || c.email}</div>
-            <span style="font-size:10px;font-family:var(--font-mono);padding:1px 6px;border-radius:4px;border:1px solid;${roleCls}">${roleLabel}</span>
-          </div>
-          <div class="client-nicho-cell">${c.email}</div>
-        </div>
+        <div class="client-name-cell">${c.full_name || c.email}</div>
       </div></td>
+      <td style="color:var(--gray);font-size:12px;">${c.email || '—'}</td>
+      <td><span style="font-size:10px;font-family:var(--font-mono);padding:2px 7px;border-radius:4px;border:1px solid;${typeStyle}">${typeLabel}</span></td>
       <td style="color:var(--gray);font-size:12px;">${c.nicho || '—'}</td>
-      <td style="color:var(--gray);font-size:12px;">${startStr}</td>
-      <td><span class="mono" style="font-size:13px;color:var(--green);">${dayNum}</span></td>
-      <td><span class="days-remaining ${daysClass}">${daysLeft}</span></td>
-      <td><div style="display:flex;align-items:center;gap:8px;">
-        <div class="progress-cell-bar"><div class="progress-cell-fill" style="width:${pct}%"></div></div>
-        <span style="font-size:12px;color:var(--gray);">${pct}%</span>
-      </div></td>
-      <td><span class="status-badge ${statusMap[status]||'status-pendiente'}">● ${statusLabel[status]||status}</span></td>
+      <td>${statusBadge}</td>
+      <td><span class="mono" style="font-size:13px;color:var(--gray);">${linkedUsers}</span></td>
+      <td style="color:var(--gray);font-size:12px;">${createdStr}</td>
       <td><svg viewBox="0 0 16 16" fill="none" style="width:16px;height:16px;color:var(--gray);"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td>
     </tr>`;
   }).join('');
@@ -148,122 +169,42 @@ function renderClientsTable(clients) {
 
 function filterClients() {
   const search = (document.getElementById('client-search')?.value || '').toLowerCase();
-  const status = document.getElementById('filter-status')?.value || '';
-  const sort = document.getElementById('filter-sort')?.value || 'date';
-  const today = new Date(); today.setHours(0,0,0,0);
+  const nicho  = document.getElementById('filter-nicho')?.value || '';
+  const sort   = document.getElementById('filter-sort')?.value || 'recent';
+
   let filtered = allClientsData.filter(c => {
-    const matchSearch = !search || (c.full_name||'').toLowerCase().includes(search) || (c.email||'').toLowerCase().includes(search) || (c.nicho||'').toLowerCase().includes(search);
-    const matchStatus = !status || (c.status||'activo').toLowerCase() === status;
-    return matchSearch && matchStatus;
+    const matchSearch = !search
+      || (c.full_name||'').toLowerCase().includes(search)
+      || (c.email||'').toLowerCase().includes(search)
+      || (c.nicho||'').toLowerCase().includes(search);
+    const matchNicho = !nicho || (c.nicho || '') === nicho;
+    return matchSearch && matchNicho;
   });
-  if(sort === 'progress') {
-    filtered.sort((a,b) => {
-      const pa = allProgressData.filter(p=>p.client_id===a.id).filter(p=>p.completed).length;
-      const pb = allProgressData.filter(p=>p.client_id===b.id).filter(p=>p.completed).length;
-      return pb - pa;
-    });
-  } else if(sort === 'days') {
-    filtered.sort((a,b) => {
-      const da = a.end_date ? Math.ceil((new Date(a.end_date)-today)/86400000) : 999;
-      const db = b.end_date ? Math.ceil((new Date(b.end_date)-today)/86400000) : 999;
-      return da - db;
-    });
-  } else if(sort === 'name') {
-    filtered.sort((a,b) => (a.full_name||a.email).localeCompare(b.full_name||b.email));
+
+  const ts = (c) => new Date(c.created_at || c.start_date || 0).getTime();
+  if (sort === 'old') {
+    filtered.sort((a,b) => ts(a) - ts(b));
+  } else if (sort === 'name') {
+    filtered.sort((a,b) => (a.full_name||a.email||'').localeCompare(b.full_name||b.email||''));
+  } else { // recent (default)
+    filtered.sort((a,b) => ts(b) - ts(a));
   }
+
   renderClientsTable(filtered);
 }
 
-// ── Vista general del cliente (nueva entrada desde Clientes) ─
-
+// ── Apertura del cliente desde Clientes ─────────────────────
+// El click en un cliente abre su workspace real por tipo (ver
+// client-workspace.js → openClientWorkspace). openClientOverview
+// se mantiene como alias por compatibilidad con otras vistas.
 function openClientOverview(clientId) {
+  if (typeof openClientWorkspace === 'function') return openClientWorkspace(clientId);
+  // Fallback defensivo si client-workspace.js no cargó.
   selectedClientId = clientId;
   window.ConexxaState.setSelectedClientId(clientId);
-  const clients = typeof allClientsData !== 'undefined' ? allClientsData : [];
-  const client  = clients.find(c => c.id === clientId) || { id: clientId };
-
-  showView('view-admin-client-dashboard');
-  if (typeof setSidebarActive === 'function') setSidebarActive('clients');
-  renderClientOverview(client);
+  if (typeof openClientDetail === 'function') openClientDetail(clientId);
 }
-
-function renderClientOverview(client) {
-  const root = document.getElementById('view-admin-client-dashboard');
-  if (!root) return;
-
-  const name     = client.full_name || client.email || '—';
-  const initials = name.substring(0, 2).toUpperCase();
-  const types    = typeof parseBusinessTypes === 'function' ? parseBusinessTypes(client.business_type) : [];
-  const typeBadges = types.map(t => {
-    const info = typeof BUSINESS_TYPES !== 'undefined' ? BUSINESS_TYPES[t] : null;
-    return info ? `<span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:${info.bg};color:${info.color};">${info.icon} ${info.label}</span>` : '';
-  }).join('');
-  const statusColor = client.client_status === 'activo' ? 'var(--green)' : client.client_status === 'pausado' ? 'var(--amber)' : 'var(--gray)';
-
-  const futureMods = [
-    { icon:'📊', name:'Resumen general',   desc:'KPIs, progreso y métricas clave del cliente.' },
-    { icon:'⚡', name:'Módulos activos',    desc:'Todos los módulos habilitados para esta cuenta.' },
-    { icon:'🔌', name:'Integraciones',      desc:'Estado de todas las conexiones activas.' },
-    { icon:'₡',  name:'Costos',            desc:'Dashboard de gastos y costos operativos.' },
-    { icon:'✅', name:'Tareas',             desc:'Seguimiento de tareas asignadas.' },
-    { icon:'📈', name:'KPIs',              desc:'Métricas de rendimiento y objetivos.' },
-    { icon:'🛒', name:'Ecommerce OS',      desc:'Shopify, productos, órdenes y métricas.' },
-    { icon:'⚙️', name:'Operaciones OS',   desc:'Flujos, SOPs y operación del negocio.' },
-    { icon:'📦', name:'Inventario OS',     desc:'Stock, movimientos y alertas de inventario.' },
-    { icon:'🛍️', name:'Compras OS',       desc:'Proveedores, órdenes de compra y costos.' },
-  ];
-
-  root.innerHTML = `
-    <div class="cc-body">
-
-      <!-- Back -->
-      <button class="back-btn" onclick="showAdminView('clients')" style="margin-bottom:20px;">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Volver a Clientes
-      </button>
-
-      <!-- Client header -->
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
-        <div style="width:48px;height:48px;border-radius:50%;background:var(--green-dim);border:2px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--green);flex-shrink:0;">${initials}</div>
-        <div style="flex:1;">
-          <h1 style="font-size:22px;font-weight:700;color:var(--white);margin-bottom:4px;">${name}</h1>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <span style="font-size:12px;color:${statusColor};">● ${client.client_status || 'pendiente'}</span>
-            ${client.nicho ? `<span style="font-size:12px;color:var(--gray);">${client.nicho}</span>` : ''}
-            ${typeBadges}
-          </div>
-        </div>
-        <button class="btn-action" style="font-size:12px;padding:8px 16px;" onclick="openClientDetail('${client.id}')">
-          Ver OS Ecommerce →
-        </button>
-      </div>
-
-      <!-- Placeholder banner -->
-      <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:14px;padding:24px;margin-bottom:32px;text-align:center;">
-        <div style="font-size:22px;margin-bottom:8px;">🚧</div>
-        <div style="font-size:15px;font-weight:600;color:var(--white);margin-bottom:6px;">Dashboard del Cliente — Próximamente</div>
-        <div style="font-size:13px;color:var(--gray);max-width:520px;margin:0 auto;line-height:1.6;">Aquí se centralizará la vista general del cliente por tipo de negocio, módulos activos, integraciones, costos, tareas, KPIs y progreso.</div>
-      </div>
-
-      <!-- Future modules grid -->
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--gray);font-family:'DM Mono',monospace;margin-bottom:14px;">Módulos futuros de esta vista</div>
-      <div class="cc-modules-grid">
-        ${futureMods.map(m => `
-          <div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:18px;opacity:.6;">
-            <div style="font-size:20px;margin-bottom:8px;">${m.icon}</div>
-            <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px;">${m.name}</div>
-            <div style="font-size:12px;color:var(--gray);line-height:1.4;">${m.desc}</div>
-            <div style="font-size:10px;color:var(--amber);margin-top:10px;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;">⏳ En construcción</div>
-          </div>
-        `).join('')}
-      </div>
-
-    </div>
-  `;
-}
-
-window.openClientOverview  = openClientOverview;
-window.renderClientOverview = renderClientOverview;
+window.openClientOverview = openClientOverview;
 
 // ── Vista detallada ecommerce (preservada para Ecommerce OS) ─
 

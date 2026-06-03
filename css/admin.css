@@ -79,7 +79,7 @@
 .admin-body { max-width: 1200px; margin: 0 auto; }
 
 /* KPI STRIP */
-.kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; margin-bottom: 28px; }
+.kpi-strip { display: grid; grid-template-columns: repeat(6,1fr); gap: 12px; margin-bottom: 28px; }
 .kpi-card {
   background: var(--black-card);
   border: 1px solid var(--border);
