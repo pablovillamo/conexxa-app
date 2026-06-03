@@ -7,38 +7,38 @@ console.log('[AdminOS] loaded');
 // ── Sidebar nav items ─────────────────────────────────────
 
 const SIDEBAR_CORE = [
-  { id:'os',       icon:'⚡', label:'Dashboard',   status:'active', action:() => showAdminView('os')      },
-  { id:'clients',  icon:'👥', label:'Clientes',    status:'active', action:() => showAdminView('clients') },
-  { id:'brain',    icon:'🧠', label:'Brain IA',    status:'active', action:() => showAdminView('brain')   },
-  { id:'tasks',    icon:'✅', label:'Tareas',       status:'active', action:() => showAdminView('tasks')  },
-  { id:'notes',    icon:'📝', label:'Notas OS',       status:'active', action:() => showAdminView('notas-os')        },
-  { id:'notif',    icon:'🔔', label:'Notificaciones', status:'active', action:() => showAdminView('notificaciones')  },
-  { id:'crm',      icon:'🗃️', label:'CRM',         status:'coming' },
-  { id:'docs',     icon:'📄', label:'Documentos',  status:'coming' },
-  { id:'resources',icon:'📚', label:'Recursos',    status:'coming' },
-  { id:'meetings', icon:'🎙️', label:'Reuniones',   status:'coming' },
-  { id:'kpis',     icon:'📊', label:'KPIs',        status:'coming' },
-  { id:'ia',       icon:'🤖', label:'IA',           status:'coming' },
+  { id:'os',       label:'Dashboard',      status:'active', action:() => showAdminView('os')           },
+  { id:'clients',  label:'Clientes',       status:'active', action:() => showAdminView('clients')      },
+  { id:'brain',    label:'Brain IA',       status:'active', action:() => showAdminView('brain')        },
+  { id:'tasks',    label:'Tareas',         status:'active', action:() => showAdminView('tasks')        },
+  { id:'notes',    label:'Notas OS',       status:'active', action:() => showAdminView('notas-os')     },
+  { id:'notif',    label:'Notificaciones', status:'active', action:() => showAdminView('notificaciones') },
+  { id:'crm',      label:'CRM',            status:'coming' },
+  { id:'docs',     label:'Documentos',     status:'coming' },
+  { id:'resources',label:'Recursos',       status:'coming' },
+  { id:'meetings', label:'Reuniones',      status:'coming' },
+  { id:'kpis',     label:'KPIs',           status:'coming' },
+  { id:'ia',       label:'IA',             status:'coming' },
 ];
 
 const SIDEBAR_MODULES = [
-  { id:'ecom',        icon:'🛒', label:'Ecommerce OS',        status:'active',  action:() => showAdminView('ecommerce')           },
-  { id:'store-intel', icon:'🏪', label:'Store Intelligence', status:'active',  action:() => showAdminView('store-intelligence') },
-  { id:'finanzas',    icon:'💰', label:'Finanzas OS',      status:'active',  action:() => showAdminView('finanzas')     },
-  { id:'ops',         icon:'⚙️', label:'Operaciones OS',  status:'active',  action:() => showAdminView('operaciones')  },
-  { id:'analytics',   icon:'📊', label:'Analytics OS',    status:'coming'  },
-  { id:'content',     icon:'✍️', label:'Content OS',      status:'coming'  },
-  { id:'app-os',      icon:'📱', label:'App OS',          status:'coming'  },
-  { id:'integrations',icon:'🔌', label:'Integraciones',   status:'active',  action:() => showAdminView('integrations') },
-  { id:'ceo',         icon:'🎯', label:'CEO OS',          status:'coming'  },
-  { id:'inv',         icon:'📦', label:'Inventario OS',     status:'coming'  },
-  { id:'purch',       icon:'🛍️', label:'Compras OS',       status:'coming'  },
-  { id:'rrhh',        icon:'🤝', label:'RRHH OS',           status:'coming'  },
-  { id:'cx',          icon:'💬', label:'Customer Success',  status:'coming'  },
-  { id:'franchise',   icon:'🏪', label:'Franquicias OS',    status:'locked'  },
-  { id:'brand',       icon:'🎨', label:'Marca y Producto',  status:'coming'  },
-  { id:'ia-os',       icon:'🤖', label:'IA OS',             status:'coming'  },
-  { id:'vg',          icon:'🚀', label:'Conexxa',            status:'active',  action:() => showAdminView('clients')       },
+  { id:'ecom',        label:'Ecommerce OS',      status:'active', action:() => showAdminView('ecommerce')        },
+  { id:'store-intel', label:'Store Intelligence', status:'active', action:() => showAdminView('store-intelligence') },
+  { id:'finanzas',    label:'Finanzas OS',        status:'active', action:() => showAdminView('finanzas')        },
+  { id:'ops',         label:'Operaciones OS',     status:'active', action:() => showAdminView('operaciones')     },
+  { id:'analytics',   label:'Analytics OS',       status:'coming' },
+  { id:'content',     label:'Content OS',         status:'coming' },
+  { id:'app-os',      label:'App OS',             status:'coming' },
+  { id:'integrations',label:'Integraciones',      status:'active', action:() => showAdminView('integrations')   },
+  { id:'ceo',         label:'CEO OS',             status:'coming' },
+  { id:'inv',         label:'Inventario OS',      status:'coming' },
+  { id:'purch',       label:'Compras OS',         status:'coming' },
+  { id:'rrhh',        label:'RRHH OS',            status:'coming' },
+  { id:'cx',          label:'Customer Success',   status:'coming' },
+  { id:'franchise',   label:'Franquicias OS',     status:'locked' },
+  { id:'brand',       label:'Marca y Producto',   status:'coming' },
+  { id:'ia-os',       label:'IA OS',              status:'coming' },
+  { id:'vg',          label:'Conexxa',            status:'active', action:() => showAdminView('clients') },
 ];
 
 // ── Sync sidebar avatar + name ────────────────────────────
@@ -65,13 +65,12 @@ function renderSidebarNav() {
     const isLocked  = item.status === 'locked';
     const badge = isActive ? ''
       : isComing ? `<span class="osb-item-badge osb-badge-soon">Soon</span>`
-      : `<span class="osb-item-badge osb-badge-locked">🔒</span>`;
+      : `<span class="osb-item-badge osb-badge-locked">Locked</span>`;
     const cls = `osb-item${isActive ? '' : isComing ? ' is-coming' : ' is-locked'}`;
     const click = isActive && item.action
       ? `onclick="osbNavigate('${item.id}')"`
       : '';
     return `<button class="${cls}" id="osb-item-${item.id}" ${click}>
-      <span class="osb-item-icon">${item.icon}</span>
       <span class="osb-item-label">${item.label}</span>
       ${badge}
     </button>`;
@@ -145,12 +144,11 @@ function renderAdminOS() {
     const btn = isActive
       ? `<button class="cc-mod-btn open" onclick="handleOSModuleClick('${mod.id}')">Abrir →</button>`
       : isSoon
-        ? `<button class="cc-mod-btn disabled-btn">⏳ Próximamente</button>`
-        : `<button class="cc-mod-btn disabled-btn">🔒 Bloqueado</button>`;
+        ? `<button class="cc-mod-btn disabled-btn">Próximamente</button>`
+        : `<button class="cc-mod-btn disabled-btn">Bloqueado</button>`;
     return `
       <div class="${cardCls}">
         <div class="cc-mod-card-top">
-          <span class="cc-mod-icon">${mod.icon}</span>
           <span class="cc-mod-badge ${badgeCls}">${badgeTxt}</span>
         </div>
         <div class="cc-mod-name">${mod.name}</div>
@@ -200,7 +198,7 @@ function renderAdminOS() {
       <!-- Welcome -->
       <div class="cc-welcome">
         <div>
-          <p class="cc-greeting">Hola, ${adminName} <span>👋</span></p>
+          <p class="cc-greeting">Hola, ${adminName}</p>
           <h1 class="cc-headline">Conexxa OS</h1>
           <p class="cc-sub">Sistema Operativo Empresarial · ${total} cliente${total !== 1 ? 's' : ''} en plataforma</p>
         </div>
@@ -315,14 +313,14 @@ function showOSToast(msg, cls = '') {
 // ── Brain Admin View ─────────────────────────────────────
 
 const BRAIN_MASTERS = [
-  { slug:'identidad', icon:'🧬', name:'Identidad',   desc:'Misión, visión, valores y personalidad de marca.' },
-  { slug:'oferta',    icon:'🎯', name:'Oferta',       desc:'Propuesta de valor, precio y transformación.' },
-  { slug:'cliente',   icon:'👤', name:'Cliente Ideal',desc:'Perfil, dolores, deseos y objeciones.' },
-  { slug:'mercado',   icon:'🌍', name:'Mercado',      desc:'Competencia, tendencias y oportunidades.' },
-  { slug:'branding',  icon:'🎨', name:'Branding',     desc:'Identidad visual, paleta y tipografía.' },
-  { slug:'vision',    icon:'🔭', name:'Visión',       desc:'Objetivos a largo plazo y hoja de ruta.' },
-  { slug:'operacion', icon:'⚙️', name:'Operaciones',  desc:'Flujos, SOPs y estructura operativa.' },
-  { slug:'ia',        icon:'🤖', name:'IA Estratégica',desc:'Aplicación de IA al negocio y automatizaciones.' },
+  { slug:'identidad', name:'Identidad',     desc:'Misión, visión, valores y personalidad de marca.' },
+  { slug:'oferta',    name:'Oferta',         desc:'Propuesta de valor, precio y transformación.' },
+  { slug:'cliente',   name:'Cliente Ideal',  desc:'Perfil, dolores, deseos y objeciones.' },
+  { slug:'mercado',   name:'Mercado',        desc:'Competencia, tendencias y oportunidades.' },
+  { slug:'branding',  name:'Branding',       desc:'Identidad visual, paleta y tipografía.' },
+  { slug:'vision',    name:'Visión',         desc:'Objetivos a largo plazo y hoja de ruta.' },
+  { slug:'operacion', name:'Operaciones',    desc:'Flujos, SOPs y estructura operativa.' },
+  { slug:'ia',        name:'IA Estratégica', desc:'Aplicación de IA al negocio y automatizaciones.' },
 ];
 
 function renderAdminBrainView() {
@@ -343,7 +341,6 @@ function renderAdminBrainView() {
   // ── 8 Master cards ───────────────────────────────────────
   const masterCardsHTML = BRAIN_MASTERS.map(m => `
     <div class="brain-master-card" onclick="openBrainMaster('${m.slug}')">
-      <div class="brain-master-icon">${m.icon}</div>
       <div class="brain-master-name">${m.name}</div>
       <div class="brain-master-desc">${m.desc}</div>
       <div class="brain-master-arrow">→</div>
@@ -490,18 +487,18 @@ async function renderAdminTasksView() {
           const dueDate = t.due_date ? new Date(t.due_date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}) : null;
           const isOverdue = !t.completed && t.due_date && new Date(t.due_date) < today;
           const statusDot = t.completed
-            ? `<span style="color:var(--green);font-size:12px;">✓ Completada</span>`
+            ? `<span style="color:var(--stable);font-size:11px;font-family:var(--font-mono);">Completada</span>`
             : isOverdue
-              ? `<span style="color:var(--red);font-size:12px;">⚠ Vencida</span>`
-              : `<span style="color:var(--amber);font-size:12px;">● Pendiente</span>`;
+              ? `<span style="color:var(--critical);font-size:11px;font-family:var(--font-mono);">Vencida</span>`
+              : `<span style="color:var(--warning);font-size:11px;font-family:var(--font-mono);">Pendiente</span>`;
           return `
-            <div style="background:var(--black-card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:16px;${t.completed?'opacity:.5':''}">
+            <div style="background:var(--panel-surface);border:1px solid var(--border-line);border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:16px;${t.completed?'opacity:.5':''}">
               <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px;${t.completed?'text-decoration:line-through':''}">${t.title}</div>
-                ${t.description ? `<div style="font-size:12px;color:var(--gray);margin-bottom:3px;">${t.description}</div>` : ''}
+                <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:3px;${t.completed?'text-decoration:line-through':''}">${t.title}</div>
+                ${t.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:3px;">${t.description}</div>` : ''}
                 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                  <span style="font-size:11px;color:var(--gray);">👤 ${clientName}</span>
-                  ${dueDate ? `<span style="font-size:11px;color:${isOverdue?'var(--red)':'var(--gray)'};">📅 ${dueDate}</span>` : ''}
+                  <span style="font-size:11px;color:var(--text-muted);">${clientName}</span>
+                  ${dueDate ? `<span style="font-size:11px;color:${isOverdue?'var(--critical)':'var(--text-muted)'};">${dueDate}</span>` : ''}
                   ${statusDot}
                 </div>
               </div>

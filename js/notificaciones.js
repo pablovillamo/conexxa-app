@@ -77,7 +77,9 @@ function renderNotificacionesView() {
 
       <!-- Info banner -->
       <div class="notif-banner">
-        <div class="notif-banner-icon">🛡️</div>
+        <div class="notif-banner-icon">
+          <svg viewBox="0 0 16 16" fill="none" width="16" height="16"><path d="M8 2L3 4.5V9c0 2.5 2.2 4.5 5 5 2.8-.5 5-2.5 5-5V4.5L8 2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        </div>
         <div>
           <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:3px;">Visibilidad siempre completa</div>
           <div style="font-size:12px;color:var(--gray);line-height:1.5;">

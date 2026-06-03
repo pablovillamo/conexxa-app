@@ -11,7 +11,7 @@ const OS_MODULES = [
     id:          'vg-program',
     name:        'Programa Conexxa',
     description: 'Gestión de clientes activos, progreso por fases y módulos del programa.',
-    icon:        '🚀',
+    
     status:      'active',
     category:    'conexxa',
     action:      () => showAdminView('clients'),
@@ -21,7 +21,7 @@ const OS_MODULES = [
     id:          'vg-brain',
     name:        'Brain Clonado IA',
     description: 'Documentos estratégicos generados con IA: identidad, oferta, cliente ideal y más.',
-    icon:        '🧠',
+    
     status:      'active',
     category:    'conexxa',
     action:      () => showAdminView('brain'),
@@ -31,7 +31,7 @@ const OS_MODULES = [
     id:          'vg-ecommerce',
     name:        'Ecommerce OS',
     description: 'Métricas Shopify, productos sincronizados, órdenes y conexiones ecommerce.',
-    icon:        '🛒',
+    
     status:      'active',
     category:    'conexxa',
     action:      () => showAdminView('clients'),
@@ -41,7 +41,7 @@ const OS_MODULES = [
     id:          'vg-tasks',
     name:        'Tareas y Seguimiento',
     description: 'Asignación de tareas, checklists operativos y seguimiento de entregables.',
-    icon:        '✅',
+    
     status:      'active',
     category:    'conexxa',
     action:      () => showAdminView('tasks'),
@@ -53,7 +53,7 @@ const OS_MODULES = [
     id:          'core-crm',
     name:        'CRM Central',
     description: 'Base de datos unificada de clientes, contactos y segmentaciones por perfil.',
-    icon:        '👥',
+    
     status:      'coming_soon',
     category:    'core',
     action:      null,
@@ -63,7 +63,7 @@ const OS_MODULES = [
     id:          'core-docs',
     name:        'Documentos',
     description: 'Gestión centralizada de contratos, propuestas, SOPs y documentos internos.',
-    icon:        '📄',
+    
     status:      'coming_soon',
     category:    'core',
     action:      null,
@@ -73,7 +73,7 @@ const OS_MODULES = [
     id:          'core-meetings',
     name:        'Reuniones',
     description: 'Registro de auditorías, sesiones de trabajo y minutas de reuniones.',
-    icon:        '🎙️',
+    
     status:      'coming_soon',
     category:    'core',
     action:      null,
@@ -83,7 +83,7 @@ const OS_MODULES = [
     id:          'core-kpis',
     name:        'KPIs Dashboard',
     description: 'Panel de métricas globales: CR, AOV, LTV, CAC, ROAS por cliente y período.',
-    icon:        '📊',
+    
     status:      'coming_soon',
     category:    'core',
     action:      null,
@@ -93,7 +93,7 @@ const OS_MODULES = [
     id:          'core-resources',
     name:        'Recursos',
     description: 'Biblioteca de entregables, materiales educativos y recursos por módulo.',
-    icon:        '📚',
+    
     status:      'coming_soon',
     category:    'core',
     action:      null,
@@ -105,7 +105,7 @@ const OS_MODULES = [
     id:          'os-ceo',
     name:        'CEO OS',
     description: 'Dashboard ejecutivo con visión estratégica, OKRs y decisiones clave del negocio.',
-    icon:        '🎯',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -115,7 +115,7 @@ const OS_MODULES = [
     id:          'os-operations',
     name:        'Operaciones OS',
     description: 'SOPs, flujos de trabajo, automatizaciones y gestión operativa del negocio.',
-    icon:        '⚙️',
+    
     status:      'active',
     category:    'business',
     action:      () => showAdminView('operaciones'),
@@ -125,7 +125,7 @@ const OS_MODULES = [
     id:          'os-inventory',
     name:        'Inventario OS',
     description: 'Control de stock, movimientos de inventario, alertas y trazabilidad de productos.',
-    icon:        '📦',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -135,7 +135,7 @@ const OS_MODULES = [
     id:          'os-purchasing',
     name:        'Compras OS',
     description: 'Gestión de proveedores, órdenes de compra, costos y negociaciones.',
-    icon:        '🛍️',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -145,7 +145,7 @@ const OS_MODULES = [
     id:          'os-rrhh',
     name:        'RRHH OS',
     description: 'Gestión de equipo, roles, onboarding, capacitación y cultura organizacional.',
-    icon:        '🤝',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -155,7 +155,7 @@ const OS_MODULES = [
     id:          'os-cx',
     name:        'Customer Success OS',
     description: 'Retención, NPS, ciclo de vida del cliente y estrategias de fidelización.',
-    icon:        '💬',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -165,7 +165,7 @@ const OS_MODULES = [
     id:          'os-brand',
     name:        'Marca y Producto OS',
     description: 'Estrategia de marca, roadmap de producto, identidad visual y posicionamiento.',
-    icon:        '🎨',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -175,7 +175,7 @@ const OS_MODULES = [
     id:          'os-franchise',
     name:        'Franquicias OS',
     description: 'Modelo de expansión, manual de franquicias, gestión de nuevas unidades.',
-    icon:        '🏪',
+    
     status:      'locked',
     category:    'business',
     action:      null,
@@ -187,7 +187,7 @@ const OS_MODULES = [
     id:          'finanzas',
     name:        'Finanzas OS',
     description: 'Control financiero completo: costos, ingresos, flujo de caja, presupuestos y rentabilidad.',
-    icon:        '💰',
+    
     status:      'active',
     category:    'business',
     action:      () => showAdminView('finanzas'),
@@ -199,7 +199,7 @@ const OS_MODULES = [
     id:          'analytics-os',
     name:        'Analytics OS',
     description: 'Business Intelligence, KPIs, ventas, ROAS, conversión, tendencias y forecast.',
-    icon:        '📊',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -211,7 +211,7 @@ const OS_MODULES = [
     id:          'content-os',
     name:        'Content OS',
     description: 'Calendario editorial, contenido, SEO, redes sociales, ideas, aprobación y publicaciones.',
-    icon:        '✍️',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -223,7 +223,7 @@ const OS_MODULES = [
     id:          'app-os',
     name:        'App OS',
     description: 'Usuarios, suscripciones, retención, churn, métricas de producto y crecimiento para aplicaciones.',
-    icon:        '📱',
+    
     status:      'coming_soon',
     category:    'business',
     action:      null,
@@ -235,7 +235,7 @@ const OS_MODULES = [
     id:          'int-shopify',
     name:        'Shopify',
     description: 'Conexión activa. Sincronización de productos, órdenes y métricas en tiempo real.',
-    icon:        '🛒',
+    
     status:      'active',
     category:    'integrations',
     action:      () => showAdminView('clients'),
@@ -245,7 +245,7 @@ const OS_MODULES = [
     id:          'int-meta',
     name:        'Meta Ads',
     description: 'Métricas de campañas Facebook e Instagram Ads, ROAS y audiencias.',
-    icon:        '📱',
+    
     status:      'coming_soon',
     category:    'integrations',
     action:      null,
@@ -255,7 +255,7 @@ const OS_MODULES = [
     id:          'int-klaviyo',
     name:        'Klaviyo',
     description: 'Email marketing, flujos automatizados, tasas de apertura y conversión.',
-    icon:        '📧',
+    
     status:      'coming_soon',
     category:    'integrations',
     action:      null,
@@ -265,7 +265,7 @@ const OS_MODULES = [
     id:          'int-manychat',
     name:        'ManyChat',
     description: 'Automatizaciones de chat, keyword triggers y flujos de conversión.',
-    icon:        '💬',
+    
     status:      'coming_soon',
     category:    'integrations',
     action:      null,
@@ -275,7 +275,7 @@ const OS_MODULES = [
     id:          'int-google',
     name:        'Google Drive',
     description: 'Sincronización de documentos, carpetas de clientes y entregables.',
-    icon:        '📁',
+    
     status:      'coming_soon',
     category:    'integrations',
     action:      null,
@@ -287,7 +287,7 @@ const OS_MODULES = [
     id:          'ai-brain',
     name:        'IA OS',
     description: 'Generación de documentos estratégicos, análisis de datos y automatización inteligente.',
-    icon:        '🤖',
+    
     status:      'active',
     category:    'ai',
     action:      () => showAdminView('clients'),
