@@ -117,6 +117,18 @@ async function loadUserProfile(user) {
       loadDashboard();
       break;
 
+    case 'app_client':
+      _showClientShell();
+      if (typeof renderAppClientDashboard === 'function') renderAppClientDashboard();
+      else { showView('view-app-client-dashboard'); renderClientOS({ dayNum:0, pct:0, pendingCount:0, doneCount:0, totalTasks:0 }); }
+      break;
+
+    case 'service_client':
+      _showClientShell();
+      if (typeof renderServiceClientDashboard === 'function') renderServiceClientDashboard();
+      else { showView('view-service-client-dashboard'); renderClientOS({ dayNum:0, pct:0, pendingCount:0, doneCount:0, totalTasks:0 }); }
+      break;
+
     case 'collaborator':
       _showClientShell();
       await loadClientView();

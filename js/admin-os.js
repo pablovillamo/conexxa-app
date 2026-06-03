@@ -4,43 +4,42 @@
 
 console.log('[AdminOS] loaded');
 
-// ── Sidebar nav items ─────────────────────────────────────
+// ── Sidebar nav — 3 secciones ─────────────────────────────
+
+const SIDEBAR_ADMIN_OS = [
+  { id:'clients',    label:'Clientes',              status:'active', action:() => showAdminView('clients')    },
+  { id:'ceos',       label:'CEOs',                  status:'active', action:() => showAdminView('ceos')       },
+  { id:'program90',  label:'Programa 90D',          status:'active', action:() => showAdminView('program90')  },
+  { id:'consulting', label:'Consultoría / Servicios',status:'active',action:() => showAdminView('consulting') },
+  { id:'apps',       label:'Apps',                  status:'active', action:() => showAdminView('apps')       },
+  { id:'users',      label:'Usuarios',              status:'active', action:() => showAdminView('users')      },
+];
 
 const SIDEBAR_CORE = [
-  { id:'os',       label:'Dashboard',      status:'active', action:() => showAdminView('os')           },
-  { id:'clients',  label:'Clientes',       status:'active', action:() => showAdminView('clients')      },
-  { id:'brain',    label:'Brain IA',       status:'active', action:() => showAdminView('brain')        },
-  { id:'tasks',    label:'Tareas',         status:'active', action:() => showAdminView('tasks')        },
-  { id:'notes',    label:'Notas OS',       status:'active', action:() => showAdminView('notas-os')     },
+  { id:'os',       label:'Dashboard',      status:'active', action:() => showAdminView('os')             },
+  { id:'brain',    label:'Brain IA',       status:'active', action:() => showAdminView('brain')          },
+  { id:'tasks',    label:'Tareas',         status:'active', action:() => showAdminView('tasks')          },
+  { id:'notes',    label:'Notas OS',       status:'active', action:() => showAdminView('notas-os')       },
   { id:'notif',    label:'Notificaciones', status:'active', action:() => showAdminView('notificaciones') },
-  { id:'users',    label:'Usuarios',        status:'active', action:() => showAdminView('users')        },
-  { id:'config',   label:'Configuración',  status:'active', action:() => showAdminView('config')       },
-  { id:'crm',      label:'CRM',            status:'coming' },
-  { id:'docs',     label:'Documentos',     status:'coming' },
-  { id:'resources',label:'Recursos',       status:'coming' },
-  { id:'meetings', label:'Reuniones',      status:'coming' },
-  { id:'kpis',     label:'KPIs',           status:'coming' },
-  { id:'ia',       label:'IA',             status:'coming' },
+  { id:'config',   label:'Configuración',  status:'active', action:() => showAdminView('config')         },
 ];
 
 const SIDEBAR_MODULES = [
-  { id:'ecom',        label:'Ecommerce OS',      status:'active', action:() => showAdminView('ecommerce')        },
-  { id:'store-intel', label:'Store Intelligence', status:'active', action:() => showAdminView('store-intelligence') },
-  { id:'finanzas',    label:'Finanzas OS',        status:'active', action:() => showAdminView('finanzas')        },
-  { id:'ops',         label:'Operaciones OS',     status:'active', action:() => showAdminView('operaciones')     },
+  { id:'ecom',        label:'Ecommerce OS',      status:'active', action:() => showAdminView('ecommerce')         },
+  { id:'store-intel', label:'Store Intelligence', status:'active', action:() => showAdminView('store-intelligence')},
+  { id:'finanzas',    label:'Finanzas OS',        status:'active', action:() => showAdminView('finanzas')         },
+  { id:'ops',         label:'Operaciones OS',     status:'active', action:() => showAdminView('operaciones')      },
+  { id:'integrations',label:'Integraciones',      status:'active', action:() => showAdminView('integrations')    },
+  { id:'ceo-os',      label:'CEO OS',             status:'coming' },
+  { id:'crm',         label:'CRM',                status:'coming' },
+  { id:'docs',        label:'Documentos',         status:'coming' },
+  { id:'resources',   label:'Recursos',           status:'coming' },
+  { id:'meetings',    label:'Reuniones',          status:'coming' },
+  { id:'kpis',        label:'KPIs',               status:'coming' },
+  { id:'ia',          label:'IA',                 status:'coming' },
   { id:'analytics',   label:'Analytics OS',       status:'coming' },
   { id:'content',     label:'Content OS',         status:'coming' },
   { id:'app-os',      label:'App OS',             status:'coming' },
-  { id:'integrations',label:'Integraciones',      status:'active', action:() => showAdminView('integrations')   },
-  { id:'ceo',         label:'CEO OS',             status:'coming' },
-  { id:'inv',         label:'Inventario OS',      status:'coming' },
-  { id:'purch',       label:'Compras OS',         status:'coming' },
-  { id:'rrhh',        label:'RRHH OS',            status:'coming' },
-  { id:'cx',          label:'Customer Success',   status:'coming' },
-  { id:'franchise',   label:'Franquicias OS',     status:'locked' },
-  { id:'brand',       label:'Marca y Producto',   status:'coming' },
-  { id:'ia-os',       label:'IA OS',              status:'coming' },
-  { id:'vg',          label:'Conexxa',            status:'active', action:() => showAdminView('clients') },
 ];
 
 // ── Sync sidebar avatar + name ────────────────────────────
@@ -57,34 +56,33 @@ function syncSidebarUser() {
 // ── Render sidebar nav ────────────────────────────────────
 
 function renderSidebarNav() {
+  const adminEl   = document.getElementById('osb-nav-admin');
   const coreEl    = document.getElementById('osb-nav-core');
   const modulesEl = document.getElementById('osb-nav-modules');
   if (!coreEl || !modulesEl) return;
 
   const buildItem = (item) => {
-    const isActive  = item.status === 'active';
-    const isComing  = item.status === 'coming';
-    const isLocked  = item.status === 'locked';
+    const isActive = item.status === 'active';
+    const isComing = item.status === 'coming';
     const badge = isActive ? ''
       : isComing ? `<span class="osb-item-badge osb-badge-soon">Soon</span>`
       : `<span class="osb-item-badge osb-badge-locked">Locked</span>`;
-    const cls = `osb-item${isActive ? '' : isComing ? ' is-coming' : ' is-locked'}`;
-    const click = isActive && item.action
-      ? `onclick="osbNavigate('${item.id}')"`
-      : '';
+    const cls   = `osb-item${isActive ? '' : isComing ? ' is-coming' : ' is-locked'}`;
+    const click = isActive && item.action ? `onclick="osbNavigate('${item.id}')"` : '';
     return `<button class="${cls}" id="osb-item-${item.id}" ${click}>
       <span class="osb-item-label">${item.label}</span>
       ${badge}
     </button>`;
   };
 
+  if (adminEl)   adminEl.innerHTML   = SIDEBAR_ADMIN_OS.map(buildItem).join('');
   coreEl.innerHTML    = SIDEBAR_CORE.map(buildItem).join('');
   modulesEl.innerHTML = SIDEBAR_MODULES.map(buildItem).join('');
   syncSidebarUser();
 }
 
 function osbNavigate(itemId) {
-  const allItems = [...SIDEBAR_CORE, ...SIDEBAR_MODULES];
+  const allItems = [...SIDEBAR_ADMIN_OS, ...SIDEBAR_CORE, ...SIDEBAR_MODULES];
   const item = allItems.find(i => i.id === itemId);
   if (item && item.action) item.action();
 }

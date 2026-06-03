@@ -11,8 +11,8 @@ function getClientImageUrl(client) {
 }
 
 async function loadAdminClients() {
-  // Cuentas comerciales: ceo, program_90d y client (legacy). Excluye admin y collaborator.
-  const { data: clients } = await sb.from('profiles').select('*').in('role',['client','ceo','program_90d']).order('created_at',{ascending:false});
+  // Cuentas comerciales: todos los tipos de cliente. Excluye admin y collaborator.
+  const { data: clients } = await sb.from('profiles').select('*').in('role',['client','ceo','program_90d','app_client','service_client']).order('created_at',{ascending:false});
   const { data: allProgress } = await sb.from('client_modules').select('*');
   const { data: allTasks } = await sb.from('tasks').select('*');
 
@@ -420,3 +420,209 @@ async function crearCliente() {
     btn.textContent = 'Crear cliente';
   }
 }
+
+// ── Vista maestro: Clientes (todos los tipos comerciales) ──
+// Reutiliza la tabla existente — ya carga en loadAdminClients()
+function renderAdminClientsView() {
+  // La vista view-admin-clients ya se llena por loadAdminClients()
+  // Esta función se llama desde navigation.js al navegar
+  if (allClientsData.length > 0) renderClientsTable(allClientsData);
+}
+window.renderAdminClientsView = renderAdminClientsView;
+
+// ── Vista: CEOs ────────────────────────────────────────────
+async function renderAdminCEOsView() {
+  const el = document.getElementById('admin-ceos-list');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">Cargando...</div>';
+
+  const { data: ceos } = await sb.from('profiles').select('*').in('role',['ceo','client']).order('created_at',{ascending:false});
+  const list = ceos || [];
+
+  if (!list.length) {
+    el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px;">Sin CEOs registrados todavía.</div>`;
+    return;
+  }
+
+  const badgeCls = 'color:var(--acid);background:rgba(166,255,0,.08);border:1px solid rgba(166,255,0,.2);border-radius:4px;font-size:10px;font-family:var(--font-mono);padding:1px 6px;';
+
+  el.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid var(--border-line);">
+        ${['Empresa / CEO','Email','Nicho','Estado','Creado','Acciones'].map(h =>
+          `<th style="text-align:left;padding:8px 12px;font-size:11px;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">${h}</th>`
+        ).join('')}
+      </tr></thead>
+      <tbody>${list.map(c => {
+        const status = c.status || 'activo';
+        const created = c.created_at ? new Date(c.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        return `<tr onclick="openClientOverview('${c.id}')" style="cursor:pointer;border-bottom:1px solid var(--border-line);">
+          <td style="padding:12px;"><div style="font-weight:600;font-size:13px;color:var(--text-primary);">${c.full_name||c.email}</div><span style="${badgeCls}">CEO</span></td>
+          <td style="padding:12px;font-size:12px;color:var(--text-secondary);">${c.email}</td>
+          <td style="padding:12px;font-size:12px;color:var(--text-secondary);">${c.nicho||'—'}</td>
+          <td style="padding:12px;"><span class="status-badge ${status==='activo'?'stable':'warning'}">${status}</span></td>
+          <td style="padding:12px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono);">${created}</td>
+          <td style="padding:12px;"><svg viewBox="0 0 16 16" fill="none" style="width:16px;height:16px;color:var(--text-muted);"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+window.renderAdminCEOsView = renderAdminCEOsView;
+
+// ── Vista: Programa 90D ────────────────────────────────────
+async function renderAdminProgram90View() {
+  const listEl = document.getElementById('admin-program90-list');
+  const kpiEl  = document.getElementById('admin-program90-kpis');
+  if (!listEl) return;
+
+  listEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">Cargando...</div>';
+
+  const { data: clients } = await sb.from('profiles').select('*').eq('role','program_90d').order('created_at',{ascending:false});
+  const { data: allProgress } = await sb.from('client_modules').select('*');
+  const { data: allTasks }    = await sb.from('tasks').select('*');
+  const list = clients || [];
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // KPIs
+  let activos=0, completados=0, pausados=0, proxFinish=0, totalPct=0, vencidas=0;
+  let topClient=null, topPct=0, atrasados=0;
+  list.forEach(c => {
+    const s = (c.status||'activo').toLowerCase();
+    if(s==='activo') activos++; else if(s==='finalizado') completados++; else if(s==='pausado') pausados++;
+    const prog = (allProgress||[]).filter(p=>p.client_id===c.id);
+    const done = prog.filter(p=>p.completed).length;
+    const pct  = Math.round((done/9)*100);
+    totalPct += pct;
+    if(pct>topPct){topPct=pct;topClient=c;}
+    if(c.end_date){const dl=Math.ceil((new Date(c.end_date)-today)/86400000);if(dl>0&&dl<=15)proxFinish++;}
+    if(c.start_date){const dn=Math.floor((Date.now()-new Date(c.start_date).getTime())/86400000)+1;const ep=Math.round((Math.min(dn,90)/90)*100);if(pct<ep-20)atrasados++;}
+  });
+  (allTasks||[]).forEach(t=>{if(!t.completed&&t.due_date&&new Date(t.due_date)<today)vencidas++;});
+  const avgPct = list.length>0?Math.round(totalPct/list.length):0;
+
+  if (kpiEl) kpiEl.innerHTML = [
+    {val:activos,    label:'Activos',    cls:'green'},
+    {val:completados,label:'Completados',cls:''},
+    {val:pausados,   label:'Pausados',   cls:'amber'},
+    {val:proxFinish, label:'Próx. fin',  cls:'amber'},
+    {val:avgPct+'%', label:'Promedio',   cls:'green'},
+    {val:atrasados,  label:'Atrasados',  cls:atrasados>0?'amber':''},
+    {val:vencidas,   label:'T. vencidas',cls:vencidas>0?'critical':''},
+    {val:topClient?(topClient.full_name||topClient.email).split(' ')[0]+' '+topPct+'%':'—', label:'Mayor avance', cls:'green'},
+  ].map(k=>`<div class="cc-qs-card ${k.cls}"><div class="cc-qs-val" style="font-size:18px;">${k.val}</div><div class="cc-qs-label">${k.label}</div></div>`).join('');
+
+  if (!list.length) {
+    listEl.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px;">Sin clientes del Programa 90D todavía.</div>`;
+    return;
+  }
+
+  const badgeCls = 'color:#818CF8;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:4px;font-size:10px;font-family:var(--font-mono);padding:1px 6px;';
+
+  listEl.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid var(--border-line);">
+        ${['Cliente','Nicho','Ingreso','Día','Días rest.','Progreso','Estado','Acciones'].map(h =>
+          `<th style="text-align:left;padding:8px 12px;font-size:11px;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">${h}</th>`
+        ).join('')}
+      </tr></thead>
+      <tbody>${list.map(c => {
+        const prog = (allProgress||[]).filter(p=>p.client_id===c.id);
+        const done = prog.filter(p=>p.completed).length;
+        const pct  = Math.round((done/9)*100);
+        let dayNum='—', daysLeft='—', daysClass='';
+        if(c.start_date){const d=Math.floor((Date.now()-new Date(c.start_date).getTime())/86400000)+1;dayNum=Math.min(90,Math.max(1,d));}
+        if(c.end_date){const dl=Math.ceil((new Date(c.end_date)-today)/86400000);daysLeft=dl>0?dl+' días':'Vencido';daysClass=dl<=0?'days-urgent':dl<=15?'days-warn':'days-ok';}
+        const startStr=c.start_date?new Date(c.start_date).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'—';
+        const status=c.status||'activo';
+        return `<tr onclick="openClientOverview('${c.id}')" style="cursor:pointer;border-bottom:1px solid var(--border-line);">
+          <td style="padding:12px;"><div style="font-weight:600;font-size:13px;color:var(--text-primary);">${c.full_name||c.email}</div><span style="${badgeCls}">Prog 90D</span></td>
+          <td style="padding:12px;font-size:12px;color:var(--text-secondary);">${c.nicho||'—'}</td>
+          <td style="padding:12px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono);">${startStr}</td>
+          <td style="padding:12px;font-size:13px;color:var(--acid);font-family:var(--font-mono);">${dayNum}</td>
+          <td style="padding:12px;"><span class="days-remaining ${daysClass}">${daysLeft}</span></td>
+          <td style="padding:12px;"><div style="display:flex;align-items:center;gap:8px;"><div class="progress-cell-bar"><div class="progress-cell-fill" style="width:${pct}%"></div></div><span style="font-size:11px;color:var(--text-muted);">${pct}%</span></div></td>
+          <td style="padding:12px;"><span class="status-badge ${status==='activo'?'stable':status==='pausado'?'warning':'optimal'}">${status}</span></td>
+          <td style="padding:12px;"><svg viewBox="0 0 16 16" fill="none" style="width:16px;height:16px;color:var(--text-muted);"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+window.renderAdminProgram90View = renderAdminProgram90View;
+
+// ── Vista: Consultoría / Servicios ─────────────────────────
+async function renderAdminConsultingView() {
+  const el = document.getElementById('admin-consulting-list');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">Cargando...</div>';
+
+  const { data: clients } = await sb.from('profiles').select('*').eq('role','service_client').order('created_at',{ascending:false});
+  const list = clients || [];
+
+  if (!list.length) {
+    el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px;">No hay clientes de consultoría registrados todavía.</div>`;
+    return;
+  }
+
+  const badgeCls = 'color:#F59E0B;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:4px;font-size:10px;font-family:var(--font-mono);padding:1px 6px;';
+
+  el.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid var(--border-line);">
+        ${['Cliente','Email','Nicho','Estado','Inicio','Acciones'].map(h =>
+          `<th style="text-align:left;padding:8px 12px;font-size:11px;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">${h}</th>`
+        ).join('')}
+      </tr></thead>
+      <tbody>${list.map(c => {
+        const status  = c.status || 'activo';
+        const created = c.created_at ? new Date(c.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        return `<tr onclick="openClientOverview('${c.id}')" style="cursor:pointer;border-bottom:1px solid var(--border-line);">
+          <td style="padding:12px;"><div style="font-weight:600;font-size:13px;color:var(--text-primary);">${c.full_name||c.email}</div><span style="${badgeCls}">Consultoría</span></td>
+          <td style="padding:12px;font-size:12px;color:var(--text-secondary);">${c.email}</td>
+          <td style="padding:12px;font-size:12px;color:var(--text-secondary);">${c.nicho||'—'}</td>
+          <td style="padding:12px;"><span class="status-badge ${status==='activo'?'stable':'warning'}">${status}</span></td>
+          <td style="padding:12px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono);">${created}</td>
+          <td style="padding:12px;"><svg viewBox="0 0 16 16" fill="none" style="width:16px;height:16px;color:var(--text-muted);"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+window.renderAdminConsultingView = renderAdminConsultingView;
+
+// ── Vista: Apps ────────────────────────────────────────────
+async function renderAdminAppsView() {
+  const el = document.getElementById('admin-apps-list');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">Cargando...</div>';
+
+  const { data: clients } = await sb.from('profiles').select('*').eq('role','app_client').order('created_at',{ascending:false});
+  const list = clients || [];
+
+  if (!list.length) {
+    el.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px;">No hay proyectos de apps registrados todavía.</div>`;
+    return;
+  }
+
+  const badgeCls = 'color:#14B8A6;background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.2);border-radius:4px;font-size:10px;font-family:var(--font-mono);padding:1px 6px;';
+
+  el.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid var(--border-line);">
+        ${['Proyecto / App','Email','Nicho','Estado','Ingreso','Acciones'].map(h =>
+          `<th style="text-align:left;padding:8px 12px;font-size:11px;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">${h}</th>`
+        ).join('')}
+      </tr></thead>
+      <tbody>${list.map(c => {
+        const status  = c.status || 'activo';
+        const created = c.created_at ? new Date(c.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        return `<tr onclick="openClientOverview('${c.id}')" style="cursor:pointer;border-bottom:1px solid var(--border-line);">
+          <td style="padding:12px;"><div style="font-weight:600;font-size:13px;color:var(--text-primary);">${c.full_name||c.email}</div><span style="${badgeCls}">App</span></td>
+          <td style="padding:12px;font-size:12px;color:var(--text-secondary);">${c.email}</td>
+          <td style="padding:12px;font-size:12px;color:var(--text-secondary);">${c.nicho||'—'}</td>
+          <td style="padding:12px;"><span class="status-badge ${status==='activo'?'stable':'warning'}">${status}</span></td>
+          <td style="padding:12px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono);">${created}</td>
+          <td style="padding:12px;"><svg viewBox="0 0 16 16" fill="none" style="width:16px;height:16px;color:var(--text-muted);"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+window.renderAdminAppsView = renderAdminAppsView;

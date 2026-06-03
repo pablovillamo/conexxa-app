@@ -11,7 +11,24 @@ function showAdminView(view) {
     if (typeof syncSidebarUser === 'function') syncSidebarUser();
   } else if (view === 'clients') {
     showView('view-admin-clients');
+    if (typeof renderAdminClientsView === 'function') renderAdminClientsView();
     if (typeof setSidebarActive === 'function') setSidebarActive('clients');
+  } else if (view === 'ceos') {
+    showView('view-admin-ceos');
+    if (typeof renderAdminCEOsView === 'function') renderAdminCEOsView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('ceos');
+  } else if (view === 'program90') {
+    showView('view-admin-program90');
+    if (typeof renderAdminProgram90View === 'function') renderAdminProgram90View();
+    if (typeof setSidebarActive === 'function') setSidebarActive('program90');
+  } else if (view === 'consulting') {
+    showView('view-admin-consulting');
+    if (typeof renderAdminConsultingView === 'function') renderAdminConsultingView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('consulting');
+  } else if (view === 'apps') {
+    showView('view-admin-apps');
+    if (typeof renderAdminAppsView === 'function') renderAdminAppsView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('apps');
   } else if (view === 'notificaciones') {
     showView('view-admin-notificaciones');
     if (typeof renderNotificacionesView === 'function') renderNotificacionesView();
