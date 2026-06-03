@@ -11,7 +11,8 @@ function getClientImageUrl(client) {
 }
 
 async function loadAdminClients() {
-  const { data: clients } = await sb.from('profiles').select('*').eq('role','client').order('created_at',{ascending:false});
+  // Transición: incluye 'client' (legacy) y 'ceo' hasta completar migración
+  const { data: clients } = await sb.from('profiles').select('*').in('role',['client','ceo']).order('created_at',{ascending:false});
   const { data: allProgress } = await sb.from('client_modules').select('*');
   const { data: allTasks } = await sb.from('tasks').select('*');
 
@@ -365,7 +366,7 @@ async function crearCliente() {
     const { data: authData, error: authErr } = await sb.auth.signUp({
       email,
       password: pass,
-      options: { data: { full_name: name, nicho, role: 'client' } }
+      options: { data: { full_name: name, nicho, role: 'ceo' } }
     });
     console.log('[crearCliente] signUp respuesta — user:', authData?.user?.id, '| error:', authErr);
 

@@ -278,6 +278,80 @@
       </div>
     </div>
 
+    <!-- ── NUEVAS VISTAS — SISTEMA DE ROLES ─────────────────── -->
+
+    <!-- CEO: Dashboard -->
+    <div id="view-ceo-dashboard" class="view">
+      <div style="max-width:900px;margin:0 auto;padding:32px 24px;">
+        <p class="section-kicker" style="margin-bottom:6px;">CEO · Centro de control</p>
+        <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;" id="ceo-dashboard-title">Dashboard</h1>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:28px;" id="ceo-dashboard-sub">Bienvenido a tu centro de operaciones.</p>
+        <div id="ceo-dashboard-content" style="color:var(--text-muted);font-size:14px;">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- CEO: Mi Equipo -->
+    <div id="view-ceo-team" class="view">
+      <div style="max-width:900px;margin:0 auto;padding:32px 24px;">
+        <p class="section-kicker" style="margin-bottom:6px;">CEO · Equipo</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;">Mi Equipo</h1>
+            <p style="font-size:13px;color:var(--text-muted);">Colaboradores con acceso a tu operación.</p>
+          </div>
+          <button class="btn-action" onclick="openCreateCollaboratorModal()" style="font-size:13px;">+ Crear colaborador</button>
+        </div>
+        <div id="ceo-team-list" style="color:var(--text-muted);font-size:14px;">Cargando equipo...</div>
+      </div>
+    </div>
+
+    <!-- Programa 90 días: Dashboard -->
+    <div id="view-program90-dashboard" class="view">
+      <div style="max-width:800px;margin:0 auto;padding:32px 24px;">
+        <p class="section-kicker" style="margin-bottom:6px;">Programa 90 Días · Progreso</p>
+        <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;" id="p90-title">Mi Programa</h1>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:28px;">Seguimiento de tu progreso, tareas y entregables.</p>
+        <div id="program90-content" style="color:var(--text-muted);font-size:14px;">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- Colaborador: Dashboard -->
+    <div id="view-collaborator-dashboard" class="view">
+      <div style="max-width:900px;margin:0 auto;padding:32px 24px;">
+        <p class="section-kicker" style="margin-bottom:6px;">Colaborador · Acceso</p>
+        <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;" id="collab-title">Mi Panel</h1>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:28px;">Módulos habilitados por tu organización.</p>
+        <div id="collaborator-modules-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;"></div>
+      </div>
+    </div>
+
+    <!-- Admin: Usuarios / Gestión global de cuentas -->
+    <div id="view-admin-users" class="view">
+      <div style="max-width:1100px;margin:0 auto;padding:32px 24px;">
+        <p class="section-kicker" style="margin-bottom:6px;">Admin · Gestión</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;">Usuarios</h1>
+            <p style="font-size:13px;color:var(--text-muted);">Todos los usuarios de la plataforma.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <select id="users-filter-role" onchange="renderAdminUsersView()" style="background:var(--panel-surface);border:1px solid var(--border-line);color:var(--text-primary);border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;">
+              <option value="">Todos los roles</option>
+              <option value="admin">Admin</option>
+              <option value="ceo">CEO</option>
+              <option value="program_90d">Programa 90D</option>
+              <option value="collaborator">Colaborador</option>
+              <option value="client">Legacy (client)</option>
+            </select>
+            <input id="users-search" type="text" placeholder="Buscar..." oninput="renderAdminUsersView()" style="background:var(--panel-surface);border:1px solid var(--border-line);color:var(--text-primary);border-radius:7px;padding:7px 12px;font-size:12px;width:180px;" />
+          </div>
+        </div>
+        <div id="admin-users-table-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ── FIN NUEVAS VISTAS ──────────────────────────────── -->
+
     <!-- ADMIN: Ecommerce OS -->
     <div id="view-admin-ecommerce" class="view"></div>
 
@@ -1259,6 +1333,7 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/brain-prompts.js"></script>
 <script src="/js/navigation.js"></script>
 <script src="/js/core/state.js"></script>
+<script src="/js/core/roles.js"></script>
 <script src="/js/app.js"></script>
 <script src="/js/config.js"></script>
 <script src="/js/auth.js"></script>

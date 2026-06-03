@@ -13,6 +13,7 @@ const SIDEBAR_CORE = [
   { id:'tasks',    label:'Tareas',         status:'active', action:() => showAdminView('tasks')        },
   { id:'notes',    label:'Notas OS',       status:'active', action:() => showAdminView('notas-os')     },
   { id:'notif',    label:'Notificaciones', status:'active', action:() => showAdminView('notificaciones') },
+  { id:'users',    label:'Usuarios',        status:'active', action:() => showAdminView('users')        },
   { id:'config',   label:'Configuración',  status:'active', action:() => showAdminView('config')       },
   { id:'crm',      label:'CRM',            status:'coming' },
   { id:'docs',     label:'Documentos',     status:'coming' },

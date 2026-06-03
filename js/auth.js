@@ -42,7 +42,7 @@ async function register() {
   if (pass.length < 8) { showMsg(msg,'error','La contraseña debe tener mínimo 8 caracteres'); return; }
   const btn = document.querySelector('#auth-register .btn-primary');
   btn.disabled = true; btn.textContent = 'Creando cuenta...';
-  const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name, nicho, role: 'client' } } });
+  const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { full_name: name, nicho, role: 'ceo' } } });
   btn.disabled = false; btn.textContent = 'Crear mi cuenta';
   if (error) showMsg(msg,'error', error.message);
   else showMsg(msg,'success','¡Cuenta creada! Revisa tu correo para confirmar.');

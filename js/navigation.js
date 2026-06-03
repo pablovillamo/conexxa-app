@@ -63,6 +63,10 @@ function showAdminView(view) {
     showView('view-admin-config');
     if (typeof openAdminConfig === 'function') openAdminConfig();
     if (typeof setSidebarActive === 'function') setSidebarActive('config');
+  } else if (view === 'users') {
+    showView('view-admin-users');
+    if (typeof renderAdminUsersView === 'function') renderAdminUsersView();
+    if (typeof setSidebarActive === 'function') setSidebarActive('users');
   } else if (view === 'detail') {
     showView('view-admin-detail');
   }
