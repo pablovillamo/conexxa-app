@@ -6,6 +6,7 @@ const ADMIN_EMAIL = 'pablovillamo123@gmail.com';
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.ConexxaState.setSupabaseClient(sb);
 
 let currentUser = null;
 let currentProfile = null;
@@ -38,11 +39,15 @@ async function init() {
 
 async function loadUserProfile(user) {
   currentUser = user;
+  window.ConexxaState.setCurrentUser(user);
+
   const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
   currentProfile = profile;
+  window.ConexxaState.setCurrentProfile(profile);
 
   const { data: mods } = await sb.from('modules').select('*').order('order_index');
   allModules = mods || [];
+  window.ConexxaState.setAllModules(allModules);
 
   const sel = document.getElementById('nt-module');
   sel.innerHTML = '<option value="">Sin módulo específico</option>';

@@ -18,6 +18,7 @@ async function loadAdminClients() {
   allClientsData = clients || [];
   allProgressData = allProgress || [];
   allTasksData = allTasks || [];
+  window.ConexxaState.setAllClientsData(allClientsData);
 
   // DEBUG: ver qué campos de imagen trae Supabase
   if (allClientsData.length > 0) {
@@ -166,6 +167,7 @@ function filterClients() {
 
 function openClientOverview(clientId) {
   selectedClientId = clientId;
+  window.ConexxaState.setSelectedClientId(clientId);
   const clients = typeof allClientsData !== 'undefined' ? allClientsData : [];
   const client  = clients.find(c => c.id === clientId) || { id: clientId };
 
@@ -256,6 +258,7 @@ window.renderClientOverview = renderClientOverview;
 
 async function openClientDetail(clientId) {
   selectedClientId = clientId;
+  window.ConexxaState.setSelectedClientId(clientId);
   showAdminView('detail');
 
   const { data: client } = await sb.from('profiles').select('*').eq('id', clientId).single();
