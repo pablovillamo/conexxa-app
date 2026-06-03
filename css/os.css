@@ -78,8 +78,8 @@
 
 .osb-logo-sub {
   font-size: 10px;
-  color: #22C55E;
-  font-family: 'DM Mono', monospace;
+  color: var(--acid);
+  font-family: var(--font-mono);
   letter-spacing: 0.08em;
 }
 
@@ -623,8 +623,8 @@
   bottom: 28px;
   left: calc(232px + 50%);
   transform: translateX(-50%) translateY(12px);
-  background: #1A1A1A;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--panel-surface);
+  border: 1px solid var(--border-line);
   border-radius: 10px;
   padding: 11px 18px;
   font-size: 13px;

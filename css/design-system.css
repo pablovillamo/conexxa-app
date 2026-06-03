@@ -1,44 +1,151 @@
 /* ============================================================
-   CONEXXA — DESIGN SYSTEM
+   CONEXXA — DESIGN SYSTEM v2.0
+   Command Center · Dark Enterprise · Operational Intelligence
    ============================================================ */
+
+/* ── Fuentes ─────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 :root {
-  --black:       #0A0A0A;
-  --black-soft:  #141414;
-  --black-card:  #1A1A1A;
-  --carbon:      #2C2C2A;
-  --green:       #22C55E;
-  --green-dark:  #16A34A;
-  --green-dim:   rgba(34,197,94,0.10);
-  --green-border:rgba(34,197,94,0.22);
-  --white:       #FFFFFF;
-  --cream:       #F5F5F4;
-  --gray:        #888780;
-  --gray-mid:    #4A4A48;
-  --gray-dark:   #2E2E2C;
-  --border:      rgba(255,255,255,0.07);
-  --border-mid:  rgba(255,255,255,0.12);
-  --red:         #EF4444;
-  --red-dim:     rgba(239,68,68,0.10);
-  --amber:       #F59E0B;
-  --amber-dim:   rgba(245,158,11,0.10);
+  /* ── Conexxa color tokens ─────────────────────────────── */
+  --conexxa-green: #C6FF00;
+  --acid:          #A6FF00;
+  --deep-green:    #2ECC00;
+  --dark-core:     #050505;
+  --panel-surface: #0B0D0F;
+  --border-line:   #1C2128;
+
+  --text-primary:   #F4F7FA;
+  --text-secondary: #A8B0BA;
+  --text-muted:     #68707A;
+
+  --critical: #FF3B30;
+  --warning:  #FFB020;
+  --stable:   #2ECC00;
+  --optimal:  #A6FF00;
+
+  /* ── Aliases backward-compat (mantienen CSS existente) ── */
+  --black:        var(--dark-core);
+  --black-soft:   #0D0F12;
+  --black-card:   var(--panel-surface);
+  --carbon:       #1C2128;
+  --green:        var(--conexxa-green);
+  --green-dark:   var(--acid);
+  --green-dim:    rgba(166,255,0,0.08);
+  --green-border: rgba(166,255,0,0.20);
+  --white:        var(--text-primary);
+  --cream:        #E8EDF2;
+  --gray:         var(--text-secondary);
+  --gray-mid:     #4A5260;
+  --gray-dark:    #1C2128;
+  --border:       rgba(255,255,255,0.05);
+  --border-mid:   var(--border-line);
+  --red:          var(--critical);
+  --red-dim:      rgba(255,59,48,0.10);
+  --amber:        var(--warning);
+  --amber-dim:    rgba(255,176,32,0.10);
+
+  /* ── Tipografía ───────────────────────────────────────── */
+  --font-display: 'Geist', 'Inter', sans-serif;
+  --font-body:    'IBM Plex Sans', 'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', 'DM Mono', monospace;
+
+  /* ── Status tokens ────────────────────────────────────── */
+  --status-critical: #FF3B30;
+  --status-warning:  #FFB020;
+  --status-stable:   #2ECC00;
+  --status-optimal:  #A6FF00;
 }
 
-*{margin:0;padding:0;box-sizing:border-box;}
+/* ── Reset ───────────────────────────────────────────────── */
+*{ margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  font-family:'Inter',sans-serif;
-  background:var(--black);
-  color:var(--white);
-  min-height:100vh;
-  -webkit-font-smoothing:antialiased;
+  font-family: var(--font-body);
+  background: var(--dark-core);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ============================================================ UTILS */
-.hidden{display:none!important;}
-.mono{font-family:'DM Mono',monospace;}
-.green{color:var(--green);}
-.gray{color:var(--gray);}
+/* ── Utilidades ──────────────────────────────────────────── */
+.hidden  { display: none !important; }
+.mono    { font-family: var(--font-mono); }
+.green   { color: var(--conexxa-green); }
+.acid    { color: var(--acid); }
+.gray    { color: var(--text-secondary); }
+.muted   { color: var(--text-muted); }
+.display { font-family: var(--font-display); }
 
-/* ============================================================ SCREENS */
-.screen{display:none;min-height:100vh;}
-.screen.active{display:flex;flex-direction:column;}
+/* ── Pantallas ───────────────────────────────────────────── */
+.screen       { display: none; min-height: 100vh; }
+.screen.active{ display: flex; flex-direction: column; }
+
+/* ── CommandPanel — patrón base de paneles Conexxa ───────── */
+.command-panel {
+  background: var(--panel-surface);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.command-panel:hover {
+  border-color: rgba(166,255,0,0.35);
+  box-shadow: 0 0 0 1px rgba(166,255,0,0.10), 0 0 24px rgba(166,255,0,0.06);
+  transform: translateY(-1px);
+}
+
+/* ── StatusBadge ─────────────────────────────────────────── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.status-badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-badge.optimal  { color: var(--status-optimal);  background: rgba(166,255,0,0.08);  border: 1px solid rgba(166,255,0,0.20); }
+.status-badge.optimal::before  { background: var(--status-optimal); }
+.status-badge.stable   { color: var(--status-stable);   background: rgba(46,204,0,0.08);   border: 1px solid rgba(46,204,0,0.20); }
+.status-badge.stable::before   { background: var(--status-stable); }
+.status-badge.warning  { color: var(--status-warning);  background: rgba(255,176,32,0.08); border: 1px solid rgba(255,176,32,0.20); }
+.status-badge.warning::before  { background: var(--status-warning); }
+.status-badge.critical { color: var(--status-critical); background: rgba(255,59,48,0.08);  border: 1px solid rgba(255,59,48,0.20); }
+.status-badge.critical::before { background: var(--status-critical); }
+
+/* ── Wordmark CONEXXA ────────────────────────────────────── */
+.conexxa-wordmark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.conexxa-wordmark .xx {
+  color: var(--acid);
+}
+
+/* ── Separadores técnicos ────────────────────────────────── */
+.section-divider {
+  height: 1px;
+  background: var(--border-line);
+  margin: 24px 0;
+}
+.section-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}

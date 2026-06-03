@@ -42,7 +42,7 @@ async function openEditClientModal() {
   if (existingImgUrl) {
     preview.innerHTML = `<img src="${existingImgUrl}" alt="foto" />`;
   } else {
-    const initials = (client.full_name || client.email || 'VG').substring(0, 2).toUpperCase();
+    const initials = (client.full_name || client.email || 'CX').substring(0, 2).toUpperCase();
     preview.innerHTML = initials;
   }
 
@@ -198,7 +198,7 @@ function ecRefreshDetailHeader(client) {
     avatarEl.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="" />`;
     avatarEl.style.padding = '0';
   } else {
-    const initials = (client.full_name || client.email || 'VG').substring(0, 2).toUpperCase();
+    const initials = (client.full_name || client.email || 'CX').substring(0, 2).toUpperCase();
     avatarEl.innerHTML = initials;
     avatarEl.style.padding = '';
   }

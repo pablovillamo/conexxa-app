@@ -58,7 +58,7 @@ async function loadUserProfile(user) {
     sel.appendChild(o);
   });
 
-  const initials = (profile?.full_name || user.email || 'VG').substring(0,2).toUpperCase();
+  const initials = (profile?.full_name || user.email || 'CX').substring(0,2).toUpperCase();
   document.getElementById('user-avatar').textContent = initials;
   document.getElementById('user-name-display').textContent = profile?.full_name || (user.email || '').split('@')[0];
   const ddName = document.getElementById('dd-name');

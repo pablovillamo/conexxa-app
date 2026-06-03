@@ -49,7 +49,7 @@ function syncSidebarUser() {
   const osbName  = document.getElementById('osb-user-name');
   const osbAvatar= document.getElementById('osb-user-avatar');
   if (osbName   && nameEl)   osbName.textContent   = nameEl.textContent || '—';
-  if (osbAvatar && avatarEl) osbAvatar.innerHTML    = avatarEl.innerHTML || 'VG';
+  if (osbAvatar && avatarEl) osbAvatar.innerHTML    = avatarEl.innerHTML || 'CX';
 }
 
 // ── Render sidebar nav ────────────────────────────────────
@@ -587,7 +587,7 @@ function buildClientTypeTable(clients) {
           ${clients.map(c => {
             const types = parseBusinessTypes(c.business_type);
             const statusColor = c.client_status === 'activo' ? 'var(--green)' : c.client_status === 'pausado' ? 'var(--amber)' : 'var(--gray)';
-            const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+            const initials = (c.full_name || c.email || 'CX').substring(0,2).toUpperCase();
             const typeBadges = types.length
               ? types.map(t => {
                   const info = BUSINESS_TYPES[t];
@@ -646,7 +646,7 @@ function renderAdminEcommerceOS() {
     ? `<div style="background:var(--black-card);border:1px solid var(--border);border-radius:14px;padding:32px;text-align:center;color:var(--gray);font-size:14px;">No hay clientes con tipo Ecommerce registrados.<br><span style="font-size:12px;margin-top:6px;display:block;">Editá un cliente y seleccioná "Ecommerce" en sus tipos de negocio.</span></div>`
     : clients.map(c => {
         const types = parseBusinessTypes(c.business_type);
-        const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+        const initials = (c.full_name || c.email || 'CX').substring(0,2).toUpperCase();
         const statusColor = c.client_status === 'activo' ? 'var(--green)' : 'var(--amber)';
         const typeBadges = types.map(t => {
           const info = BUSINESS_TYPES[t];
@@ -741,7 +741,7 @@ async function renderAdminIntegrationsPanel() {
           : INTEGRATIONS_BY_TYPE['ecommerce']
       )];
       const hasShopify = !!shopifyMap[c.id];
-      const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+      const initials = (c.full_name || c.email || 'CX').substring(0,2).toUpperCase();
 
       const intCells = ['shopify','meta','klaviyo','manychat','whatsapp','google-drive'].map(key => {
         const relevant = relevantInts.includes(key);

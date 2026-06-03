@@ -13,7 +13,7 @@ const BRAIN_MODULOS = [
       {
         id: 'a', titulo: 'Información general del negocio', abierta: true,
         campos: [
-          { id:'bi-nombre',    label:'Nombre de la marca',       tipo:'input', req:true,  placeholder:'Ej: Villamo Growth' },
+          { id:'bi-nombre',    label:'Nombre de la marca',       tipo:'input', req:true,  placeholder:'Ej: Conexxa' },
           { id:'bi-industria', label:'Industria',                tipo:'input', req:true,  placeholder:'Ej: Consultoría ecommerce' },
           { id:'bi-nicho',     label:'Nicho específico',         tipo:'input', req:true,  placeholder:'Ej: Marcas físicas LATAM' },
           { id:'bi-tipo',      label:'Tipo de negocio',          tipo:'input', req:false, placeholder:'Ej: Consultoría B2B, SaaS...' },

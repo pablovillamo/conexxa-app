@@ -91,7 +91,7 @@ function renderClientsTable(clients) {
     const prog = allProgressData.filter(p => p.client_id === c.id);
     const done = prog.filter(p => p.completed).length;
     const pct = Math.round((done/9)*100);
-    const initials = (c.full_name || c.email || 'VG').substring(0,2).toUpperCase();
+    const initials = (c.full_name || c.email || 'CX').substring(0,2).toUpperCase();
     console.log('[Client image debug]', c.full_name || c.email, { profile_image_url: c.profile_image_url, photo_url: c.photo_url, avatar_url: c.avatar_url, logo_url: c.logo_url });
     const imgUrl = getClientImageUrl(c);
     let avatarContent, avatarStyleAttr;
