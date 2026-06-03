@@ -17,6 +17,9 @@ const USER_ROLES = {
 // Roles que son cuentas comerciales (aparecen en Clientes)
 const COMMERCIAL_ROLES = ['ceo', 'program_90d', 'app_client', 'service_client', 'client'];
 
+// Roles que son dueños de cuenta y pueden tener equipo de colaboradores
+const ACCOUNT_OWNER_ROLES = ['ceo', 'program_90d', 'app_client', 'service_client'];
+
 // ── Normalización ─────────────────────────────────────────
 // 'client' legacy → 'ceo' durante transición.
 function normalizeRole(role) {
@@ -34,6 +37,19 @@ function isServiceClient(profile) { return profile?.role === 'service_client'; }
 function isCollaborator(profile)  { return profile?.role === 'collaborator'; }
 function isCommercialClient(profile) {
   return COMMERCIAL_ROLES.includes(profile?.role);
+}
+
+// Puede tener equipo de colaboradores vinculados por parent_account_id
+function canHaveTeam(profileOrRole) {
+  const role = normalizeRole(
+    typeof profileOrRole === 'string' ? profileOrRole : profileOrRole?.role
+  );
+  return ACCOUNT_OWNER_ROLES.includes(role);
+}
+
+// Alias semántico — dueño de una cuenta principal
+function isAccountOwner(profileOrRole) {
+  return canHaveTeam(profileOrRole);
 }
 
 function isActiveUser(profile) {
@@ -122,6 +138,7 @@ function getVisibleModules(profile, permissions) {
 window.ConexxaRoles = {
   USER_ROLES,
   COMMERCIAL_ROLES,
+  ACCOUNT_OWNER_ROLES,
   normalizeRole,
   isAdmin,
   isCEO,
@@ -130,6 +147,8 @@ window.ConexxaRoles = {
   isServiceClient,
   isCollaborator,
   isCommercialClient,
+  canHaveTeam,
+  isAccountOwner,
   isActiveUser,
   canAccessModule,
   canPerformAction,

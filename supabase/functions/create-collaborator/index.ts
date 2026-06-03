@@ -15,13 +15,16 @@ interface ModulePermission {
   canDelete?: boolean;
 }
 
+// Roles que pueden tener equipo de colaboradores
+const ACCOUNT_OWNER_ROLES = ["ceo", "program_90d", "app_client", "service_client", "client"];
+
 interface CreateCollaboratorInput {
   fullName: string;
   email: string;
   position: string;
   temporaryPassword: string;
   modules: ModulePermission[];
-  parentCeoId?: string; // solo admin puede especificar un CEO distinto
+  parentAccountId?: string; // solo admin puede especificar una cuenta distinta
 }
 
 serve(async (req) => {
@@ -67,7 +70,7 @@ serve(async (req) => {
     }
 
     const callerRole = callerProfile.role;
-    if (!["admin", "ceo", "client"].includes(callerRole)) {
+    if (!["admin", ...ACCOUNT_OWNER_ROLES].includes(callerRole)) {
       return json({ ok: false, error: "Sin permisos para crear colaboradores" }, 403);
     }
     if (callerProfile.is_active === false) {
@@ -76,7 +79,7 @@ serve(async (req) => {
 
     // ── 3. Parsear y validar input ───────────────────────
     const body: CreateCollaboratorInput = await req.json();
-    const { fullName, email, position, temporaryPassword, modules, parentCeoId } = body;
+    const { fullName, email, position, temporaryPassword, modules, parentAccountId } = body;
 
     if (!fullName?.trim())          return json({ ok: false, error: "Nombre requerido" }, 400);
     if (!email?.trim())             return json({ ok: false, error: "Correo requerido" }, 400);
@@ -90,29 +93,29 @@ serve(async (req) => {
       return json({ ok: false, error: "Al menos un módulo debe tener permiso de vista" }, 400);
     }
 
-    // ── 4. Resolver parent_ceo_id ────────────────────────
-    let resolvedParentCeoId: string;
+    // ── 4. Resolver parent_account_id ────────────────────
+    let resolvedParentAccountId: string;
 
     if (callerRole === "admin") {
-      if (!parentCeoId) {
-        return json({ ok: false, error: "Admin debe especificar parentCeoId" }, 400);
+      if (!parentAccountId) {
+        return json({ ok: false, error: "Admin debe especificar parentAccountId" }, 400);
       }
-      // Verificar que ese CEO exista
-      const { data: ceoProfile } = await sbAdmin
+      // Verificar que la cuenta principal exista y sea un tipo válido
+      const { data: ownerProfile } = await sbAdmin
         .from("profiles")
         .select("id, role")
-        .eq("id", parentCeoId)
+        .eq("id", parentAccountId)
         .single();
-      if (!ceoProfile || !["ceo", "client"].includes(ceoProfile.role)) {
-        return json({ ok: false, error: "CEO especificado no existe o no tiene rol CEO" }, 400);
+      if (!ownerProfile || !ACCOUNT_OWNER_ROLES.includes(ownerProfile.role)) {
+        return json({ ok: false, error: "Cuenta principal no existe o no puede tener equipo" }, 400);
       }
-      resolvedParentCeoId = parentCeoId;
+      resolvedParentAccountId = parentAccountId;
     } else {
-      // CEO solo puede crear colaboradores para sí mismo
-      if (parentCeoId && parentCeoId !== callerProfile.id) {
-        return json({ ok: false, error: "No podés crear colaboradores para otro CEO" }, 403);
+      // Cuenta principal solo puede crear colaboradores para sí misma
+      if (parentAccountId && parentAccountId !== callerProfile.id) {
+        return json({ ok: false, error: "No podés crear colaboradores para otra cuenta" }, 403);
       }
-      resolvedParentCeoId = callerProfile.id;
+      resolvedParentAccountId = callerProfile.id;
     }
 
     // ── 5. Crear usuario en Supabase Auth ────────────────
@@ -124,7 +127,7 @@ serve(async (req) => {
         role: "collaborator",
         full_name: fullName.trim(),
         position: position.trim(),
-        parent_ceo_id: resolvedParentCeoId,
+        parent_account_id: resolvedParentAccountId,
       },
     });
 
@@ -137,14 +140,15 @@ serve(async (req) => {
 
     // ── 6. Crear profile ─────────────────────────────────
     const { error: insertProfileErr } = await sbAdmin.from("profiles").insert({
-      id:             newUserId,
-      email:          email.trim().toLowerCase(),
-      full_name:      fullName.trim(),
-      role:           "collaborator",
-      position:       position.trim(),
-      parent_ceo_id:  resolvedParentCeoId,
-      created_by:     callerProfile.id,
-      is_active:      true,
+      id:                newUserId,
+      email:             email.trim().toLowerCase(),
+      full_name:         fullName.trim(),
+      role:              "collaborator",
+      position:          position.trim(),
+      parent_account_id: resolvedParentAccountId,
+      parent_ceo_id:     resolvedParentAccountId, // legacy — mantener hasta deprecar
+      created_by:        callerProfile.id,
+      is_active:         true,
     });
 
     if (insertProfileErr) {
