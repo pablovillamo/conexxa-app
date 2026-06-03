@@ -9,11 +9,12 @@ function setTheme(theme) {
 }
 
 function _syncThemeButtons(theme) {
-  const darkBtn  = document.getElementById('theme-btn-dark');
-  const lightBtn = document.getElementById('theme-btn-light');
-  if (!darkBtn || !lightBtn) return;
-  darkBtn.classList.toggle('active',  theme === 'dark');
-  lightBtn.classList.toggle('active', theme === 'light');
+  ['', '-admin'].forEach(suffix => {
+    const d = document.getElementById('theme-btn-dark'  + suffix);
+    const l = document.getElementById('theme-btn-light' + suffix);
+    if (d) d.classList.toggle('active', theme === 'dark');
+    if (l) l.classList.toggle('active', theme === 'light');
+  });
 }
 
 function initTheme() {
@@ -93,6 +94,43 @@ function loadSavedLogo() {
     if(removeBtn) removeBtn.style.display = 'inline';
   }
 }
+
+// ── Admin config ──────────────────────────────────────────
+
+function openAdminConfig() {
+  const p = currentProfile;
+  const nameEl  = document.getElementById('admin-cfg-name');
+  const emailEl = document.getElementById('admin-cfg-email');
+  if (nameEl  && p) nameEl.value  = p.full_name || '';
+  if (emailEl && p) emailEl.value = currentUser?.email || '';
+  _syncThemeButtons(localStorage.getItem('conexxa_theme') || 'dark');
+}
+
+async function saveAdminConfig() {
+  const btn = document.getElementById('view-admin-config')?.querySelector('.btn-save');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  try {
+    const fullName = document.getElementById('admin-cfg-name')?.value?.trim() || '';
+    if (currentUser && fullName) {
+      await sb.from('profiles').update({ full_name: fullName }).eq('id', currentUser.id);
+      currentProfile = { ...currentProfile, full_name: fullName };
+      window.ConexxaState.setCurrentProfile(currentProfile);
+      const nameEl = document.getElementById('user-name-display');
+      if (nameEl) nameEl.textContent = fullName;
+      const ddNameEl = document.getElementById('dd-name');
+      if (ddNameEl) ddNameEl.textContent = fullName;
+      if (typeof syncSidebarUser === 'function') syncSidebarUser();
+    }
+    if (btn) btn.textContent = 'Guardado';
+  } catch(e) {
+    if (btn) btn.textContent = 'Error — intenta de nuevo';
+  } finally {
+    if (btn) { btn.disabled = false; setTimeout(() => { btn.textContent = 'Guardar cambios'; }, 2000); }
+  }
+}
+
+window.openAdminConfig = openAdminConfig;
+window.saveAdminConfig = saveAdminConfig;
 
 async function saveConfig() {
   const btn = document.querySelector('.btn-save');
