@@ -1,5 +1,30 @@
 console.log("[Config] loaded");
 
+// ── Theme system ──────────────────────────────────────────
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('conexxa_theme', theme);
+  _syncThemeButtons(theme);
+}
+
+function _syncThemeButtons(theme) {
+  const darkBtn  = document.getElementById('theme-btn-dark');
+  const lightBtn = document.getElementById('theme-btn-light');
+  if (!darkBtn || !lightBtn) return;
+  darkBtn.classList.toggle('active',  theme === 'dark');
+  lightBtn.classList.toggle('active', theme === 'light');
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('conexxa_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  _syncThemeButtons(saved);
+}
+
+window.setTheme  = setTheme;
+window.initTheme = initTheme;
+
 function openConfig() {
   closeDropdown();
   const p = currentProfile;
@@ -19,6 +44,7 @@ function openConfig() {
   }
   showView('view-client-config');
   setTimeout(loadSavedLogo, 100);
+  _syncThemeButtons(localStorage.getItem('conexxa_theme') || 'dark');
 }
 
 function openChangePassword() {

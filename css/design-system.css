@@ -1,72 +1,194 @@
 /* ============================================================
-   CONEXXA — DESIGN SYSTEM v2.0
+   CONEXXA — DESIGN SYSTEM v2.1
    Command Center · Dark Enterprise · Operational Intelligence
+   Dark / Light Mode System
    ============================================================ */
 
 /* ── Fuentes ─────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-:root {
-  /* ── Conexxa color tokens ─────────────────────────────── */
+/* ============================================================
+   DARK MODE (default)
+   ============================================================ */
+:root,
+:root[data-theme="dark"] {
+  /* ── Brand ───────────────────────────────────────────────── */
   --conexxa-green: #C6FF00;
   --acid:          #A6FF00;
   --deep-green:    #2ECC00;
+
+  /* ── Base ───────────────────────────────────────────────── */
   --dark-core:     #050505;
   --panel-surface: #0B0D0F;
   --border-line:   #1C2128;
+  --background:    #050505;
 
+  /* ── Texto ───────────────────────────────────────────────── */
   --text-primary:   #F4F7FA;
   --text-secondary: #A8B0BA;
   --text-muted:     #68707A;
+  --text-disabled:  #3D4752;
 
-  --critical: #FF3B30;
-  --warning:  #FFB020;
-  --stable:   #2ECC00;
-  --optimal:  #A6FF00;
+  /* ── Status ──────────────────────────────────────────────── */
+  --critical:        #FF3B30;
+  --critical-soft:   rgba(255,59,48,0.10);
+  --critical-border: rgba(255,59,48,0.25);
+  --warning:         #FFB020;
+  --warning-soft:    rgba(255,176,32,0.10);
+  --warning-border:  rgba(255,176,32,0.25);
+  --stable:          #2ECC00;
+  --stable-soft:     rgba(46,204,0,0.08);
+  --stable-border:   rgba(46,204,0,0.20);
+  --optimal:         #A6FF00;
+  --optimal-soft:    rgba(166,255,0,0.08);
+  --optimal-border:  rgba(166,255,0,0.20);
 
-  /* ── Aliases backward-compat (mantienen CSS existente) ── */
-  --black:        var(--dark-core);
+  /* ── Interacción ─────────────────────────────────────────── */
+  --primary-action:      var(--acid);
+  --primary-action-hover:var(--conexxa-green);
+  --primary-action-text: #050505;
+  --accent-soft:         rgba(166,255,0,0.08);
+  --accent-border:       rgba(166,255,0,0.20);
+  --accent-glow:         rgba(166,255,0,0.12);
+
+  /* ── Inputs ──────────────────────────────────────────────── */
+  --input-bg:              #0D0F12;
+  --input-border:          #1C2128;
+  --input-border-focus:    #A6FF00;
+  --input-placeholder:     #4A5260;
+
+  /* ── Sombras ─────────────────────────────────────────────── */
+  --shadow-soft:  0 8px 24px rgba(0,0,0,0.40);
+  --shadow-panel: 0 1px 2px rgba(0,0,0,0.30), 0 8px 20px rgba(0,0,0,0.20);
+
+  /* ── Aliases backward-compat ─────────────────────────────── */
+  --black:        #050505;
   --black-soft:   #0D0F12;
-  --black-card:   var(--panel-surface);
+  --black-card:   #0B0D0F;
   --carbon:       #1C2128;
   --green:        var(--conexxa-green);
   --green-dark:   var(--acid);
   --green-dim:    rgba(166,255,0,0.08);
   --green-border: rgba(166,255,0,0.20);
-  --white:        var(--text-primary);
+  --white:        #F4F7FA;
   --cream:        #E8EDF2;
-  --gray:         var(--text-secondary);
+  --gray:         #A8B0BA;
   --gray-mid:     #4A5260;
   --gray-dark:    #1C2128;
   --border:       rgba(255,255,255,0.05);
-  --border-mid:   var(--border-line);
-  --red:          var(--critical);
+  --border-mid:   #1C2128;
+  --red:          #FF3B30;
   --red-dim:      rgba(255,59,48,0.10);
-  --amber:        var(--warning);
+  --amber:        #FFB020;
   --amber-dim:    rgba(255,176,32,0.10);
 
-  /* ── Tipografía ───────────────────────────────────────── */
+  /* ── Tipografía ──────────────────────────────────────────── */
   --font-display: 'Geist', 'Inter', sans-serif;
   --font-body:    'IBM Plex Sans', 'Inter', sans-serif;
   --font-mono:    'JetBrains Mono', 'DM Mono', monospace;
 
-  /* ── Status tokens ────────────────────────────────────── */
+  /* ── Status tokens (aliases) ─────────────────────────────── */
   --status-critical: #FF3B30;
   --status-warning:  #FFB020;
   --status-stable:   #2ECC00;
   --status-optimal:  #A6FF00;
 }
 
-/* ── Reset ───────────────────────────────────────────────── */
+/* ============================================================
+   LIGHT MODE
+   Executive Command Center Light
+   ============================================================ */
+:root[data-theme="light"] {
+  /* ── Brand (sin cambios) ─────────────────────────────────── */
+  --conexxa-green: #C6FF00;
+  --acid:          #A6FF00;
+  --deep-green:    #2ECC00;
+
+  /* ── Base ───────────────────────────────────────────────── */
+  --dark-core:     #F5F7FA;
+  --panel-surface: #FFFFFF;
+  --border-line:   #D9DEE5;
+  --background:    #F5F7FA;
+
+  /* ── Texto ───────────────────────────────────────────────── */
+  --text-primary:   #071014;
+  --text-secondary: #3D4752;
+  --text-muted:     #6B7280;
+  --text-disabled:  #9CA3AF;
+
+  /* ── Status ──────────────────────────────────────────────── */
+  --critical:        #D92D20;
+  --critical-soft:   #FEE4E2;
+  --critical-border: #FDA29B;
+  --warning:         #DC9800;
+  --warning-soft:    #FFF4D6;
+  --warning-border:  #FEC84B;
+  --stable:          #2ECC00;
+  --stable-soft:     #E7FBD9;
+  --stable-border:   #8BE66B;
+  --optimal:         #7ACC00;
+  --optimal-soft:    #F0FFD1;
+  --optimal-border:  #C6FF00;
+
+  /* ── Interacción ─────────────────────────────────────────── */
+  --primary-action:      #2ECC00;
+  --primary-action-hover:#25A800;
+  --primary-action-text: #050505;
+  --accent-soft:         rgba(198,255,0,0.18);
+  --accent-border:       rgba(46,204,0,0.35);
+  --accent-glow:         rgba(166,255,0,0.22);
+
+  /* ── Inputs ──────────────────────────────────────────────── */
+  --input-bg:           #FFFFFF;
+  --input-border:       #CBD5E1;
+  --input-border-focus: #2ECC00;
+  --input-placeholder:  #94A3B8;
+
+  /* ── Sombras ─────────────────────────────────────────────── */
+  --shadow-soft:  0 8px 24px rgba(5,5,5,0.06);
+  --shadow-panel: 0 1px 2px rgba(5,5,5,0.06), 0 8px 20px rgba(5,5,5,0.04);
+
+  /* ── Aliases backward-compat (light override) ─────────────── */
+  --black:        #F5F7FA;
+  --black-soft:   #EEF1F5;
+  --black-card:   #FFFFFF;
+  --carbon:       #D9DEE5;
+  --green:        #2ECC00;
+  --green-dark:   #25A800;
+  --green-dim:    rgba(46,204,0,0.10);
+  --green-border: rgba(46,204,0,0.30);
+  --white:        #071014;
+  --cream:        #F9FAFB;
+  --gray:         #3D4752;
+  --gray-mid:     #6B7280;
+  --gray-dark:    #E5E7EB;
+  --border:       rgba(0,0,0,0.06);
+  --border-mid:   #D9DEE5;
+  --red:          #D92D20;
+  --red-dim:      #FEE4E2;
+  --amber:        #DC9800;
+  --amber-dim:    #FFF4D6;
+
+  /* ── Status tokens (light) ───────────────────────────────── */
+  --status-critical: #D92D20;
+  --status-warning:  #DC9800;
+  --status-stable:   #2ECC00;
+  --status-optimal:  #7ACC00;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 *{ margin:0; padding:0; box-sizing:border-box; }
 
 body {
   font-family: var(--font-body);
-  background: var(--dark-core);
+  background: var(--background);
   color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 200ms ease, color 200ms ease;
 }
 
 /* ── Utilidades ──────────────────────────────────────────── */
@@ -82,7 +204,7 @@ body {
 .screen       { display: none; min-height: 100vh; }
 .screen.active{ display: flex; flex-direction: column; }
 
-/* ── CommandPanel — patrón base de paneles Conexxa ───────── */
+/* ── CommandPanel ────────────────────────────────────────── */
 .command-panel {
   background: var(--panel-surface);
   border: 1px solid var(--border-line);
@@ -90,8 +212,8 @@ body {
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 .command-panel:hover {
-  border-color: rgba(166,255,0,0.35);
-  box-shadow: 0 0 0 1px rgba(166,255,0,0.10), 0 0 24px rgba(166,255,0,0.06);
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 1px var(--accent-soft), 0 0 24px var(--accent-glow);
   transform: translateY(-1px);
 }
 
@@ -115,14 +237,63 @@ body {
   border-radius: 50%;
   flex-shrink: 0;
 }
-.status-badge.optimal  { color: var(--status-optimal);  background: rgba(166,255,0,0.08);  border: 1px solid rgba(166,255,0,0.20); }
+.status-badge.optimal  { color: var(--status-optimal);  background: var(--optimal-soft);  border: 1px solid var(--optimal-border); }
 .status-badge.optimal::before  { background: var(--status-optimal); }
-.status-badge.stable   { color: var(--status-stable);   background: rgba(46,204,0,0.08);   border: 1px solid rgba(46,204,0,0.20); }
+.status-badge.stable   { color: var(--status-stable);   background: var(--stable-soft);   border: 1px solid var(--stable-border); }
 .status-badge.stable::before   { background: var(--status-stable); }
-.status-badge.warning  { color: var(--status-warning);  background: rgba(255,176,32,0.08); border: 1px solid rgba(255,176,32,0.20); }
+.status-badge.warning  { color: var(--status-warning);  background: var(--warning-soft);  border: 1px solid var(--warning-border); }
 .status-badge.warning::before  { background: var(--status-warning); }
-.status-badge.critical { color: var(--status-critical); background: rgba(255,59,48,0.08);  border: 1px solid rgba(255,59,48,0.20); }
+.status-badge.critical { color: var(--status-critical); background: var(--critical-soft); border: 1px solid var(--critical-border); }
 .status-badge.critical::before { background: var(--status-critical); }
+
+/* ── Theme toggle button ─────────────────────────────────── */
+.theme-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+.theme-toggle-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.theme-toggle-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.theme-segmented {
+  display: flex;
+  gap: 2px;
+  background: var(--border-line);
+  border-radius: 8px;
+  padding: 3px;
+}
+.theme-seg-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.theme-seg-btn.active {
+  background: var(--panel-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-soft);
+}
+[data-theme="light"] .theme-seg-btn.active {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
 
 /* ── Wordmark CONEXXA ────────────────────────────────────── */
 .conexxa-wordmark {
@@ -131,9 +302,7 @@ body {
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
-.conexxa-wordmark .xx {
-  color: var(--acid);
-}
+.conexxa-wordmark .xx { color: var(--acid); }
 
 /* ── Separadores técnicos ────────────────────────────────── */
 .section-divider {
