@@ -383,15 +383,17 @@
             <p style="font-size:13px;color:var(--text-muted);">Todos los usuarios de la plataforma.</p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <select id="users-filter-role" onchange="renderAdminUsersView()" style="background:var(--panel-surface);border:1px solid var(--border-line);color:var(--text-primary);border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;">
+            <select id="users-filter-role" onchange="filterAdminUsers()" style="background:var(--panel-surface);border:1px solid var(--border-line);color:var(--text-primary);border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;">
               <option value="">Todos los roles</option>
               <option value="admin">Admin</option>
               <option value="ceo">CEO</option>
               <option value="program_90d">Programa 90D</option>
+              <option value="service_client">Consultoría / Servicios</option>
+              <option value="app_client">Apps</option>
               <option value="collaborator">Colaborador</option>
               <option value="client">Legacy (client)</option>
             </select>
-            <input id="users-search" type="text" placeholder="Buscar..." oninput="renderAdminUsersView()" style="background:var(--panel-surface);border:1px solid var(--border-line);color:var(--text-primary);border-radius:7px;padding:7px 12px;font-size:12px;width:180px;" />
+            <input id="users-search" type="text" placeholder="Buscar..." oninput="filterAdminUsers()" style="background:var(--panel-surface);border:1px solid var(--border-line);color:var(--text-primary);border-radius:7px;padding:7px 12px;font-size:12px;width:180px;" />
           </div>
         </div>
         <div id="admin-users-table-wrap"></div>

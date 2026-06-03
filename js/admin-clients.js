@@ -371,6 +371,115 @@ function renderAdminClientsView() {
 }
 window.renderAdminClientsView = renderAdminClientsView;
 
+// ── Vista: Usuarios (TODOS los perfiles de la plataforma) ──
+// Etiqueta y estilo de badge para cualquier rol (incl. admin/collaborator).
+function userRoleLabel(role) {
+  const map = {
+    admin:          'Admin',
+    ceo:            'CEO',
+    program_90d:    'Programa 90D',
+    service_client: 'Consultoría / Servicios',
+    app_client:     'Apps',
+    collaborator:   'Colaborador',
+    client:         'Legacy',
+  };
+  return map[role] || role || '—';
+}
+
+function userRoleBadgeStyle(role) {
+  switch (role) {
+    case 'admin':          return 'color:var(--white);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);';
+    case 'program_90d':    return 'color:#818CF8;background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.2);';
+    case 'service_client': return 'color:#F59E0B;background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.2);';
+    case 'app_client':     return 'color:#14B8A6;background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.2);';
+    case 'collaborator':   return 'color:#60A5FA;background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.2);';
+    case 'client':         return 'color:var(--text-muted);background:rgba(255,255,255,.04);border-color:var(--border-line);';
+    default:               return 'color:var(--acid);background:rgba(166,255,0,.08);border-color:rgba(166,255,0,.2);';
+  }
+}
+
+let allUsersData = [];
+
+// Navegación a Usuarios: carga fresca de TODOS los perfiles, luego pinta.
+async function renderAdminUsersView() {
+  const wrap = document.getElementById('admin-users-table-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px;">Cargando usuarios...</div>';
+  const { data: users, error } = await sb.from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    wrap.innerHTML = `<div style="color:var(--red);font-size:13px;padding:20px;">Error cargando usuarios: ${error.message}</div>`;
+    return;
+  }
+  allUsersData = users || [];
+  paintAdminUsers();
+}
+
+// Cambios de filtro/búsqueda: re-pinta sin volver a consultar Supabase.
+function filterAdminUsers() {
+  paintAdminUsers();
+}
+
+function paintAdminUsers() {
+  const wrap = document.getElementById('admin-users-table-wrap');
+  if (!wrap) return;
+
+  const byId = {};
+  allUsersData.forEach(u => { byId[u.id] = u; });
+
+  const roleFilter = document.getElementById('users-filter-role')?.value || '';
+  const search = (document.getElementById('users-search')?.value || '').toLowerCase();
+
+  const filtered = allUsersData.filter(u => {
+    const matchRole = !roleFilter || u.role === roleFilter;
+    const matchSearch = !search
+      || (u.full_name || '').toLowerCase().includes(search)
+      || (u.email || '').toLowerCase().includes(search);
+    return matchRole && matchSearch;
+  });
+
+  if (!filtered.length) {
+    wrap.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px;">No hay usuarios que coincidan con el filtro.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${filtered.length} usuario${filtered.length !== 1 ? 's' : ''} de ${allUsersData.length} en la plataforma</div>
+    <div style="background:var(--black-card);border:1px solid var(--border-line);border-radius:14px;overflow:hidden;overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:720px;">
+        <thead><tr style="border-bottom:1px solid var(--border-line);">
+          ${['Usuario','Email','Rol','Cuenta padre','Estado','Ingreso'].map(h =>
+            `<th style="text-align:left;padding:10px 14px;font-size:11px;font-family:var(--font-mono);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">${h}</th>`
+          ).join('')}
+        </tr></thead>
+        <tbody>${filtered.map(u => {
+          const initials = (u.full_name || u.email || 'CX').substring(0,2).toUpperCase();
+          const active = u.is_active !== false;
+          const created = u.created_at ? new Date(u.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) : '—';
+          // Cuenta padre: solo aplica a colaboradores (parent_account_id).
+          const parent = u.parent_account_id ? byId[u.parent_account_id] : null;
+          const parentLabel = u.role === 'collaborator'
+            ? (parent ? (parent.full_name || parent.email) : (u.parent_account_id ? '—' : 'Sin cuenta'))
+            : '—';
+          return `<tr style="border-bottom:1px solid rgba(255,255,255,.04);">
+            <td style="padding:12px 14px;"><div style="display:flex;align-items:center;gap:9px;">
+              <div style="width:26px;height:26px;border-radius:50%;background:var(--green-dim);border:1px solid var(--green-border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--green);flex-shrink:0;">${initials}</div>
+              <span style="font-size:13px;font-weight:500;color:var(--text-primary);">${u.full_name || u.email || '—'}</span>
+            </div></td>
+            <td style="padding:12px 14px;font-size:12px;color:var(--text-secondary);">${u.email || '—'}</td>
+            <td style="padding:12px 14px;"><span style="font-size:10px;font-family:var(--font-mono);padding:2px 7px;border-radius:4px;border:1px solid;${userRoleBadgeStyle(u.role)}">${userRoleLabel(u.role)}</span></td>
+            <td style="padding:12px 14px;font-size:12px;color:var(--text-secondary);">${parentLabel}</td>
+            <td style="padding:12px 14px;font-size:12px;color:${active ? 'var(--green)' : 'var(--amber)'};">● ${active ? 'Activo' : 'Inactivo'}</td>
+            <td style="padding:12px 14px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono);">${created}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+}
+window.renderAdminUsersView = renderAdminUsersView;
+window.filterAdminUsers     = filterAdminUsers;
+
 // ── Vista: CEOs ────────────────────────────────────────────
 async function renderAdminCEOsView() {
   const el = document.getElementById('admin-ceos-list');
