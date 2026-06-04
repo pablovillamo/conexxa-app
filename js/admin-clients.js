@@ -402,17 +402,29 @@ let allUsersData = [];
 
 // Navegación a Usuarios: carga fresca de TODOS los perfiles, luego pinta.
 async function renderAdminUsersView() {
+  console.log('[Conexxa] renderAdminUsersView:start');
   const wrap = document.getElementById('admin-users-table-wrap');
-  if (!wrap) return;
+  if (!wrap) {
+    console.warn('[Conexxa] renderAdminUsersView: contenedor #admin-users-table-wrap no encontrado');
+    return;
+  }
+  const client = (typeof sb !== 'undefined' && sb) || (window.ConexxaState && window.ConexxaState.getSupabaseClient && window.ConexxaState.getSupabaseClient());
+  if (!client) {
+    wrap.innerHTML = `<div style="color:var(--red);font-size:13px;padding:20px;">No se pudo inicializar la conexión. Recargá la página.</div>`;
+    console.error('[Conexxa] renderAdminUsersView: supabase client no disponible');
+    return;
+  }
   wrap.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px;">Cargando usuarios...</div>';
-  const { data: users, error } = await sb.from('profiles')
+  const { data: users, error } = await client.from('profiles')
     .select('*')
     .order('created_at', { ascending: false });
   if (error) {
-    wrap.innerHTML = `<div style="color:var(--red);font-size:13px;padding:20px;">Error cargando usuarios: ${error.message}</div>`;
+    console.error('[Conexxa] Error cargando usuarios:', error);
+    wrap.innerHTML = `<div style="color:var(--red);font-size:13px;padding:20px;">No se pudieron cargar los usuarios.<br><span style="color:var(--text-muted);font-size:12px;">${error.message || ''}</span></div>`;
     return;
   }
   allUsersData = users || [];
+  console.log('[Conexxa] usuarios cargados:', allUsersData.length);
   paintAdminUsers();
 }
 
@@ -430,6 +442,7 @@ function paintAdminUsers() {
 
   const roleFilter = document.getElementById('users-filter-role')?.value || '';
   const search = (document.getElementById('users-search')?.value || '').toLowerCase();
+  console.log('[Conexxa] usuarios — filtro:', roleFilter || 'todos', '| búsqueda:', search || '—');
 
   const filtered = allUsersData.filter(u => {
     const matchRole = !roleFilter || u.role === roleFilter;
