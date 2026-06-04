@@ -1,0 +1,254 @@
+/* ============================================================
+   CONEXXA HOME — Launcher / centro de mando (pantalla inicial admin)
+   ============================================================ */
+
+.conexxa-home {
+  position: relative;
+  min-height: calc(100vh - 60px);
+  overflow: hidden;
+  --mouse-x: 50%;
+  --mouse-y: 28%;
+  background-color: var(--dark-base, #0A0A0A);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+/* Spotlight verde que sigue el cursor */
+.conexxa-home::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x) var(--mouse-y),
+    rgba(173, 255, 0, 0.14),
+    transparent 340px
+  );
+}
+
+/* Halo radial estático secundario para profundidad */
+.conexxa-home::after {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 680px;
+  height: 680px;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(166, 255, 0, 0.10), transparent 60%);
+  filter: blur(20px);
+}
+
+.conexxa-home-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 64px 24px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.conexxa-home-hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.conexxa-home-logo {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: cxhFloat 6s ease-in-out infinite;
+}
+
+.conexxa-home-logo::before {
+  content: '';
+  position: absolute;
+  inset: -34px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(166, 255, 0, 0.35), transparent 68%);
+  filter: blur(14px);
+  z-index: 0;
+}
+
+.conexxa-home-logo img {
+  position: relative;
+  z-index: 1;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: 22px;
+  filter: drop-shadow(0 8px 28px rgba(166, 255, 0, 0.25));
+}
+
+@keyframes cxhFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.conexxa-home-title {
+  font-family: 'Geist', 'Inter', sans-serif;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--white, #fff);
+  margin-bottom: 10px;
+  line-height: 1.05;
+}
+
+.conexxa-home-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--acid, #A6FF00);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 16px;
+}
+
+.conexxa-home-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--gray, #888780);
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* ── Cards ─────────────────────────────────────────────────── */
+.conexxa-home-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 48px;
+}
+
+.conexxa-home-card {
+  position: relative;
+  text-align: left;
+  padding: 22px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-line, rgba(255, 255, 255, 0.08));
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  overflow: hidden;
+}
+
+.conexxa-home-card:hover {
+  transform: translateY(-3px);
+  background: rgba(166, 255, 0, 0.04);
+  border-color: rgba(166, 255, 0, 0.35);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(166, 255, 0, 0.12);
+}
+
+.conexxa-home-card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(166, 255, 0, 0.08);
+  border: 1px solid rgba(166, 255, 0, 0.2);
+  color: var(--acid, #A6FF00);
+  margin-bottom: 16px;
+}
+
+.conexxa-home-card-icon svg { width: 20px; height: 20px; }
+
+.conexxa-home-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white, #fff);
+  margin-bottom: 6px;
+}
+
+.conexxa-home-card-desc {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--gray, #888780);
+}
+
+.conexxa-home-card-arrow {
+  position: absolute;
+  top: 22px;
+  right: 20px;
+  color: var(--gray, #888780);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 180ms ease, transform 180ms ease, color 180ms ease;
+}
+
+.conexxa-home-card:hover .conexxa-home-card-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--acid, #A6FF00);
+}
+
+/* ── Métricas ──────────────────────────────────────────────── */
+.conexxa-home-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  width: 100%;
+}
+
+.conexxa-home-metric {
+  text-align: center;
+  padding: 20px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-line, rgba(255, 255, 255, 0.08));
+}
+
+.conexxa-home-metric-val {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: 'Geist', 'Inter', sans-serif;
+  color: var(--acid, #A6FF00);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.conexxa-home-metric-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray, #888780);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 880px) {
+  .conexxa-home-cards   { grid-template-columns: repeat(2, 1fr); }
+  .conexxa-home-metrics { grid-template-columns: repeat(2, 1fr); }
+  .conexxa-home-title   { font-size: 34px; }
+  .conexxa-home-inner   { padding: 44px 16px 40px; }
+}
+
+@media (max-width: 520px) {
+  .conexxa-home-cards   { grid-template-columns: 1fr; }
+}
+
+/* Modo claro */
+[data-theme="light"] .conexxa-home {
+  background-color: var(--cream, #F5F5F4);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+}
+[data-theme="light"] .conexxa-home-card { background: rgba(0, 0, 0, 0.02); }

@@ -101,7 +101,8 @@ async function loadUserProfile(user) {
       _showAdminShell();
       await loadAdminClients();
       if (typeof renderSidebarNav === 'function') renderSidebarNav();
-      showAdminView('os');
+      // Pantalla inicial: Conexxa Home (launcher). El dashboard sigue en Core OS → Dashboard.
+      showAdminView('home');
       break;
 
     case 'ceo':

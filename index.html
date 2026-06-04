@@ -42,6 +42,7 @@
 <link rel="stylesheet" href="/css/client.css">
 <link rel="stylesheet" href="/css/integrations.css">
 <link rel="stylesheet" href="/css/os.css">
+<link rel="stylesheet" href="/css/home.css?v=20260604">
 <link rel="stylesheet" href="/css/costos.css">
 <link rel="stylesheet" href="/css/notas-os.css">
 <link rel="stylesheet" href="/css/operaciones.css">
@@ -120,7 +121,7 @@
 
   <!-- ADMIN SIDEBAR (visible solo en admin-mode) -->
   <nav class="os-sidebar" id="os-sidebar" style="display:none;">
-    <div class="osb-logo">
+    <div class="osb-logo" onclick="showAdminView('home')" style="cursor:pointer;" title="Inicio Conexxa">
       <div class="osb-logo-mark">
         <img src="/conexxa-64.png" alt="logo" />
       </div>
@@ -215,6 +216,9 @@
 
   <!-- BODY -->
   <div class="app-body os-main-content" id="os-main-content">
+
+    <!-- CONEXXA HOME: launcher / pantalla inicial admin -->
+    <div id="view-conexxa-home" class="view conexxa-home"></div>
 
     <!-- ADMIN: OS Dashboard -->
     <div id="view-admin-os" class="view"></div>
@@ -1335,5 +1339,6 @@ Revisalo con calma. Cualquier ajuste lo hacemos en la próxima sesión.
 <script src="/js/costos.js?v=20260604"></script>
 <script src="/js/admin-os.js?v=20260604"></script>
 <script src="/js/client-workspace.js?v=20260604"></script>
+<script src="/js/conexxa-home.js?v=20260604"></script>
 </body>
 </html>

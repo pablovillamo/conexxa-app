@@ -4,7 +4,16 @@ console.log("[Navigation] loaded");
 function showAdminView(view) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-  if (view === 'os') {
+  if (view === 'home') {
+    // Si venimos de un workspace de cliente, restaurar el sidebar admin.
+    if (typeof isInClientWorkspace === 'function' && isInClientWorkspace() && typeof restoreAdminSidebar === 'function') {
+      restoreAdminSidebar();
+    }
+    showView('view-conexxa-home');
+    if (typeof renderConexxaHome === 'function') renderConexxaHome();
+    if (typeof setSidebarActive === 'function') setSidebarActive('');  // Home no es un item del sidebar
+    if (typeof syncSidebarUser === 'function') syncSidebarUser();
+  } else if (view === 'os') {
     showView('view-admin-os');
     if (typeof renderAdminOS === 'function') renderAdminOS();
     if (typeof setSidebarActive === 'function') setSidebarActive('os');

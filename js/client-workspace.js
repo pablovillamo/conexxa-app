@@ -160,6 +160,7 @@ function enterWorkspaceSidebar() {
 }
 
 function restoreAdminSidebar() {
+  currentWorkspace = null;
   const nav = document.getElementById('osb-nav');
   if (nav && _adminNavHTMLCache !== null) {
     nav.innerHTML = _adminNavHTMLCache;
@@ -175,6 +176,9 @@ function exitClientWorkspace() {
   if (typeof showAdminView === 'function') showAdminView('clients');
 }
 window.exitClientWorkspace = exitClientWorkspace;
+window.restoreAdminSidebar = restoreAdminSidebar;
+// Permite a otras vistas saber/limpiar el estado de workspace.
+window.isInClientWorkspace = () => currentWorkspace !== null;
 
 function setWorkspaceActive(idx) {
   document.querySelectorAll('#osb-nav .osb-item').forEach(el => el.classList.remove('active'));
